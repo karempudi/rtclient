@@ -4,8 +4,41 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rtclient"
+authors = [
+    {name = "Praneeth Karempudi", email = "praneeth.karempudi@gmail.com"},
+]
 version = "0.0.1"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT-License"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+
 dependencies = [
     "numpy",
+    "requests",
+    "pyside6",
+    "qtpy",
 ]
-    
+
+[project.optional-dependencies]
+linting = ["mypy", "ruff", "pre-commit", "ruff"]
+cpu=[]
+gpu=[]
+
+
+[project.scripts]
+rtclient-app = "rtclient.app:main"
+
+[tool.setuptools.packages.find]
+where = ["rtclient"]
+include = ["rtclient*"]
+exclude = ["tests*"]
+
+[tool.pyright.defineConstant]
+PYQT5 = false
+PYSIDE2 = false
+PYQT6 = false
+PYSIDE6 = true
+
