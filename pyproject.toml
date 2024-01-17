@@ -26,18 +26,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-linting = ["mypy", "ruff", "pre-commit", "ruff"]
+linting = ["mypy", "ruff", "pre-commit"]
 cpu=[]
 gpu=[]
 
+[tool.setuptools.packages]
+find = {}
 
 [project.scripts]
-rtclient-app = "rtclient.app:main"
+rtclient-app = "rtclient.app:run"
 
-[tool.setuptools.packages.find]
-where = ["rtclient"]
-include = ["rtclient*"]
-exclude = ["tests*"]
 
 [tool.pyright.defineConstant]
 PYQT5 = false

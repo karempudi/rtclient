@@ -1,8 +1,8 @@
 import numpy
 
-def main():
+def run():
     print("Real-time client")
 
 if __name__ == '__main__':
-    main()
+    run()
 
