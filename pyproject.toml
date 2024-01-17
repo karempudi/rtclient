@@ -23,10 +23,12 @@ dependencies = [
     "pycromanager",
     "torch",
     "torchvision",
+    "docker",
 ]
 
 [project.optional-dependencies]
 linting = ["mypy", "ruff", "pre-commit"]
+testing = ["pytest"]
 cpu=[]
 gpu=[]
 
