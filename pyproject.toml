@@ -20,6 +20,9 @@ dependencies = [
     "requests",
     "pyside6",
     "qtpy",
+    "pycromanager",
+    "torch",
+    "torchvision",
 ]
 
 [project.optional-dependencies]
