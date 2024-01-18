@@ -27,4 +27,7 @@ Install optional dependencies using commands during development to smooth out in
 ```
 # this will install additional dependencies for linting, type-checking, etc
 pip install -e ".[linting]"
+# or 
+pip install -e ".[testing]"
+
 ```
