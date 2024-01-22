@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>PositionsWindow</class>
+ <widget class="QMainWindow" name="PositionsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>867</width>
-    <height>608</height>
+    <width>908</width>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGroupBox" name="groupBox">
+   <widget class="QGroupBox" name="positions_group">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -31,13 +31,13 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>355</width>
+       <width>357</width>
        <height>251</height>
       </rect>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QFormLayout" name="positions_layout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="num_sides_label">
         <property name="text">
          <string>No of sides</string>
         </property>
@@ -53,6 +53,9 @@
           <property name="checked">
            <bool>true</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sidesGroup</string>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -60,19 +63,25 @@
           <property name="text">
            <string>Two sides</string>
           </property>
+          <property name="autoExclusive">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sidesGroup</string>
+          </attribute>
          </widget>
         </item>
        </layout>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="making_patterns_label">
         <property name="text">
          <string>Marking patterns</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="comboBox_2">
+       <widget class="QComboBox" name="pattern_type_combo">
         <item>
          <property name="text">
           <string>4 corners</string>
@@ -91,14 +100,14 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="dummy_positions_label">
         <property name="text">
          <string>Dummy</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="comboBox_3">
+       <widget class="QComboBox" name="dummy_positions_combo">
         <item>
          <property name="text">
           <string>Follow boundary</string>
@@ -112,45 +121,24 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="num_dummy_positions_label">
         <property name="text">
          <string>No of dummy  positions</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="num_dummy_positions"/>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="chip_orientation_label">
         <property name="text">
          <string>Chip orientation</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <layout class="QHBoxLayout" name="chip_orientation_layout">
-        <item>
-         <widget class="QRadioButton" name="chip_vertical_button">
-          <property name="text">
-           <string>vertical</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="chip_horizontal_button">
-          <property name="text">
-           <string>horizontal</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="mm_version_label">
         <property name="text">
          <string>Micromanager Version</string>
         </property>
@@ -166,6 +154,9 @@
           <property name="checked">
            <bool>true</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">versionGroup</string>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -173,33 +164,63 @@
           <property name="text">
            <string>1.4</string>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">versionGroup</string>
+          </attribute>
          </widget>
         </item>
        </layout>
       </item>
       <item row="6" column="0">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="num_rows_label">
         <property name="text">
          <string>Number of rows</string>
         </property>
        </widget>
       </item>
       <item row="6" column="1">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="num_rows_edit"/>
       </item>
       <item row="7" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="num_cols_label">
         <property name="text">
          <string>Number of columns</string>
         </property>
        </widget>
       </item>
       <item row="7" column="1">
-       <widget class="QLineEdit" name="lineEdit_3"/>
+       <widget class="QLineEdit" name="num_cols_edit"/>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="chip_orientation_layout">
+        <item>
+         <widget class="QRadioButton" name="chip_vertical_button">
+          <property name="text">
+           <string>vertical</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientationGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="chip_horizontal_button">
+          <property name="text">
+           <string>horizontal</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientationGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="pushButton_4">
+    <widget class="QPushButton" name="save_positions_button">
      <property name="geometry">
       <rect>
        <x>30</x>
@@ -212,7 +233,7 @@
       <string>Save positions</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_5">
+    <widget class="QPushButton" name="update_path_button">
      <property name="geometry">
       <rect>
        <x>170</x>
@@ -226,7 +247,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_3">
+   <widget class="QGroupBox" name="rules_group">
     <property name="geometry">
      <rect>
       <x>390</x>
@@ -247,50 +268,50 @@
        <height>121</height>
       </rect>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QFormLayout" name="rules_form_layout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="mm_groups_label">
         <property name="text">
          <string>Group</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="preset_label">
         <property name="text">
          <string>Preset</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_11">
+       <widget class="QLabel" name="exposure_label">
         <property name="text">
          <string>Exposure(ms)</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit_4"/>
+       <widget class="QLineEdit" name="exposure_edit"/>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox"/>
+       <widget class="QComboBox" name="mm_groups_combo"/>
       </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="comboBox_4"/>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_12">
+       <widget class="QLabel" name="imaging_freq_label">
         <property name="text">
          <string>Imaging freq (mins)</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit_6"/>
+       <widget class="QLineEdit" name="imaging_freq_edit"/>
       </item>
      </layout>
     </widget>
-    <widget class="QListWidget" name="listWidget">
+    <widget class="QListWidget" name="show_imaging_list">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -300,7 +321,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="add_preset_button">
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -313,7 +334,7 @@
       <string>Add</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QPushButton" name="remove_preset_button">
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -327,7 +348,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_4">
+   <widget class="QGroupBox" name="test_acquire_group">
     <property name="geometry">
      <rect>
       <x>280</x>
@@ -381,7 +402,7 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_2">
+   <widget class="QGroupBox" name="mark_positions_group">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -402,30 +423,30 @@
        <height>171</height>
       </rect>
      </property>
-     <layout class="QGridLayout" name="one_side_layout">
+     <layout class="QGridLayout" name="choose_positions_layout">
       <item row="3" column="0">
-       <widget class="QPushButton" name="bl_button">
+       <widget class="QPushButton" name="bl_button_1">
         <property name="text">
          <string>Bottom Left 1</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="tl_button">
+       <widget class="QPushButton" name="tl_button_1">
         <property name="text">
          <string>Top Left 1</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="tr_button">
+       <widget class="QPushButton" name="tr_button_1">
         <property name="text">
          <string>Top Right 1</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QPushButton" name="br_button">
+       <widget class="QPushButton" name="br_button_1">
         <property name="text">
          <string>Bottom Right 1</string>
         </property>
@@ -465,8 +486,8 @@
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>360</y>
+      <x>770</x>
+      <y>40</y>
       <width>281</width>
       <height>211</height>
      </rect>
@@ -477,20 +498,27 @@
      <rect>
       <x>470</x>
       <y>290</y>
-      <width>221</width>
+      <width>301</width>
       <height>51</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="reset_close_layout">
      <item>
-      <widget class="QPushButton" name="pushButton_7">
+      <widget class="QPushButton" name="generate_events_button">
+       <property name="text">
+        <string>Generate Events</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reset_button">
        <property name="text">
         <string>Reset all</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_6">
+      <widget class="QPushButton" name="close_button">
        <property name="text">
         <string>Close</string>
        </property>
@@ -498,13 +526,23 @@
      </item>
     </layout>
    </widget>
+   <widget class="QListView" name="viewPositions">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>370</y>
+      <width>311</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>867</width>
+     <width>908</width>
      <height>22</height>
     </rect>
    </property>
@@ -513,4 +551,9 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="orientationGroup"/>
+  <buttongroup name="versionGroup"/>
+  <buttongroup name="sidesGroup"/>
+ </buttongroups>
 </ui>

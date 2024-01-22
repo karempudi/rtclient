@@ -141,20 +141,20 @@ class Ui_MainWindow(object):
         self.verticalLayout_3 = QVBoxLayout(self.verticalLayoutWidget_3)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.pushButton_7 = QPushButton(self.verticalLayoutWidget_3)
-        self.pushButton_7.setObjectName(u"pushButton_7")
+        self.positions_button = QPushButton(self.verticalLayoutWidget_3)
+        self.positions_button.setObjectName(u"positions_button")
 
-        self.verticalLayout_3.addWidget(self.pushButton_7)
+        self.verticalLayout_3.addWidget(self.positions_button)
 
-        self.pushButton_8 = QPushButton(self.verticalLayoutWidget_3)
-        self.pushButton_8.setObjectName(u"pushButton_8")
+        self.rules_button = QPushButton(self.verticalLayoutWidget_3)
+        self.rules_button.setObjectName(u"rules_button")
 
-        self.verticalLayout_3.addWidget(self.pushButton_8)
+        self.verticalLayout_3.addWidget(self.rules_button)
 
-        self.pushButton = QPushButton(self.verticalLayoutWidget_3)
-        self.pushButton.setObjectName(u"pushButton")
+        self.preview_button = QPushButton(self.verticalLayoutWidget_3)
+        self.preview_button.setObjectName(u"preview_button")
 
-        self.verticalLayout_3.addWidget(self.pushButton)
+        self.verticalLayout_3.addWidget(self.preview_button)
 
         self.horizontalLayoutWidget = QWidget(self.centralwidget)
         self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
@@ -228,9 +228,9 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
         self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Setup", None))
-        self.pushButton_7.setText(QCoreApplication.translate("MainWindow", u"Positions", None))
-        self.pushButton_8.setText(QCoreApplication.translate("MainWindow", u"Rules", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Preview", None))
+        self.positions_button.setText(QCoreApplication.translate("MainWindow", u"Positions", None))
+        self.rules_button.setText(QCoreApplication.translate("MainWindow", u"Rules", None))
+        self.preview_button.setText(QCoreApplication.translate("MainWindow", u"Preview", None))
         self.checkBox_4.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
         self.checkBox_3.setText(QCoreApplication.translate("MainWindow", u"Segment", None))
         self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Track (mCells Data structures)", None))
