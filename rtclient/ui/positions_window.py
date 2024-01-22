@@ -1,10 +1,11 @@
 import sys
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIntValidator, QValidator
-from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar, QMessageBox
 from rtclient.ui.qt_ui_classes.ui_positions import Ui_PositionsWindow
 from rtclient.utils.devices import check_mm_server_alive
 #from rtclient.microscope.utils import parse_positions_file
+from pycromanager import Core # type: ignore
 
 class PositionsWindow(QMainWindow):
 
@@ -27,6 +28,10 @@ class PositionsWindow(QMainWindow):
             'first_half': ('TL1', 'TR1', 'BR1', 'BL1'),
             'second_half': ('TL2', 'TR2', 'BR2', 'BL2')
         }
+        self.scope_devices = {
+            'focus': 'PFSOffset',
+            'XYStage': 'XYStage',
+        }
 
         self.selected_values = {
             'n_sides': 1,
@@ -36,7 +41,8 @@ class PositionsWindow(QMainWindow):
             'mm_version': 2.0,
             'orientation': 'horizontal',
             'marking_type': 'corners',
-            'corners': {}
+            'corners': {},
+            'save_dir': None,
         }
         # check platform and fill values
         if check_mm_server_alive():
@@ -217,13 +223,41 @@ class PositionsWindow(QMainWindow):
         pass
 
     def set_positon_and_label(self, label):
-        self.statusBar.showMessage(f"{label} position selected ..", 2000)
-        #position_dict = self.get_mm_current_position()
+        self.statusBar.showMessage(f"{label} position selected ..", 1000)
+        position_dict = self.get_mm_current_position(label)
+        self.selected_values['corners'][label] = position_dict
 
-    def get_mm_current_position(self):
-        pass
-        
-    
+    def get_mm_current_position(self, label):
+        core = None
+        position_dict = None
+        try:
+            core = Core()
+            if core.get_focus_device() != self.scope_devices['focus']:
+                raise ValueError('Focus device is not PFSOffset')
+            if core.get_xy_stage_device != self.scope_devices['XYStage']:
+                raise ValueError('XY stage device is not XYStage')
+
+            x = core.get_x_position()
+            y = core.get_y_position()
+            z = core.get_auto_focus_offset()
+            position_dict = {
+                'x': x,
+                'y': y,
+                'z': z,
+                'grid_row': 0,
+                'grid_col': 0,
+            }
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Could not grad position {label} from micromanger, check connection: {e}')
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec()
+        finally:
+            if core:
+                del core
+            self.statusBar.showMessage(f"Positon {label} set to {position_dict}")
+            return position_dict
+
     @Slot()
     def set_tl_1_position(self):
         self.set_positon_and_label('TL1')
