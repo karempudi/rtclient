@@ -25,7 +25,7 @@ class Ui_PositionsWindow(object):
     def setupUi(self, PositionsWindow):
         if not PositionsWindow.objectName():
             PositionsWindow.setObjectName(u"PositionsWindow")
-        PositionsWindow.resize(908, 647)
+        PositionsWindow.resize(908, 688)
         self.centralwidget = QWidget(PositionsWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.positions_group = QGroupBox(self.centralwidget)
@@ -33,7 +33,7 @@ class Ui_PositionsWindow(object):
         self.positions_group.setGeometry(QRect(10, 10, 371, 331))
         self.formLayoutWidget = QWidget(self.positions_group)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(10, 30, 357, 251))
+        self.formLayoutWidget.setGeometry(QRect(10, 30, 351, 241))
         self.positions_layout = QFormLayout(self.formLayoutWidget)
         self.positions_layout.setObjectName(u"positions_layout")
         self.positions_layout.setContentsMargins(0, 0, 0, 0)
@@ -68,14 +68,6 @@ class Ui_PositionsWindow(object):
 
         self.positions_layout.setWidget(1, QFormLayout.LabelRole, self.making_patterns_label)
 
-        self.pattern_type_combo = QComboBox(self.formLayoutWidget)
-        self.pattern_type_combo.addItem("")
-        self.pattern_type_combo.addItem("")
-        self.pattern_type_combo.addItem("")
-        self.pattern_type_combo.setObjectName(u"pattern_type_combo")
-
-        self.positions_layout.setWidget(1, QFormLayout.FieldRole, self.pattern_type_combo)
-
         self.dummy_positions_label = QLabel(self.formLayoutWidget)
         self.dummy_positions_label.setObjectName(u"dummy_positions_label")
 
@@ -102,6 +94,26 @@ class Ui_PositionsWindow(object):
         self.chip_orientation_label.setObjectName(u"chip_orientation_label")
 
         self.positions_layout.setWidget(4, QFormLayout.LabelRole, self.chip_orientation_label)
+
+        self.chip_orientation_layout = QHBoxLayout()
+        self.chip_orientation_layout.setObjectName(u"chip_orientation_layout")
+        self.chip_vertical_button = QRadioButton(self.formLayoutWidget)
+        self.orientationGroup = QButtonGroup(PositionsWindow)
+        self.orientationGroup.setObjectName(u"orientationGroup")
+        self.orientationGroup.addButton(self.chip_vertical_button)
+        self.chip_vertical_button.setObjectName(u"chip_vertical_button")
+        self.chip_vertical_button.setChecked(True)
+
+        self.chip_orientation_layout.addWidget(self.chip_vertical_button)
+
+        self.chip_horizontal_button = QRadioButton(self.formLayoutWidget)
+        self.orientationGroup.addButton(self.chip_horizontal_button)
+        self.chip_horizontal_button.setObjectName(u"chip_horizontal_button")
+
+        self.chip_orientation_layout.addWidget(self.chip_horizontal_button)
+
+
+        self.positions_layout.setLayout(4, QFormLayout.FieldRole, self.chip_orientation_layout)
 
         self.mm_version_label = QLabel(self.formLayoutWidget)
         self.mm_version_label.setObjectName(u"mm_version_label")
@@ -148,25 +160,24 @@ class Ui_PositionsWindow(object):
 
         self.positions_layout.setWidget(7, QFormLayout.FieldRole, self.num_cols_edit)
 
-        self.chip_orientation_layout = QHBoxLayout()
-        self.chip_orientation_layout.setObjectName(u"chip_orientation_layout")
-        self.chip_vertical_button = QRadioButton(self.formLayoutWidget)
-        self.orientationGroup = QButtonGroup(PositionsWindow)
-        self.orientationGroup.setObjectName(u"orientationGroup")
-        self.orientationGroup.addButton(self.chip_vertical_button)
-        self.chip_vertical_button.setObjectName(u"chip_vertical_button")
-        self.chip_vertical_button.setChecked(True)
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.corners_marking_button = QRadioButton(self.formLayoutWidget)
+        self.markingGroup = QButtonGroup(PositionsWindow)
+        self.markingGroup.setObjectName(u"markingGroup")
+        self.markingGroup.addButton(self.corners_marking_button)
+        self.corners_marking_button.setObjectName(u"corners_marking_button")
 
-        self.chip_orientation_layout.addWidget(self.chip_vertical_button)
+        self.horizontalLayout_2.addWidget(self.corners_marking_button)
 
-        self.chip_horizontal_button = QRadioButton(self.formLayoutWidget)
-        self.orientationGroup.addButton(self.chip_horizontal_button)
-        self.chip_horizontal_button.setObjectName(u"chip_horizontal_button")
+        self.auto_marking_button = QRadioButton(self.formLayoutWidget)
+        self.markingGroup.addButton(self.auto_marking_button)
+        self.auto_marking_button.setObjectName(u"auto_marking_button")
 
-        self.chip_orientation_layout.addWidget(self.chip_horizontal_button)
+        self.horizontalLayout_2.addWidget(self.auto_marking_button)
 
 
-        self.positions_layout.setLayout(4, QFormLayout.FieldRole, self.chip_orientation_layout)
+        self.positions_layout.setLayout(1, QFormLayout.FieldRole, self.horizontalLayout_2)
 
         self.save_positions_button = QPushButton(self.positions_group)
         self.save_positions_button.setObjectName(u"save_positions_button")
@@ -241,15 +252,15 @@ class Ui_PositionsWindow(object):
         self.formLayout_3 = QFormLayout(self.formLayoutWidget_3)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.pushButton_3 = QPushButton(self.formLayoutWidget_3)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.save_dir_button = QPushButton(self.formLayoutWidget_3)
+        self.save_dir_button.setObjectName(u"save_dir_button")
 
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.pushButton_3)
+        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.save_dir_button)
 
-        self.lineEdit_5 = QLineEdit(self.formLayoutWidget_3)
-        self.lineEdit_5.setObjectName(u"lineEdit_5")
+        self.save_dir_path_display = QLineEdit(self.formLayoutWidget_3)
+        self.save_dir_path_display.setObjectName(u"save_dir_path_display")
 
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_5)
+        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.save_dir_path_display)
 
         self.horizontalLayoutWidget_2 = QWidget(self.test_acquire_group)
         self.horizontalLayoutWidget_2.setObjectName(u"horizontalLayoutWidget_2")
@@ -257,10 +268,10 @@ class Ui_PositionsWindow(object):
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.checkBox = QCheckBox(self.horizontalLayoutWidget_2)
-        self.checkBox.setObjectName(u"checkBox")
+        self.only_run_check = QCheckBox(self.horizontalLayoutWidget_2)
+        self.only_run_check.setObjectName(u"only_run_check")
 
-        self.horizontalLayout.addWidget(self.checkBox)
+        self.horizontalLayout.addWidget(self.only_run_check)
 
         self.mark_positions_group = QGroupBox(self.centralwidget)
         self.mark_positions_group.setObjectName(u"mark_positions_group")
@@ -338,6 +349,9 @@ class Ui_PositionsWindow(object):
         self.viewPositions = QListView(self.centralwidget)
         self.viewPositions.setObjectName(u"viewPositions")
         self.viewPositions.setGeometry(QRect(550, 370, 311, 201))
+        self.widget_2 = QWidget(self.centralwidget)
+        self.widget_2.setObjectName(u"widget_2")
+        self.widget_2.setGeometry(QRect(10, 611, 391, 20))
         PositionsWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(PositionsWindow)
         self.menubar.setObjectName(u"menubar")
@@ -359,23 +373,21 @@ class Ui_PositionsWindow(object):
         self.one_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"One Side", None))
         self.two_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"Two sides", None))
         self.making_patterns_label.setText(QCoreApplication.translate("PositionsWindow", u"Marking patterns", None))
-        self.pattern_type_combo.setItemText(0, QCoreApplication.translate("PositionsWindow", u"4 corners", None))
-        self.pattern_type_combo.setItemText(1, QCoreApplication.translate("PositionsWindow", u"8 corners", None))
-        self.pattern_type_combo.setItemText(2, QCoreApplication.translate("PositionsWindow", u"Fully automatic", None))
-
         self.dummy_positions_label.setText(QCoreApplication.translate("PositionsWindow", u"Dummy", None))
         self.dummy_positions_combo.setItemText(0, QCoreApplication.translate("PositionsWindow", u"Follow boundary", None))
         self.dummy_positions_combo.setItemText(1, QCoreApplication.translate("PositionsWindow", u"Fastest way", None))
 
         self.num_dummy_positions_label.setText(QCoreApplication.translate("PositionsWindow", u"No of dummy  positions", None))
         self.chip_orientation_label.setText(QCoreApplication.translate("PositionsWindow", u"Chip orientation", None))
+        self.chip_vertical_button.setText(QCoreApplication.translate("PositionsWindow", u"vertical", None))
+        self.chip_horizontal_button.setText(QCoreApplication.translate("PositionsWindow", u"horizontal", None))
         self.mm_version_label.setText(QCoreApplication.translate("PositionsWindow", u"Micromanager Version", None))
         self.mm20_button.setText(QCoreApplication.translate("PositionsWindow", u"2.0", None))
         self.mm14_button.setText(QCoreApplication.translate("PositionsWindow", u"1.4", None))
         self.num_rows_label.setText(QCoreApplication.translate("PositionsWindow", u"Number of rows", None))
         self.num_cols_label.setText(QCoreApplication.translate("PositionsWindow", u"Number of columns", None))
-        self.chip_vertical_button.setText(QCoreApplication.translate("PositionsWindow", u"vertical", None))
-        self.chip_horizontal_button.setText(QCoreApplication.translate("PositionsWindow", u"horizontal", None))
+        self.corners_marking_button.setText(QCoreApplication.translate("PositionsWindow", u"Corners", None))
+        self.auto_marking_button.setText(QCoreApplication.translate("PositionsWindow", u"Auto", None))
         self.save_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Save positions", None))
         self.update_path_button.setText(QCoreApplication.translate("PositionsWindow", u"Update path plot", None))
         self.rules_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Imaging properties", None))
@@ -386,8 +398,8 @@ class Ui_PositionsWindow(object):
         self.add_preset_button.setText(QCoreApplication.translate("PositionsWindow", u"Add", None))
         self.remove_preset_button.setText(QCoreApplication.translate("PositionsWindow", u"Remove", None))
         self.test_acquire_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Test acquire", None))
-        self.pushButton_3.setText(QCoreApplication.translate("PositionsWindow", u"Save dir", None))
-        self.checkBox.setText(QCoreApplication.translate("PositionsWindow", u"Test run only (dont save data)", None))
+        self.save_dir_button.setText(QCoreApplication.translate("PositionsWindow", u"Save dir", None))
+        self.only_run_check.setText(QCoreApplication.translate("PositionsWindow", u"Test run only (dont save data)", None))
         self.mark_positions_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Mark positions", None))
         self.bl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Bottom Left 1", None))
         self.tl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Top Left 1", None))

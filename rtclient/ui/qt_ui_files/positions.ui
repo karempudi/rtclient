@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>908</width>
-    <height>647</height>
+    <height>688</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,8 +31,8 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>357</width>
-       <height>251</height>
+       <width>351</width>
+       <height>241</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="positions_layout">
@@ -80,25 +80,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="pattern_type_combo">
-        <item>
-         <property name="text">
-          <string>4 corners</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8 corners</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Fully automatic</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="dummy_positions_label">
         <property name="text">
@@ -136,6 +117,33 @@
          <string>Chip orientation</string>
         </property>
        </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="chip_orientation_layout">
+        <item>
+         <widget class="QRadioButton" name="chip_vertical_button">
+          <property name="text">
+           <string>vertical</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientationGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="chip_horizontal_button">
+          <property name="text">
+           <string>horizontal</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientationGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="mm_version_label">
@@ -191,28 +199,25 @@
       <item row="7" column="1">
        <widget class="QLineEdit" name="num_cols_edit"/>
       </item>
-      <item row="4" column="1">
-       <layout class="QHBoxLayout" name="chip_orientation_layout">
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QRadioButton" name="chip_vertical_button">
+         <widget class="QRadioButton" name="corners_marking_button">
           <property name="text">
-           <string>vertical</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
+           <string>Corners</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">orientationGroup</string>
+           <string notr="true">markingGroup</string>
           </attribute>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="chip_horizontal_button">
+         <widget class="QRadioButton" name="auto_marking_button">
           <property name="text">
-           <string>horizontal</string>
+           <string>Auto</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">orientationGroup</string>
+           <string notr="true">markingGroup</string>
           </attribute>
          </widget>
         </item>
@@ -371,14 +376,14 @@
      </property>
      <layout class="QFormLayout" name="formLayout_3">
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="save_dir_button">
         <property name="text">
          <string>Save dir</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEdit_5"/>
+       <widget class="QLineEdit" name="save_dir_path_display"/>
       </item>
      </layout>
     </widget>
@@ -393,7 +398,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="only_run_check">
         <property name="text">
          <string>Test run only (dont save data)</string>
         </property>
@@ -536,6 +541,16 @@
      </rect>
     </property>
    </widget>
+   <widget class="QWidget" name="widget_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>611</y>
+      <width>391</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -555,5 +570,6 @@
   <buttongroup name="orientationGroup"/>
   <buttongroup name="versionGroup"/>
   <buttongroup name="sidesGroup"/>
+  <buttongroup name="markingGroup"/>
  </buttongroups>
 </ui>
