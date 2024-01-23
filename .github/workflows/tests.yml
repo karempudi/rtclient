@@ -29,6 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install ".[testing, linting, typing]"
+        python3 -m pip install types-requests
         # mypy --install-types
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with ruff
@@ -39,4 +40,5 @@ jobs:
         pytest tests/
     - name: Types with mypy
       run: |
+        mypy --install-types
         mypy rtclient
