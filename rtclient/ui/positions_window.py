@@ -6,6 +6,7 @@ from rtclient.ui.qt_ui_classes.ui_positions import Ui_PositionsWindow
 from rtclient.utils.devices import check_mm_server_alive
 #from rtclient.microscope.utils import parse_positions_file
 from pycromanager import Core # type: ignore
+from requests.exceptions import ConnectionError
 
 class PositionsWindow(QMainWindow):
 
@@ -231,6 +232,8 @@ class PositionsWindow(QMainWindow):
         core = None
         position_dict = None
         try:
+            if not check_mm_server_alive():
+                raise ConnectionError('Could not connect to micromanager')
             core = Core()
             if core.get_focus_device() != self.scope_devices['focus']:
                 raise ValueError('Focus device is not PFSOffset')
