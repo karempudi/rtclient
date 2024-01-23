@@ -33,7 +33,7 @@ class Ui_PositionsWindow(object):
         self.positions_group.setGeometry(QRect(10, 10, 371, 331))
         self.formLayoutWidget = QWidget(self.positions_group)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(10, 30, 351, 241))
+        self.formLayoutWidget.setGeometry(QRect(10, 30, 355, 244))
         self.positions_layout = QFormLayout(self.formLayoutWidget)
         self.positions_layout.setObjectName(u"positions_layout")
         self.positions_layout.setContentsMargins(0, 0, 0, 0)
@@ -199,10 +199,10 @@ class Ui_PositionsWindow(object):
 
         self.rules_form_layout.setWidget(0, QFormLayout.LabelRole, self.mm_groups_label)
 
-        self.preset_label = QLabel(self.formLayoutWidget_2)
-        self.preset_label.setObjectName(u"preset_label")
+        self.mm_preset_label = QLabel(self.formLayoutWidget_2)
+        self.mm_preset_label.setObjectName(u"mm_preset_label")
 
-        self.rules_form_layout.setWidget(1, QFormLayout.LabelRole, self.preset_label)
+        self.rules_form_layout.setWidget(1, QFormLayout.LabelRole, self.mm_preset_label)
 
         self.exposure_label = QLabel(self.formLayoutWidget_2)
         self.exposure_label.setObjectName(u"exposure_label")
@@ -219,10 +219,10 @@ class Ui_PositionsWindow(object):
 
         self.rules_form_layout.setWidget(0, QFormLayout.FieldRole, self.mm_groups_combo)
 
-        self.comboBox_4 = QComboBox(self.formLayoutWidget_2)
-        self.comboBox_4.setObjectName(u"comboBox_4")
+        self.mm_presets_combo = QComboBox(self.formLayoutWidget_2)
+        self.mm_presets_combo.setObjectName(u"mm_presets_combo")
 
-        self.rules_form_layout.setWidget(1, QFormLayout.FieldRole, self.comboBox_4)
+        self.rules_form_layout.setWidget(1, QFormLayout.FieldRole, self.mm_presets_combo)
 
         self.imaging_freq_label = QLabel(self.formLayoutWidget_2)
         self.imaging_freq_label.setObjectName(u"imaging_freq_label")
@@ -392,7 +392,7 @@ class Ui_PositionsWindow(object):
         self.update_path_button.setText(QCoreApplication.translate("PositionsWindow", u"Update path plot", None))
         self.rules_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Imaging properties", None))
         self.mm_groups_label.setText(QCoreApplication.translate("PositionsWindow", u"Group", None))
-        self.preset_label.setText(QCoreApplication.translate("PositionsWindow", u"Preset", None))
+        self.mm_preset_label.setText(QCoreApplication.translate("PositionsWindow", u"Preset", None))
         self.exposure_label.setText(QCoreApplication.translate("PositionsWindow", u"Exposure(ms)", None))
         self.imaging_freq_label.setText(QCoreApplication.translate("PositionsWindow", u"Imaging freq (mins)", None))
         self.add_preset_button.setText(QCoreApplication.translate("PositionsWindow", u"Add", None))

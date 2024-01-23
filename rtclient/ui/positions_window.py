@@ -20,7 +20,6 @@ class PositionsWindow(QMainWindow):
         
         self.setWindowTitle("Positons and Rules generation")
 
-        self.setup_button_handlers()
 
         self.one_side = True
         self.enable_two_side_buttons(False)
@@ -44,14 +43,17 @@ class PositionsWindow(QMainWindow):
             'marking_type': 'corners',
             'corners': {},
             'save_dir': None,
+            'to_image' : [], # add group and preset configs
+            'selected_exposure': None,
+            'selected_freq': None
         }
-        # check platform and fill values
-        if check_mm_server_alive():
-            pass
-        else:
-            # Read and fill dummy values on linux or any test system
-            pass
 
+        self.group_dummies = {
+            'imaging(dummy)': ['phase_fast', 'phase_slow', 
+                        'phase_tweeze', 'venus']
+        }
+
+        self.setup_button_handlers()
 
     def setup_button_handlers(self):
         self._ui.one_rect_button.toggled.connect(self.set_layout_type)
@@ -103,7 +105,44 @@ class PositionsWindow(QMainWindow):
         self._ui.only_run_check.toggled.connect(self.set_run_type)
 
 
+        # fill in the defaults for the presets and config groups
+        self._ui.mm_groups_combo.clear()
+        self._ui.mm_presets_combo.clear()
+        if check_mm_server_alive():
+            # add the groups and preset
+            core = None
+            try:
+                core = Core()
+                available_groups = core.get_available_config_groups()
+                num_config_groups = available_groups.size()
+                for i in range(num_config_groups):
+                    config_name = available_groups.get(i)
+                    self._ui.mm_groups_combo.insertItem(i, config_name)
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setText(f'Could not get groups from micromanger, check connection: {e}')
+                msg.setIcon(QMessageBox.Critical)
+                msg.exec()
+            finally:
+                if core:
+                    del core
+        else:
+            for i, group_name in enumerate(self.group_dummies.keys()):
+                self._ui.mm_groups_combo.insertItem(i, group_name)
+        
+        self._ui.mm_groups_combo.textActivated.connect(self.set_selected_group)
+
         # Imaging properties
+
+        self._ui.exposure_edit.setPlaceholderText('1-300 (ms)')
+        self._ui.imaging_freq_edit.setPlaceholderText('Time between points')
+        exposure_validator = QIntValidator(0, 30, self)
+        imaging_freq_validator = QIntValidator(0, 30, self)
+        self._ui.exposure_edit.setValidator(exposure_validator)
+        self._ui.imaging_freq_edit.setValidator(imaging_freq_validator)
+        self._ui.exposure_edit.textChanged.connect(self.set_exposure)
+        self._ui.imaging_freq_edit.textChanged.connect(self.set_imaging_freq)
+
 
         self._ui.add_preset_button.clicked.connect(self.add_preset)
         self._ui.remove_preset_button.clicked.connect(self.remove_preset)
@@ -319,14 +358,103 @@ class PositionsWindow(QMainWindow):
     @Slot()
     def set_run_type(self):
         pass
+
+    @Slot()
+    def set_selected_group(self, text):
+        # update with available presets
+        core = None
+        self._ui.mm_presets_combo.clear()
+        if check_mm_server_alive():
+            try:
+                core = Core()
+                # get presets for the current text group name selected
+                available_presets = core.get_available_configs(text)
+                num_presets_in_group = available_presets.size()
+                for i in range(num_presets_in_group):
+                    preset = available_presets.get(i)
+                    self._ui.mm_presets_combo.insertItem(i, preset)
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setText(f'Could not grad presets from micromanger, check connection: {e}')
+                msg.setIcon(QMessageBox.Critical)
+                msg.exec()
+            finally:
+                if core:
+                    del core
+        else:
+            if text in self.group_dummies:
+                for i, preset in enumerate(self.group_dummies[text]):
+                    self._ui.mm_presets_combo.insertItem(i, preset)
     
     @Slot()
+    def set_exposure(self):
+        exposure_time = self._ui.exposure_edit.text()
+        state = self._ui.exposure_edit.validator().validate(exposure_time, 0)
+        valid = False
+        match state[0]:
+            case QValidator.Acceptable:
+                color = '#c4df9b' # green
+                valid = True
+            case QValidator.Intermediate:
+                color = '#fff79a' # yellow
+                valid = False
+            case QValidator.Invalid:
+                color = '#f6989d' # red color
+                valid = False
+        self._ui.exposure_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
+        self.statusBar.showMessage(f'Exposure set to {state[1]}', 1000)
+        self.selected_values['selected_exposure'] = int(state[1]) if valid else None
+
+    
+    @Slot()
+    def set_imaging_freq(self):
+        imaging_freq = self._ui.imaging_freq_edit.text()
+        state = self._ui.imaging_freq_edit.validator().validate(imaging_freq, 0)
+        valid = False
+        match state[0]:
+            case QValidator.Acceptable:
+                color = '#c4df9b' # green
+                valid = True
+            case QValidator.Intermediate:
+                color = '#fff79a' # yellow
+                valid = False
+            case QValidator.Invalid:
+                color = '#f6989d' # red color
+                valid = False
+        self._ui.imaging_freq_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
+        self.statusBar.showMessage(f'Imaging freq set to {state[1]}', 1000)
+        self.selected_values['selected_freq'] = int(state[1]) if valid else None
+
+    @Slot()
     def add_preset(self):
-        pass
+        # get current selected group and selected preset
+        # add it to the imaging rules
+        # current group
+        current_group = self._ui.mm_groups_combo.currentText()
+        # current preset
+        current_preset = self._ui.mm_presets_combo.currentText()
+
+        current_exposure_time = self.selected_values['selected_exposure']
+        current_imaging_freq = self.selected_values['selected_freq']
+
+        self._ui.show_imaging_list.addItem(str(current_group) + ','
+                                        + str(current_preset) + ','
+                                        + str(current_exposure_time) + ','
+                                        + str(current_imaging_freq))
+        self.selected_values['to_image'].append((current_group, current_preset, 
+                                            current_exposure_time, current_imaging_freq))
     
     @Slot()
     def remove_preset(self):
-        pass
+        # remove selected imaging type
+        selected_items = self._ui.show_imaging_list.selectedItems()
+        for item in selected_items:
+            group, preset, exposure, freq = tuple(item.text().split(','))
+            self._ui.show_imaging_list.takeItem(self._ui.show_imaging_list.row(item))
+            # remove the imaging from the to_image 
+            freq = int(freq) if freq != 'None' else None
+            exposure = int(exposure) if exposure != 'None' else None
+            self.selected_values['to_image'].remove((group, preset, exposure, freq))
     
     @Slot()
     def generate_events(self):
