@@ -38,5 +38,5 @@ jobs:
         pytest tests/
     - name: Types with mypy
       run: |
-        mypy --install-types
+        #mypy --install-types
         mypy rtclient
