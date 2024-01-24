@@ -23,8 +23,8 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.11"
-        cache: 'pip'
-        cache-dependency-path: pyproject.toml
+        #cache: 'pip'
+        #cache-dependency-path: pyproject.toml
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -38,4 +38,5 @@ jobs:
         pytest tests/
     - name: Types with mypy
       run: |
+        mypy --install-types
         mypy rtclient
