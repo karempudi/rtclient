@@ -30,6 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 linting = ["mypy", "ruff", "pre-commit"]
 testing = ["pytest"]
+typing = []
 cpu=[]
 gpu=[]
 
