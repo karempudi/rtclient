@@ -23,7 +23,9 @@ class MainWindow(QMainWindow):
     @Slot()
     def show_positions_window(self):
         self.positions_window.show()
-
+    
+    def closeEvent(self, event):
+        self.positions_window.close()
     
 
 

@@ -24,12 +24,12 @@ dependencies = [
     "torch",
     "torchvision",
     "docker",
+    "matplotlib",
 ]
 
 [project.optional-dependencies]
 linting = ["mypy", "ruff", "pre-commit"]
 testing = ["pytest"]
-types = ["types-requests"]
 cpu=[]
 gpu=[]
 

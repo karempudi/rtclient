@@ -1,12 +1,18 @@
 import sys
+import json
+from pathlib import Path
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIntValidator, QValidator
-from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar, QMessageBox, QFileDialog
 from rtclient.ui.qt_ui_classes.ui_positions import Ui_PositionsWindow
 from rtclient.utils.devices import check_mm_server_alive
-#from rtclient.microscope.utils import parse_positions_file
+from rtclient.microscope.utils import construct_pos_file, parse_positions_file
 from pycromanager import Core # type: ignore
-from requests.exceptions import ConnectionError
+from rtclient.microscope.motion import RectGridMotion, TwoRectGridMotion 
+
+RESOURES_PATH = Path(__file__).parent / Path('../resources/positions_dummies')
+RESOURES_PATH = RESOURES_PATH.resolve()
+DUMMY_POSTIONS_FILES = ("positions_20x_all.pos", "positions_20x_left.pos")
 
 class PositionsWindow(QMainWindow):
 
@@ -44,6 +50,8 @@ class PositionsWindow(QMainWindow):
             'corners': {},
             'save_dir': None,
             'to_image' : [], # add group and preset configs
+            'positions': [],
+            'events': [],
             'selected_exposure': None,
             'selected_freq': None
         }
@@ -85,9 +93,12 @@ class PositionsWindow(QMainWindow):
         self._ui.num_cols_edit.textChanged.connect(self.set_num_cols)
 
 
-        self._ui.save_positions_button.clicked.connect(self.save_positions)
+        self._ui.save_corners_button.clicked.connect(self.save_corners)
+        self._ui.generate_positions_button.clicked.connect(self.generate_positions)
+        self._ui.plot_path_button.clicked.connect(self.plot_path)
 
-        self._ui.update_path_button.clicked.connect(self.update_path_plot)
+        self._ui.print_corners_button.clicked.connect(self.print_corners)
+        self._ui.save_positions_button.clicked.connect(self.save_positions)
 
         # Marking positions
         self._ui.tl_button_1.clicked.connect(self.set_tl_1_position)
@@ -135,9 +146,9 @@ class PositionsWindow(QMainWindow):
         # Imaging properties
 
         self._ui.exposure_edit.setPlaceholderText('1-300 (ms)')
-        self._ui.imaging_freq_edit.setPlaceholderText('Time between points')
-        exposure_validator = QIntValidator(0, 30, self)
-        imaging_freq_validator = QIntValidator(0, 30, self)
+        self._ui.imaging_freq_edit.setPlaceholderText('0-90 (mins)')
+        exposure_validator = QIntValidator(0, 1000, self)
+        imaging_freq_validator = QIntValidator(0, 90, self)
         self._ui.exposure_edit.setValidator(exposure_validator)
         self._ui.imaging_freq_edit.setValidator(imaging_freq_validator)
         self._ui.exposure_edit.textChanged.connect(self.set_exposure)
@@ -173,6 +184,8 @@ class PositionsWindow(QMainWindow):
             self.enable_two_side_buttons(False)
             self.enable_one_side_buttons(True)
             self.selected_values['n_sides'] = 1
+        
+        self.selected_values['corners'].clear()
         self.statusBar.showMessage(f"Imaging number of chip sides: {self.selected_values['n_sides']}", 1000)
 
 
@@ -215,7 +228,7 @@ class PositionsWindow(QMainWindow):
     @Slot()
     def set_mm_version(self, clicked):
         # set micromanager version to generate positon lists for
-        mm_version = '2.0' if self._ui.mm20_button.isChecked() else '1.4'
+        mm_version = 2.0 if self._ui.mm20_button.isChecked() else 1.4
         self.selected_values['mm_version'] = mm_version
         self.statusBar.showMessage(f'MM version selected: {mm_version}', 1000)
     
@@ -255,24 +268,88 @@ class PositionsWindow(QMainWindow):
         self.statusBar.showMessage(f'Num of columns set to {n_cols}', 1000)
    
     @Slot()
+    def save_corners(self):
+            
+        write_json = None
+        try:
+            filename, _ = QFileDialog.getSaveFileName(self, "Save .pos positions file",
+                            '.', "Position files (*.pos)", options=QFileDialog.DontUseNativeDialog)
+
+            all_corners = []
+            for corners_key in self.selected_values['corners']:
+                all_corners.append(self.selected_values['corners'][corners_key])
+            write_json = construct_pos_file(all_corners, 
+                {'xy_device': self.scope_devices['XYStage'],
+                'z_device': self.scope_devices['focus']}, version=self.selected_values['mm_version'])
+
+            if filename == '' or write_json is None:
+                raise FileNotFoundError('Filename not set correctly')
+            filename = Path(filename)
+            with open(filename, 'w') as fh:
+                fh.write(json.dumps(write_json))
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Saving corners positions failed due to {e}')
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec()
+
+    @Slot()
+    def generate_positions(self):
+        chip_orientation = self.selected_values['orientation']
+        sides = self.selected_values['n_sides']
+        nrows = self.selected_values['n_rows']
+        ncols = self.selected_values['n_cols']
+        if sides == 2:
+            motion_object = TwoRectGridMotion(chip_orientation=chip_orientation) 
+        else:
+            motion_object = RectGridMotion(movement_type='top') if chip_orientation == 'vertical' else RectGridMotion(movement_type='left')
+        
+        motion_object.set_rows(nrows)
+        motion_object.set_cols(ncols)
+        
+        motion_object.construct_grid()
+        self.selected_values['positions'] = motion_object.positions
+
+    @Slot()
+    def plot_path(self):
+        pass
+    
+    @Slot()
+    def print_corners(self):
+        print(self.selected_values['corners'])
+    
+    @Slot()
     def save_positions(self):
         pass
 
-    @Slot()
-    def update_path_plot(self):
-        pass
-
     def set_positon_and_label(self, label):
-        self.statusBar.showMessage(f"{label} position selected ..", 1000)
-        position_dict = self.get_mm_current_position(label)
-        self.selected_values['corners'][label] = position_dict
+        if check_mm_server_alive():
+            position_dict = self.get_mm_current_position(label)
+            self.selected_values['corners'][label] = position_dict
+            self.statusBar.showMessage(f"{label} position grabbed from micromanager ...", 1000)
+        else:
+            
+            # load dummies if there is no micromanager connection
+            if self.selected_values['n_sides'] == 1:
+                dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[1])
+            else:
+                dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[0])
+
+            self.statusBar.showMessage(f'Setting dummy position for position: {label}')
+            _, corner_positions = parse_positions_file(dummy_filename,
+                                positions_type='corners')
+            for position in corner_positions:
+                if position['label'] == 'Pos' + label:
+                    self.selected_values['corners'][label] = position
+            self.statusBar.showMessage(f'Setting dummy position for position: {label}')
 
     def get_mm_current_position(self, label):
         core = None
         position_dict = None
         try:
             if not check_mm_server_alive():
-                raise ConnectionError('Could not connect to micromanager')
+                raise ValueError('Could not connect to micromanager')
             core = Core()
             if core.get_focus_device() != self.scope_devices['focus']:
                 raise ValueError('Focus device is not PFSOffset')
@@ -288,6 +365,7 @@ class PositionsWindow(QMainWindow):
                 'z': z,
                 'grid_row': 0,
                 'grid_col': 0,
+                'label': 'Pos' + label,
             }
         except Exception as e:
             msg = QMessageBox()

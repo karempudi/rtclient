@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>371</width>
-      <height>331</height>
+      <height>361</height>
      </rect>
     </property>
     <property name="title">
@@ -121,9 +121,9 @@
       <item row="4" column="1">
        <layout class="QHBoxLayout" name="chip_orientation_layout">
         <item>
-         <widget class="QRadioButton" name="chip_vertical_button">
+         <widget class="QRadioButton" name="chip_horizontal_button">
           <property name="text">
-           <string>vertical</string>
+           <string>horizontal</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -134,9 +134,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="chip_horizontal_button">
+         <widget class="QRadioButton" name="chip_vertical_button">
           <property name="text">
-           <string>horizontal</string>
+           <string>vertical</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">orientationGroup</string>
@@ -206,6 +209,9 @@
           <property name="text">
            <string>Corners</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
           <attribute name="buttonGroup">
            <string notr="true">markingGroup</string>
           </attribute>
@@ -225,31 +231,64 @@
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="save_positions_button">
+    <widget class="QWidget" name="horizontalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>30</x>
-       <y>290</y>
-       <width>121</width>
-       <height>25</height>
+       <x>10</x>
+       <y>280</y>
+       <width>351</width>
+       <height>41</height>
       </rect>
      </property>
-     <property name="text">
-      <string>Save positions</string>
-     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QPushButton" name="save_corners_button">
+        <property name="text">
+         <string>Save corners</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="generate_positions_button">
+        <property name="text">
+         <string>Generate position grid</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="plot_path_button">
+        <property name="text">
+         <string>Plot</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
-    <widget class="QPushButton" name="update_path_button">
+    <widget class="QWidget" name="horizontalLayoutWidget_4">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>290</y>
-       <width>141</width>
-       <height>25</height>
+       <x>20</x>
+       <y>330</y>
+       <width>321</width>
+       <height>27</height>
       </rect>
      </property>
-     <property name="text">
-      <string>Update path plot</string>
-     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QPushButton" name="print_corners_button">
+        <property name="text">
+         <string>Print Corners</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="save_positions_button">
+        <property name="text">
+         <string>Save all positions </string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QGroupBox" name="rules_group">
@@ -357,7 +396,7 @@
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>350</y>
+      <y>370</y>
       <width>251</width>
       <height>221</height>
      </rect>
@@ -411,7 +450,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>350</y>
+      <y>370</y>
       <width>251</width>
       <height>221</height>
      </rect>
@@ -535,7 +574,7 @@
     <property name="geometry">
      <rect>
       <x>550</x>
-      <y>370</y>
+      <y>390</y>
       <width>311</width>
       <height>201</height>
      </rect>
