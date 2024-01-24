@@ -17,9 +17,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QComboBox,
     QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QListView, QListWidget,
-    QListWidgetItem, QMainWindow, QMenuBar, QPushButton,
-    QRadioButton, QSizePolicy, QStatusBar, QWidget)
+    QLabel, QLineEdit, QListWidget, QListWidgetItem,
+    QMainWindow, QMenuBar, QPushButton, QRadioButton,
+    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
 
 class Ui_PositionsWindow(object):
     def setupUi(self, PositionsWindow):
@@ -204,7 +204,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_4 = QWidget(self.positions_group)
         self.horizontalLayoutWidget_4.setObjectName(u"horizontalLayoutWidget_4")
-        self.horizontalLayoutWidget_4.setGeometry(QRect(20, 330, 321, 27))
+        self.horizontalLayoutWidget_4.setGeometry(QRect(20, 330, 361, 27))
         self.horizontalLayout_4 = QHBoxLayout(self.horizontalLayoutWidget_4)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -212,6 +212,11 @@ class Ui_PositionsWindow(object):
         self.print_corners_button.setObjectName(u"print_corners_button")
 
         self.horizontalLayout_4.addWidget(self.print_corners_button)
+
+        self.reload_positions_button = QPushButton(self.horizontalLayoutWidget_4)
+        self.reload_positions_button.setObjectName(u"reload_positions_button")
+
+        self.horizontalLayout_4.addWidget(self.reload_positions_button)
 
         self.save_positions_button = QPushButton(self.horizontalLayoutWidget_4)
         self.save_positions_button.setObjectName(u"save_positions_button")
@@ -379,12 +384,15 @@ class Ui_PositionsWindow(object):
 
         self.reset_close_layout.addWidget(self.close_button)
 
-        self.viewPositions = QListView(self.centralwidget)
-        self.viewPositions.setObjectName(u"viewPositions")
-        self.viewPositions.setGeometry(QRect(550, 390, 311, 201))
         self.widget_2 = QWidget(self.centralwidget)
         self.widget_2.setObjectName(u"widget_2")
         self.widget_2.setGeometry(QRect(10, 611, 391, 20))
+        self.verticalLayoutWidget = QWidget(self.centralwidget)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(540, 360, 351, 271))
+        self.matplotlib_layout = QVBoxLayout(self.verticalLayoutWidget)
+        self.matplotlib_layout.setObjectName(u"matplotlib_layout")
+        self.matplotlib_layout.setContentsMargins(0, 0, 0, 0)
         PositionsWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(PositionsWindow)
         self.menubar.setObjectName(u"menubar")
@@ -425,6 +433,7 @@ class Ui_PositionsWindow(object):
         self.generate_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Generate position grid", None))
         self.plot_path_button.setText(QCoreApplication.translate("PositionsWindow", u"Plot", None))
         self.print_corners_button.setText(QCoreApplication.translate("PositionsWindow", u"Print Corners", None))
+        self.reload_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Reload positions", None))
         self.save_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Save all positions ", None))
         self.rules_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Imaging properties", None))
         self.mm_groups_label.setText(QCoreApplication.translate("PositionsWindow", u"Group", None))

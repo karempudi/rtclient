@@ -1,6 +1,10 @@
 import sys
 import json
+import matplotlib.pyplot as plt
 from pathlib import Path
+from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT # type: ignore[attr-defined]
+from matplotlib.figure import Figure
+import matplotlib.style as mplstyle
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIntValidator, QValidator
 from PySide6.QtWidgets import QApplication, QMainWindow, QStatusBar, QMessageBox, QFileDialog
@@ -9,6 +13,7 @@ from rtclient.utils.devices import check_mm_server_alive
 from rtclient.microscope.utils import construct_pos_file, parse_positions_file
 from pycromanager import Core # type: ignore
 from rtclient.microscope.motion import RectGridMotion, TwoRectGridMotion 
+mplstyle.use('fast')
 
 RESOURES_PATH = Path(__file__).parent / Path('../resources/positions_dummies')
 RESOURES_PATH = RESOURES_PATH.resolve()
@@ -31,7 +36,7 @@ class PositionsWindow(QMainWindow):
         self.enable_two_side_buttons(False)
         self.enable_one_side_buttons(True)
         self.corners_keys = {
-            'first_half': ('TL1', 'TR1', 'BR1', 'BL1'),
+            'first_half': ('TL', 'TR', 'BR', 'BL'),
             'second_half': ('TL2', 'TR2', 'BR2', 'BL2')
         }
         self.scope_devices = {
@@ -60,6 +65,12 @@ class PositionsWindow(QMainWindow):
             'imaging(dummy)': ['phase_fast', 'phase_slow', 
                         'phase_tweeze', 'venus']
         }
+
+        self.view = FigureCanvas(Figure(figsize=(5, 3)))
+        self.axes = self.view.figure.subplots() 
+        self.toolbar = NavigationToolbar2QT(self.view, self)
+        self._ui.matplotlib_layout.addWidget(self.toolbar)
+        self._ui.matplotlib_layout.addWidget(self.view)
 
         self.setup_button_handlers()
 
@@ -300,6 +311,7 @@ class PositionsWindow(QMainWindow):
         sides = self.selected_values['n_sides']
         nrows = self.selected_values['n_rows']
         ncols = self.selected_values['n_cols']
+        corners = self.selected_values['corners']
         if sides == 2:
             motion_object = TwoRectGridMotion(chip_orientation=chip_orientation) 
         else:
@@ -307,17 +319,50 @@ class PositionsWindow(QMainWindow):
         
         motion_object.set_rows(nrows)
         motion_object.set_cols(ncols)
+        for corner_key, corner_position in corners.items():
+            motion_object.set_corner_position(corner_key, corner_position)
         
         motion_object.construct_grid()
         self.selected_values['positions'] = motion_object.positions
+        print(f"Number of generated positions: {len(self.selected_values['positions'])}")
 
     @Slot()
     def plot_path(self):
-        pass
+
+        #print(self.selected_values['positions'])
+        self.axes.clear()
+        positions = self.selected_values['positions']
+        x_values = [item['x'] for item in positions]
+        y_values = [item['y'] for item in positions]
+        #z_values = [item['z'] for item in positions]
+        x_min = min(x_values)
+        x_max = max(x_values)
+        y_min = min(y_values)
+        y_max = max(y_values)
+        self.axes.set_xlim(x_min - 100, x_max + 100)
+        self.axes.set_ylim(y_min - 100, y_max + 100)
+
+        self.axes.invert_xaxis()
+        self.axes.invert_yaxis()
+        for i, position in enumerate(positions, 0):
+            circle = plt.Circle((position['x'], position['y']), 50, color='r')
+            self.axes.add_patch(circle)
+            if i == len(positions)-1:
+                break
+            else:
+                # drawing arrows
+                dx = positions[i+1]['x'] - positions[i]['x']
+                dy = positions[i+1]['y'] - positions[i]['y']
+                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=200,
+                            head_length=200, length_includes_head=True)
+
+        self.view.draw()
     
     @Slot()
     def print_corners(self):
-        print(self.selected_values['corners'])
+        for corner_key, corner_values in self.selected_values['corners'].items():
+            print(f'{corner_key} -- {corner_values}\n')
+            print('-----------------')
     
     @Slot()
     def save_positions(self):
@@ -380,19 +425,19 @@ class PositionsWindow(QMainWindow):
 
     @Slot()
     def set_tl_1_position(self):
-        self.set_positon_and_label('TL1')
+        self.set_positon_and_label('TL')
     
     @Slot()
     def set_tr_1_position(self):
-        self.set_positon_and_label('TR1')
+        self.set_positon_and_label('TR')
     
     @Slot()
     def set_bl_1_position(self):
-        self.set_positon_and_label('BL1')
+        self.set_positon_and_label('BL')
     
     @Slot()
     def set_br_1_position(self):
-        self.set_positon_and_label('BR1')
+        self.set_positon_and_label('BR')
      
     @Slot()
     def set_tl_2_position(self):

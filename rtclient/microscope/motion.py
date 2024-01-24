@@ -51,7 +51,8 @@ class RectGridMotion(Motion):
         filename: a file name with positions list from micromanager 2.0 with
             position names "PosTL", "PosTR", "PosBR", "PosBL", that mark the
             4 corners of the rectangle containing 25 rows of mother-machine
-            channels
+            channels, We ignore the number at the end of the position TL1 or TL2 doesn't
+            matter as far as this class is concerned
         movement_type (str): left or right or top or bottom.
             More on this in the make_pattern function docstring.
             basically meant to show how the positions are going to be moving.
@@ -64,7 +65,7 @@ class RectGridMotion(Motion):
     def __init__(self,
                 filename: Union[str, pathlib.Path] = '', objective: int = 40,
                 movement_type: str = 'left',
-                corner_names=['TL', 'TR', 'BR', 'BL'],
+                corner_names=('TL', 'TR', 'BR', 'BL'),
                 nrows=None, ncols=None,
                 ):
         super().__init__(objective=objective)
@@ -77,7 +78,7 @@ class RectGridMotion(Motion):
         self.positions: List[Any] = [] # set it to be used by pycromanager event-construction
         self.nrows = nrows
         self.ncols = ncols
-        if filename is not None:
+        if filename != '':
             self.filename = filename if isinstance(filename, pathlib.Path) else Path(filename)
             self.microscope_props, self.corner_pos_list = self.parse_position_file(filename)
             self.corner_pos_dict = self.fill_corner_positions()
@@ -401,14 +402,14 @@ class TwoRectGridMotion(Motion):
     The top blocks can be vertical if the chip orientation is vertical
     but the corner labels are the same.
 
-    (TL1) (0) ---------- (TR1) (1)   (TL2) (0) ---------- (TR2) (1)
+    (TL) (0) ---------- (TR) (1)   (TL2) (0) ---------- (TR2) (1)
      |                   |            |                    |
      |                   |            |                    |
      |                   |            |                    |
      |                   |            |                    |
      |                   |            |                    |
      |                   |            |                    |
-    (BL1) (3) ---------- (BR1) (2)   (BL2) (3) ---------- (BR2) (2)
+    (BL) (3) ---------- (BR) (2)   (BL2) (3) ---------- (BR2) (2)
 
     The number in the bracket represent the indices you will use to 
     figure out which are the 8 corners in xy plane.
@@ -464,7 +465,7 @@ class TwoRectGridMotion(Motion):
         by passing one at a time. It is used if you set the positions
         from a UI by grabbing the current location.
         Arguments:
-            label: one of 'TL1', 'TR1', 'BR1', 'BL1', 'TL2', 'TR2', 'BR2', 'BL2'
+            label: one of 'TL', 'TR', 'BR', 'BL', 'TL2', 'TR2', 'BR2', 'BL2'
             position_dict: dict with keys 'X', 'Y', 'Z', 'grid_row', 'grid_col', 'label'
         """
         if label[:2] not in self.corner_names:
@@ -475,7 +476,7 @@ class TwoRectGridMotion(Motion):
             for key in keys:
                 if key not in position_dict:
                     raise ValueError(f"Key {key} not found in position dict: {position_dict}")
-            if int(label[2:]) == 1:
+            if label[2:] == '':
                 self.left_half_motion.corner_pos_dict[label[:2]] = position_dict
             elif int(label[2:]) == 2:
                 self.right_half_motion.corner_pos_dict[label[:2]] = position_dict
@@ -484,8 +485,8 @@ class TwoRectGridMotion(Motion):
         if len(self.left_half_motion.corner_pos_dict) != 4 or len(self.right_half_motion.corner_pos_dict) != 4:
             raise ValueError("All 8 corners not set .. check that everything is set")
 
-        print(self.left_half_motion.corner_pos_dict)
-        print(self.right_half_motion.corner_pos_dict)
+        #print(self.left_half_motion.corner_pos_dict)
+        #print(self.right_half_motion.corner_pos_dict)
         
         self.left_half_motion.construct_grid(starting_position_no)
         n_left_positions = len(self.left_half_motion.positions)
@@ -494,7 +495,7 @@ class TwoRectGridMotion(Motion):
         left_positions = self.left_half_motion.positions
         right_positions = self.right_half_motion.positions
         self.positions = left_positions + right_positions
-        print(n_left_positions, len(self.positions))
+        #print(n_left_positions, len(self.positions))
 
     @classmethod
     def parse(cls, param):
@@ -638,14 +639,14 @@ class VerticalTwoRectGridMotion(Motion):
     specified by the 4 corners and a grid of certain size specifed by
     the number of positions to grab between the corners in x and y directions
 
-    (TL1) (0) ---------- (TR1) (1)
+    (TL) (0) ---------- (TR) (1)
      |                   |           
      |                   |          
      |                   |         
      |                   |         
      |                   |        
      |                   |         
-    (BL1) (3) ---------- (BR1) (2) 
+    (BL) (3) ---------- (BR) (2) 
 
     (TL2) (0) ---------- (TR2) (1)
      |                   |           
@@ -715,7 +716,7 @@ class VerticalTwoRectGridMotion(Motion):
             for key in keys:
                 if key not in position_dict:
                     raise ValueError(f"Key {key} not found in position dict: {position_dict}")
-            if int(label[2:]) == 1:
+            if label[2:] == '':
                 self.left_half_motion.corner_pos_dict[label[:2]] = position_dict
             elif int(label[2:]) == 2:
                 self.right_half_motion.corner_pos_dict[label[:2]] = position_dict

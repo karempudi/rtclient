@@ -56,7 +56,7 @@
           },
           "Label": {
             "type": "STRING",
-            "scalar": "PosTL1"
+            "scalar": "PosTL"
           },
           "Properties": {
             "type": "PROPERTY_MAP",
@@ -112,7 +112,7 @@
           },
           "Label": {
             "type": "STRING",
-            "scalar": "PosTR1"
+            "scalar": "PosTR"
           },
           "Properties": {
             "type": "PROPERTY_MAP",
@@ -168,7 +168,7 @@
           },
           "Label": {
             "type": "STRING",
-            "scalar": "PosBR1"
+            "scalar": "PosBR"
           },
           "Properties": {
             "type": "PROPERTY_MAP",
@@ -224,7 +224,7 @@
           },
           "Label": {
             "type": "STRING",
-            "scalar": "PosBL1"
+            "scalar": "PosBL"
           },
           "Properties": {
             "type": "PROPERTY_MAP",
