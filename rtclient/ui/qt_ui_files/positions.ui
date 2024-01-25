@@ -640,9 +640,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="versionGroup"/>
-  <buttongroup name="sidesGroup"/>
   <buttongroup name="orientationGroup"/>
   <buttongroup name="markingGroup"/>
+  <buttongroup name="sidesGroup"/>
+  <buttongroup name="versionGroup"/>
  </buttongroups>
 </ui>
