@@ -114,7 +114,8 @@ class PositionsWindow(QMainWindow):
         self._ui.reload_positions_button.clicked.connect(self.reload_positions)
         self._ui.save_positions_button.clicked.connect(self.save_positions)
 
-        self._ui.generate_dummy_button.clicked.connect(self.generate_dummy_positions)
+        self._ui.generate_dummy_button.clicked.connect(self.generate_positions)
+        self._ui.save_dummy_button.clicked.connect(self.save_dummy_positions)
         self._ui.plot_dummy_button.clicked.connect(self.plot_dummy_path)
 
         # Marking positions
@@ -179,6 +180,8 @@ class PositionsWindow(QMainWindow):
         # Event generation
         self._ui.generate_events_button.clicked.connect(self.generate_events)
 
+        # preview events
+        self._ui.preview_events_button.clicked.connect(self.preview_events)
         # Reset all to defaults states
         self._ui.reset_button.clicked.connect(self.reset_all)
 
@@ -334,8 +337,11 @@ class PositionsWindow(QMainWindow):
             motion_object.set_corner_position(corner_key, corner_position)
         
         motion_object.construct_grid()
+        motion_object.construct_dummy_grid()
         self.selected_values['positions'] = motion_object.positions
+        self.selected_values['dummy_positions'] = motion_object.dummy_positions
         print(f"Number of generated positions: {len(self.selected_values['positions'])}")
+        print(f"Number of generated dummy positions: {len(self.selected_values['dummy_positions'])}")
 
     @Slot()
     def plot_path(self):
@@ -403,14 +409,65 @@ class PositionsWindow(QMainWindow):
             msg.exec()
         finally:
             self.statusBar.showMessage(f"Generated positions saved to file: {filename}", 1000)
-
+    
     @Slot()
-    def generate_dummy_positions(self):
-        pass
+    def save_dummy_positions(self):
+        write_json = None
+        try:
+            filename, _ = QFileDialog.getSaveFileName(self, "Save .pos positions file",
+                            '.', "Position files (*.pos)", options=QFileDialog.DontUseNativeDialog)
+
+            write_json = construct_pos_file(self.selected_values['dummy_positions'], 
+                {'xy_device': self.scope_devices['XYStage'],
+                'z_device': self.scope_devices['focus']}, version=self.selected_values['mm_version'])
+
+            if filename == '' or write_json is None:
+                raise FileNotFoundError('Filename not set correctly')
+            filename = Path(filename)
+            with open(filename, 'w') as fh:
+                fh.write(json.dumps(write_json, indent=4))
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Saving generated dummy grid positions failed due to {e}')
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec()
+        finally:
+            self.statusBar.showMessage(f"Generated dummy positions saved to file: {filename}", 1000)
+       
     
     @Slot()
     def plot_dummy_path(self):
-        pass
+        
+        #print(self.selected_values['positions'])
+        self.axes.clear()
+        positions = self.selected_values['dummy_positions']
+        x_values = [item['x'] for item in positions]
+        y_values = [item['y'] for item in positions]
+        #z_values = [item['z'] for item in positions]
+        x_min = min(x_values)
+        x_max = max(x_values)
+        y_min = min(y_values)
+        y_max = max(y_values)
+        self.axes.set_xlim(x_min - 100, x_max + 100)
+        self.axes.set_ylim(y_min - 100, y_max + 100)
+
+        self.axes.invert_xaxis()
+        self.axes.invert_yaxis()
+        for i, position in enumerate(positions, 0):
+            circle = plt.Circle((position['x'], position['y']), 50, color='g')
+            self.axes.add_patch(circle)
+            if i == len(positions)-1:
+                break
+            else:
+                # drawing arrows
+                dx = positions[i+1]['x'] - positions[i]['x']
+                dy = positions[i+1]['y'] - positions[i]['y']
+                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=200,
+                            head_length=200, length_includes_head=True)
+
+        self.view.draw()
+    
 
     def set_positon_and_label(self, label):
         if check_mm_server_alive():
@@ -620,6 +677,7 @@ class PositionsWindow(QMainWindow):
                                         + str(current_imaging_freq))
         self.selected_values['to_image'].append((current_group, current_preset, 
                                             current_exposure_time, current_imaging_freq))
+        
     
     @Slot()
     def remove_preset(self):
@@ -635,7 +693,59 @@ class PositionsWindow(QMainWindow):
     
     @Slot()
     def generate_events(self):
-        pass
+        events = []
+        try:
+            positions = self.selected_values['positions']
+            dummy_positions = self.selected_values['dummy_positions']
+            to_image = self.selected_values['to_image']
+            for i, one_position in enumerate(positions, 0):
+                for group, preset, exposure, _ in to_image:
+                    event = {}
+                    event['axes'] = {'time': 0,
+                                'position': int(one_position['label'][3:]), 
+                                'preset': preset}
+                    event['x'] = one_position['x']
+                    event['y'] = one_position['y']
+                    event['z'] = one_position['z']
+                    event['config_group'] = [group, preset]
+                    event['exposure'] = exposure
+                    event['min_start_time'] = 0
+                    event['tags'] = {
+                        'position' : int(one_position['label'][3:])
+                    }
+                    events.append(event)
+            for i, one_dummy_position in enumerate(dummy_positions, 0):
+                dummy_event = {}
+                # for dummy positions you have to skip setting axes or channel
+                dummy_event['x'] = one_dummy_position['x']
+                dummy_event['y'] = one_dummy_position['y']
+                dummy_event['z'] = one_dummy_position['z']
+                dummy_event['config_group'] = ['imaging', 'phase_fast']
+                dummy_event['exposure'] = 0
+                dummy_event['min_start_time'] = 0
+                dummy_event['tags'] = {
+                    'position' : int(one_dummy_position['label'][3:])
+                }
+                events.append(dummy_event)
+        
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Error {e} in generating events')
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec()
+        
+        self.selected_values['events'] = events
+
+        self.statusBar.showMessage(f"Generated {len(self.selected_values['events'])} for one loop over the chip", 1000)
+
+    @Slot()
+    def preview_events(self):
+        events = self.selected_values['events']
+        self._ui.preview_list.clear()
+        for event in events:
+            self._ui.preview_list.addItem('Pos' + str(event['tags']['position']) + ',' 
+                        + event['config_group'][0] + ',' + event['config_group'][1] + ', '
+                        + str(event['exposure']) + 'ms')
 
     @Slot()
     def reset_all(self):

@@ -25,15 +25,15 @@ class Ui_PositionsWindow(object):
     def setupUi(self, PositionsWindow):
         if not PositionsWindow.objectName():
             PositionsWindow.setObjectName(u"PositionsWindow")
-        PositionsWindow.resize(908, 688)
+        PositionsWindow.resize(1182, 787)
         self.centralwidget = QWidget(PositionsWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.positions_group = QGroupBox(self.centralwidget)
         self.positions_group.setObjectName(u"positions_group")
-        self.positions_group.setGeometry(QRect(10, 10, 381, 401))
+        self.positions_group.setGeometry(QRect(10, 10, 441, 411))
         self.formLayoutWidget = QWidget(self.positions_group)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(10, 30, 355, 244))
+        self.formLayoutWidget.setGeometry(QRect(10, 30, 401, 244))
         self.positions_layout = QFormLayout(self.formLayoutWidget)
         self.positions_layout.setObjectName(u"positions_layout")
         self.positions_layout.setContentsMargins(0, 0, 0, 0)
@@ -183,7 +183,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget = QWidget(self.positions_group)
         self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
-        self.horizontalLayoutWidget.setGeometry(QRect(10, 280, 351, 41))
+        self.horizontalLayoutWidget.setGeometry(QRect(10, 280, 401, 41))
         self.horizontalLayout_3 = QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -204,7 +204,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_4 = QWidget(self.positions_group)
         self.horizontalLayoutWidget_4.setObjectName(u"horizontalLayoutWidget_4")
-        self.horizontalLayoutWidget_4.setGeometry(QRect(10, 330, 361, 27))
+        self.horizontalLayoutWidget_4.setGeometry(QRect(10, 330, 401, 27))
         self.horizontalLayout_4 = QHBoxLayout(self.horizontalLayoutWidget_4)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -225,7 +225,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_5 = QWidget(self.positions_group)
         self.horizontalLayoutWidget_5.setObjectName(u"horizontalLayoutWidget_5")
-        self.horizontalLayoutWidget_5.setGeometry(QRect(10, 370, 361, 27))
+        self.horizontalLayoutWidget_5.setGeometry(QRect(10, 370, 419, 27))
         self.horizontalLayout_5 = QHBoxLayout(self.horizontalLayoutWidget_5)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -234,6 +234,11 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayout_5.addWidget(self.generate_dummy_button)
 
+        self.save_dummy_button = QPushButton(self.horizontalLayoutWidget_5)
+        self.save_dummy_button.setObjectName(u"save_dummy_button")
+
+        self.horizontalLayout_5.addWidget(self.save_dummy_button)
+
         self.plot_dummy_button = QPushButton(self.horizontalLayoutWidget_5)
         self.plot_dummy_button.setObjectName(u"plot_dummy_button")
 
@@ -241,7 +246,7 @@ class Ui_PositionsWindow(object):
 
         self.rules_group = QGroupBox(self.centralwidget)
         self.rules_group.setObjectName(u"rules_group")
-        self.rules_group.setGeometry(QRect(400, 10, 371, 261))
+        self.rules_group.setGeometry(QRect(460, 10, 371, 261))
         self.formLayoutWidget_2 = QWidget(self.rules_group)
         self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
         self.formLayoutWidget_2.setGeometry(QRect(10, 120, 226, 121))
@@ -299,7 +304,7 @@ class Ui_PositionsWindow(object):
         self.remove_preset_button.setGeometry(QRect(260, 60, 89, 25))
         self.test_acquire_group = QGroupBox(self.centralwidget)
         self.test_acquire_group.setObjectName(u"test_acquire_group")
-        self.test_acquire_group.setGeometry(QRect(280, 420, 251, 221))
+        self.test_acquire_group.setGeometry(QRect(270, 430, 231, 221))
         self.formLayoutWidget_3 = QWidget(self.test_acquire_group)
         self.formLayoutWidget_3.setObjectName(u"formLayoutWidget_3")
         self.formLayoutWidget_3.setGeometry(QRect(10, 40, 191, 31))
@@ -318,7 +323,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_2 = QWidget(self.test_acquire_group)
         self.horizontalLayoutWidget_2.setObjectName(u"horizontalLayoutWidget_2")
-        self.horizontalLayoutWidget_2.setGeometry(QRect(10, 80, 228, 31))
+        self.horizontalLayoutWidget_2.setGeometry(QRect(0, 80, 211, 31))
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -329,7 +334,7 @@ class Ui_PositionsWindow(object):
 
         self.mark_positions_group = QGroupBox(self.centralwidget)
         self.mark_positions_group.setObjectName(u"mark_positions_group")
-        self.mark_positions_group.setGeometry(QRect(10, 420, 251, 221))
+        self.mark_positions_group.setGeometry(QRect(10, 430, 251, 221))
         self.gridLayoutWidget = QWidget(self.mark_positions_group)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
         self.gridLayoutWidget.setGeometry(QRect(10, 30, 232, 171))
@@ -376,12 +381,9 @@ class Ui_PositionsWindow(object):
 
         self.choose_positions_layout.addWidget(self.br_button_2, 4, 1, 1, 1)
 
-        self.widget = QWidget(self.centralwidget)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(770, 40, 281, 211))
         self.horizontalLayoutWidget_3 = QWidget(self.centralwidget)
         self.horizontalLayoutWidget_3.setObjectName(u"horizontalLayoutWidget_3")
-        self.horizontalLayoutWidget_3.setGeometry(QRect(470, 290, 301, 51))
+        self.horizontalLayoutWidget_3.setGeometry(QRect(470, 290, 380, 51))
         self.reset_close_layout = QHBoxLayout(self.horizontalLayoutWidget_3)
         self.reset_close_layout.setObjectName(u"reset_close_layout")
         self.reset_close_layout.setContentsMargins(0, 0, 0, 0)
@@ -389,6 +391,11 @@ class Ui_PositionsWindow(object):
         self.generate_events_button.setObjectName(u"generate_events_button")
 
         self.reset_close_layout.addWidget(self.generate_events_button)
+
+        self.preview_events_button = QPushButton(self.horizontalLayoutWidget_3)
+        self.preview_events_button.setObjectName(u"preview_events_button")
+
+        self.reset_close_layout.addWidget(self.preview_events_button)
 
         self.reset_button = QPushButton(self.horizontalLayoutWidget_3)
         self.reset_button.setObjectName(u"reset_button")
@@ -400,19 +407,19 @@ class Ui_PositionsWindow(object):
 
         self.reset_close_layout.addWidget(self.close_button)
 
-        self.widget_2 = QWidget(self.centralwidget)
-        self.widget_2.setObjectName(u"widget_2")
-        self.widget_2.setGeometry(QRect(10, 611, 391, 20))
         self.verticalLayoutWidget = QWidget(self.centralwidget)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(540, 370, 351, 271))
+        self.verticalLayoutWidget.setGeometry(QRect(510, 380, 351, 271))
         self.matplotlib_layout = QVBoxLayout(self.verticalLayoutWidget)
         self.matplotlib_layout.setObjectName(u"matplotlib_layout")
         self.matplotlib_layout.setContentsMargins(0, 0, 0, 0)
+        self.preview_list = QListWidget(self.centralwidget)
+        self.preview_list.setObjectName(u"preview_list")
+        self.preview_list.setGeometry(QRect(870, 30, 301, 621))
         PositionsWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(PositionsWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 908, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1182, 22))
         PositionsWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(PositionsWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -450,8 +457,9 @@ class Ui_PositionsWindow(object):
         self.plot_path_button.setText(QCoreApplication.translate("PositionsWindow", u"Plot", None))
         self.print_corners_button.setText(QCoreApplication.translate("PositionsWindow", u"Print Corners", None))
         self.reload_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Reload positions", None))
-        self.save_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Save all positions ", None))
-        self.generate_dummy_button.setText(QCoreApplication.translate("PositionsWindow", u"Generate dummy positions", None))
+        self.save_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Save positions ", None))
+        self.generate_dummy_button.setText(QCoreApplication.translate("PositionsWindow", u"Gen. dummy positions", None))
+        self.save_dummy_button.setText(QCoreApplication.translate("PositionsWindow", u"Save dummy pos", None))
         self.plot_dummy_button.setText(QCoreApplication.translate("PositionsWindow", u"Plot dummy path", None))
         self.rules_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Imaging properties", None))
         self.mm_groups_label.setText(QCoreApplication.translate("PositionsWindow", u"Group", None))
@@ -473,6 +481,7 @@ class Ui_PositionsWindow(object):
         self.bl_button_2.setText(QCoreApplication.translate("PositionsWindow", u"Bottom Left 2", None))
         self.br_button_2.setText(QCoreApplication.translate("PositionsWindow", u"Bottom Right 2", None))
         self.generate_events_button.setText(QCoreApplication.translate("PositionsWindow", u"Generate Events", None))
+        self.preview_events_button.setText(QCoreApplication.translate("PositionsWindow", u"Preview", None))
         self.reset_button.setText(QCoreApplication.translate("PositionsWindow", u"Reset all", None))
         self.close_button.setText(QCoreApplication.translate("PositionsWindow", u"Close", None))
     # retranslateUi

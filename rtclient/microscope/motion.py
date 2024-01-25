@@ -452,21 +452,34 @@ class RectGridMotion(Motion):
             tuples = []
             if nrows % 2 == 0:
                 # you need to make (i, j) for path BL -> TL
-                for i in range(nrows, -1, -1):
+                for i in range(nrows-1, -1, -1):
                     tuples.append((i, 0))
-            elif self.nrows % 2 == 1:
+            elif nrows % 2 == 1:
                 # you need to make (i, j) for path BR -> TR, TR -> TL
-                for i in range(nrows, -1, -1):
+                for i in range(nrows-1, -1, -1):
                     tuples.append((i, ncols-1))
                 for j in range(ncols-1, -1, -1):
                     tuples.append((0, j))
             return tuples
         elif self.movement_type == 'right':
-            pass
+            tuples = []
+            return tuples
         elif self.movement_type == 'top':
-            pass
+            tuples = []
+            if ncols % 2 == 0:
+                # you need to make (i, j) from TR -> TL
+                for i in range(ncols-1, -1, -1):
+                    tuples.append((0, i))
+            elif ncols % 2 == 1:
+                # you need to go from BR->BL, BL-> TL
+                for i in range (ncols-1, -1, -1):
+                    tuples.append((nrows-1, i))
+                for j in range(nrows-1, -1, -1):
+                    tuples.append((j, 0))
+            return tuples
         elif self.movement_type == 'bottom':
-            pass
+            tuples = []
+            return tuples
 
             
 
