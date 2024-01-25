@@ -52,10 +52,12 @@ class PositionsWindow(QMainWindow):
             'mm_version': 2.0,
             'orientation': 'horizontal',
             'marking_type': 'corners',
+            'dummy_type': 'Follow boundary', # can be 'Follow boundary' or 'Fastest way'
             'corners': {},
             'save_dir': None,
             'to_image' : [], # add group and preset configs
             'positions': [],
+            'dummy_position_numbers': [],
             'events': [],
             'selected_exposure': None,
             'selected_freq': None
@@ -109,7 +111,11 @@ class PositionsWindow(QMainWindow):
         self._ui.plot_path_button.clicked.connect(self.plot_path)
 
         self._ui.print_corners_button.clicked.connect(self.print_corners)
+        self._ui.reload_positions_button.clicked.connect(self.reload_positions)
         self._ui.save_positions_button.clicked.connect(self.save_positions)
+
+        self._ui.generate_dummy_button.clicked.connect(self.generate_dummy_positions)
+        self._ui.plot_dummy_button.clicked.connect(self.plot_dummy_path)
 
         # Marking positions
         self._ui.tl_button_1.clicked.connect(self.set_tl_1_position)
@@ -211,7 +217,12 @@ class PositionsWindow(QMainWindow):
     def set_dummy_positions_type(self, text):
         match text:
             case 'Follow boundary':
-                pass
+                self.selected_values['dummy_type'] = 'Follow boundary'
+            case 'Fastest way':
+                self.selected_values['dummy_type'] = 'Fastest way'
+        
+        self.statusBar.showMessage(f"Dummy positions path type set to: {self.selected_values['dummy_type']}", 1000)
+            
 
     @Slot()
     def set_num_dummy_positions(self):
@@ -365,7 +376,40 @@ class PositionsWindow(QMainWindow):
             print('-----------------')
     
     @Slot()
+    def reload_positions(self):
+        pass
+    
+    @Slot()
     def save_positions(self):
+        write_json = None
+        try:
+            filename, _ = QFileDialog.getSaveFileName(self, "Save .pos positions file",
+                            '.', "Position files (*.pos)", options=QFileDialog.DontUseNativeDialog)
+
+            write_json = construct_pos_file(self.selected_values['positions'], 
+                {'xy_device': self.scope_devices['XYStage'],
+                'z_device': self.scope_devices['focus']}, version=self.selected_values['mm_version'])
+
+            if filename == '' or write_json is None:
+                raise FileNotFoundError('Filename not set correctly')
+            filename = Path(filename)
+            with open(filename, 'w') as fh:
+                fh.write(json.dumps(write_json, indent=4))
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Saving generated grid positions failed due to {e}')
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec()
+        finally:
+            self.statusBar.showMessage(f"Generated positions saved to file: {filename}", 1000)
+
+    @Slot()
+    def generate_dummy_positions(self):
+        pass
+    
+    @Slot()
+    def plot_dummy_path(self):
         pass
 
     def set_positon_and_label(self, label):
@@ -476,7 +520,17 @@ class PositionsWindow(QMainWindow):
 
     @Slot()
     def set_save_dir(self):
-        pass
+        saving_dir = QFileDialog.getExistingDirectory(self, "Open Directory",
+                '../', options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+        if saving_dir == '':
+            msg = QMessageBox()
+            msg.setText('Saving images directory is not set ...')
+            msg.setIcon(QMessageBox.Warning)
+            msg.exec()
+        else:
+            self.selected_values['save_dir'] = Path(saving_dir)
+        self.statusBar.showMessage(f"Saving dir set to {str(self.selected_values['save_dir'])}", 1000)
+
     
     @Slot()
     def set_run_type(self):
