@@ -267,7 +267,7 @@
     <widget class="QWidget" name="horizontalLayoutWidget_4">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>10</x>
        <y>330</y>
        <width>361</width>
        <height>27</height>
@@ -614,9 +614,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="versionGroup"/>
-  <buttongroup name="sidesGroup"/>
   <buttongroup name="orientationGroup"/>
   <buttongroup name="markingGroup"/>
+  <buttongroup name="sidesGroup"/>
+  <buttongroup name="versionGroup"/>
  </buttongroups>
 </ui>

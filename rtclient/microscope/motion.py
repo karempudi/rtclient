@@ -76,6 +76,7 @@ class RectGridMotion(Motion):
         self.corner_pos_dict = {}
         self.microscope_props = None
         self.positions: List[Any] = [] # set it to be used by pycromanager event-construction
+        self.dummy_positions: List[Any] = [] # set it to dummy positions
         self.nrows = nrows
         self.ncols = ncols
         if filename != '':
@@ -391,6 +392,84 @@ class RectGridMotion(Motion):
     def plot_motion_plan(self):
         plt.figure()
         plt.close()    
+
+    def construct_dummy_grid(self, dummy_type='Follow boundary',
+                              start_position_no=1001):
+
+        if len(self.corner_pos_dict) != 4:
+            raise ValueError("All 4 corners not set")
+        corners = self.corner_pos_dict
+        x_top = np.linspace(corners['TL']['x'], corners['TR']['x'], num=self.ncols)
+        x_bot = np.linspace(corners['BL']['x'], corners['BR']['x'], num=self.ncols)
+        y_left = np.linspace(corners['TL']['y'], corners['BL']['y'], num=self.nrows)
+        y_right = np.linspace(corners['TR']['y'], corners['BR']['y'], num=self.nrows)
+
+        z_top = np.linspace(corners['TL']['z'], corners['TR']['z'], num=self.ncols)
+        z_bot = np.linspace(corners['BL']['z'], corners['BR']['z'], num=self.ncols)
+        z_left = np.linspace(corners['TL']['z'], corners['BL']['z'], num=self.nrows)
+        z_right = np.linspace(corners['TR']['z'], corners['BR']['z'], num=self.nrows)
+
+
+        def get_xyz(row, col):
+            x = np.linspace(x_top[col], x_bot[col], num=self.nrows)[row]
+            y = np.linspace(y_left[row], y_right[row], num=self.ncols)[col]
+
+            z_x_interp = np.linspace(z_top[col], z_bot[col], num=self.nrows)[row]
+            z_y_interp = np.linspace(z_left[row], z_right[row], num=self.ncols)[col]
+
+            # might have to do an acutual bilinear interp on a quadrilateral later on if this is causing trouble
+            # for interpolating in 'z' we assume we have something that looks more like a rectangle
+            # Interpolate 'z' first in x and then in y
+            #z_top_interp = (((corner['TR']['x'] - x)*corner['TL']['z']) + ((x - corner['TL']['x'])*corner['TR']['z'])) / (corner['TR']['x'] - corner['TL']['x'])
+            #z_bot_interp = (((corner['BR']['x'] - x)*corner['BL']['z']) + ((x - corner['BL']['x'])*corner['BR']['z'])) / (corner['BR']['x'] - corner['BL']['x'])
+            # Interpolate in 'y'
+            #z = () / (corner['BR']['y'] - corner['BL'])
+            z = (z_x_interp + z_y_interp)/2.0
+            return (x, y, z)
+
+
+        # return row column of the 
+        tuples = self.make_dummy_pattern(self.nrows, self.ncols, dummy_type)
+        dummy_positions = []
+        for counter, (i, j) in enumerate(tuples, start_position_no):
+            one_position = get_xyz(i, j)
+
+            dummy_positions.append({
+                'x': one_position[0],
+                'y': one_position[1],
+                'z': one_position[2],
+                'grid_row': j,
+                'grid_col': i,
+                'label': 'Pos' + str(counter).zfill(5)
+            })
+        
+        self.dummy_positions = dummy_positions
+
+
+    def make_dummy_pattern(self, nrows, ncols, dummy_type='Follow boundary'):
+        
+        if self.movement_type == 'left':
+            tuples = []
+            if nrows % 2 == 0:
+                # you need to make (i, j) for path BL -> TL
+                for i in range(nrows, -1, -1):
+                    tuples.append((i, 0))
+            elif self.nrows % 2 == 1:
+                # you need to make (i, j) for path BR -> TR, TR -> TL
+                for i in range(nrows, -1, -1):
+                    tuples.append((i, ncols-1))
+                for j in range(ncols-1, -1, -1):
+                    tuples.append((0, j))
+            return tuples
+        elif self.movement_type == 'right':
+            pass
+        elif self.movement_type == 'top':
+            pass
+        elif self.movement_type == 'bottom':
+            pass
+
+            
+
 
 class TwoRectGridMotion(Motion):
     """
