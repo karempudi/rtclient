@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(732, 293)
+        MainWindow.resize(769, 521)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.groupBox = QGroupBox(self.centralwidget)
@@ -97,20 +97,25 @@ class Ui_MainWindow(object):
         self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.pushButton_2 = QPushButton(self.verticalLayoutWidget)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.start_analysis_button = QPushButton(self.verticalLayoutWidget)
+        self.start_analysis_button.setObjectName(u"start_analysis_button")
 
-        self.verticalLayout.addWidget(self.pushButton_2)
+        self.verticalLayout.addWidget(self.start_analysis_button)
 
-        self.pushButton_3 = QPushButton(self.verticalLayoutWidget)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.acquire_next_button = QPushButton(self.verticalLayoutWidget)
+        self.acquire_next_button.setObjectName(u"acquire_next_button")
 
-        self.verticalLayout.addWidget(self.pushButton_3)
+        self.verticalLayout.addWidget(self.acquire_next_button)
 
-        self.pushButton_4 = QPushButton(self.verticalLayoutWidget)
-        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.acquire_button = QPushButton(self.verticalLayoutWidget)
+        self.acquire_button.setObjectName(u"acquire_button")
 
-        self.verticalLayout.addWidget(self.pushButton_4)
+        self.verticalLayout.addWidget(self.acquire_button)
+
+        self.stop_button = QPushButton(self.verticalLayoutWidget)
+        self.stop_button.setObjectName(u"stop_button")
+
+        self.verticalLayout.addWidget(self.stop_button)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
@@ -193,7 +198,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 732, 22))
+        self.menubar.setGeometry(QRect(0, 0, 769, 22))
         self.menubar.setNativeMenuBar(True)
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
@@ -224,9 +229,10 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(accessibility)
         self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"Live", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Controls", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Start analysis services", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
+        self.start_analysis_button.setText(QCoreApplication.translate("MainWindow", u"Start analysis services", None))
+        self.acquire_next_button.setText(QCoreApplication.translate("MainWindow", u"Acquire next event", None))
+        self.acquire_button.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
+        self.stop_button.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Setup", None))
         self.positions_button.setText(QCoreApplication.translate("MainWindow", u"Positions", None))
         self.rules_button.setText(QCoreApplication.translate("MainWindow", u"Rules", None))
