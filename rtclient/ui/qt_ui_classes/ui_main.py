@@ -78,10 +78,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.pushButton_5 = QPushButton(self.verticalLayoutWidget_2)
-        self.pushButton_5.setObjectName(u"pushButton_5")
+        self.tweezer_button = QPushButton(self.verticalLayoutWidget_2)
+        self.tweezer_button.setObjectName(u"tweezer_button")
 
-        self.verticalLayout_2.addWidget(self.pushButton_5)
+        self.verticalLayout_2.addWidget(self.tweezer_button)
 
         self.pushButton_6 = QPushButton(self.verticalLayoutWidget_2)
         self.pushButton_6.setObjectName(u"pushButton_6")
@@ -107,10 +107,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.acquire_next_button)
 
-        self.acquire_button = QPushButton(self.verticalLayoutWidget)
-        self.acquire_button.setObjectName(u"acquire_button")
+        self.acquire_in_loop_button = QPushButton(self.verticalLayoutWidget)
+        self.acquire_in_loop_button.setObjectName(u"acquire_in_loop_button")
 
-        self.verticalLayout.addWidget(self.acquire_button)
+        self.verticalLayout.addWidget(self.acquire_in_loop_button)
 
         self.stop_button = QPushButton(self.verticalLayoutWidget)
         self.stop_button.setObjectName(u"stop_button")
@@ -223,7 +223,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Tracking", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Fork Plots", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Results", None))
-        self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u"Tweeze", None))
+        self.tweezer_button.setText(QCoreApplication.translate("MainWindow", u"Tweeze", None))
 #if QT_CONFIG(accessibility)
         self.pushButton_6.setAccessibleDescription("")
 #endif // QT_CONFIG(accessibility)
@@ -231,7 +231,7 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Controls", None))
         self.start_analysis_button.setText(QCoreApplication.translate("MainWindow", u"Start analysis services", None))
         self.acquire_next_button.setText(QCoreApplication.translate("MainWindow", u"Acquire next event", None))
-        self.acquire_button.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
+        self.acquire_in_loop_button.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
         self.stop_button.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Setup", None))
         self.positions_button.setText(QCoreApplication.translate("MainWindow", u"Positions", None))

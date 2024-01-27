@@ -463,6 +463,7 @@ class RectGridMotion(Motion):
             return tuples
         elif self.movement_type == 'right':
             tuples = []
+            
             return tuples
         elif self.movement_type == 'top':
             tuples = []

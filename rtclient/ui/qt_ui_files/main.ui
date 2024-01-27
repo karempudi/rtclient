@@ -110,7 +110,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QPushButton" name="pushButton_5">
+       <widget class="QPushButton" name="tweezer_button">
         <property name="text">
          <string>Tweeze</string>
         </property>
@@ -166,7 +166,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="acquire_button">
+       <widget class="QPushButton" name="acquire_in_loop_button">
         <property name="text">
          <string>Acquire</string>
         </property>
