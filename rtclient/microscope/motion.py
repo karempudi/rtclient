@@ -528,27 +528,29 @@ class TwoRectGridMotion(Motion):
         self.nrows = nrows
         self.ncols = ncols
         self.corner_names = corner_names
+        self.dummpy_positions: List[Any] = []
+        self.chip_orientation = chip_orientation
         if chip_orientation == 'vertical':
-            self.left_half_motion = RectGridMotion(objective=objective, movement_type='top',
+            self.first_half_motion = RectGridMotion(objective=objective, movement_type='top',
                                     corner_names=corner_names)
-            self.right_half_motion = RectGridMotion(objective=objective, movement_type='bottom',
+            self.second_half_motion = RectGridMotion(objective=objective, movement_type='bottom',
                                     corner_names=corner_names)
         elif chip_orientation == 'horizontal':
-            self.left_half_motion = RectGridMotion(objective=objective, movement_type='left',
+            self.first_half_motion = RectGridMotion(objective=objective, movement_type='left',
                                     corner_names=corner_names)
-            self.right_half_motion = RectGridMotion(objective=objective, movement_type='right',
+            self.second_half_motion = RectGridMotion(objective=objective, movement_type='right',
                                     corner_names=corner_names)
 
-        self.positions = None
+        self.positions: List[Any] = []
     
     def set_rows(self, rows):
-        self.left_half_motion.set_rows(rows)
-        self.right_half_motion.set_rows(rows)
+        self.first_half_motion.set_rows(rows)
+        self.second_half_motion.set_rows(rows)
         self.nrows = rows
     
     def set_cols(self, cols):
-        self.left_half_motion.set_cols(cols)
-        self.right_half_motion.set_cols(cols)
+        self.first_half_motion.set_cols(cols)
+        self.second_half_motion.set_cols(cols)
         self.ncols = cols
 
     
@@ -570,25 +572,32 @@ class TwoRectGridMotion(Motion):
                 if key not in position_dict:
                     raise ValueError(f"Key {key} not found in position dict: {position_dict}")
             if label[2:] == '':
-                self.left_half_motion.corner_pos_dict[label[:2]] = position_dict
+                self.first_half_motion.corner_pos_dict[label[:2]] = position_dict
             elif int(label[2:]) == 2:
-                self.right_half_motion.corner_pos_dict[label[:2]] = position_dict
+                self.second_half_motion.corner_pos_dict[label[:2]] = position_dict
     
     def construct_grid(self, starting_position_no=1):
-        if len(self.left_half_motion.corner_pos_dict) != 4 or len(self.right_half_motion.corner_pos_dict) != 4:
+        if len(self.first_half_motion.corner_pos_dict) != 4 or len(self.second_half_motion.corner_pos_dict) != 4:
             raise ValueError("All 8 corners not set .. check that everything is set")
 
-        #print(self.left_half_motion.corner_pos_dict)
-        #print(self.right_half_motion.corner_pos_dict)
-        
-        self.left_half_motion.construct_grid(starting_position_no)
-        n_left_positions = len(self.left_half_motion.positions)
-        self.right_half_motion.construct_grid(starting_position_no + n_left_positions)
+        #print(self.first_half_motion.corner_pos_dict)
+        #print(self.second_half_motion.corner_pos_dict)
 
-        left_positions = self.left_half_motion.positions
-        right_positions = self.right_half_motion.positions
-        self.positions = left_positions + right_positions
-        #print(n_left_positions, len(self.positions))
+        # always assert that the two grids are joinable
+        # using two halves. Only possible
+        if (self.chip_orientation == 'horizontal') and (self.nrows % 2 != 1):
+            raise ValueError("If Chip orientation is horizontal, No of rows should be odd")
+        
+        if (self.chip_orientation == 'vertical') and (self.ncols % 2 != 1):
+            raise ValueError("If Chip orientation is vertical, No of cols should be odd")
+        
+        self.first_half_motion.construct_grid(starting_position_no)
+        n_first_positions = len(self.first_half_motion.positions)
+        self.second_half_motion.construct_grid(starting_position_no + n_first_positions)
+
+        first_positions = self.first_half_motion.positions
+        second_positions = self.second_half_motion.positions
+        self.positions = first_positions + second_positions
 
     @classmethod
     def parse(cls, param):
@@ -597,6 +606,226 @@ class TwoRectGridMotion(Motion):
     def plot_motion_plan(self):
         plt.figure()
         plt.close()
+    
+    def construct_dummy_grid(self, dummy_type='Follow boundary',
+            start_position_no=1001):
+
+        if len(self.first_half_motion.corner_pos_dict) != 4 or len(self.second_half_motion.corner_pos_dict) != 4:
+            raise ValueError("All 8 corners nto set .. check that all of them are set")
+
+        # always assert that the two grids are joinable
+        # using two halves. Only possible
+        if (self.chip_orientation == 'horizontal') and (self.nrows % 2 != 1):
+            raise ValueError("If Chip orientation is horizontal, No of rows should be odd")
+        
+        if (self.chip_orientation == 'vertical') and (self.ncols % 2 != 1):
+            raise ValueError("If Chip orientation is vertical, No of cols should be odd")
+
+        if self.chip_orientation == 'horizontal':
+            # you need to add the top row of the right half 
+            # followed by top row of the left half
+
+            right_corners = self.second_half_motion.corner_pos_dict
+            x_top_right = np.linspace(right_corners['TL']['x'], right_corners['TR']['x'], num=self.ncols)
+            x_bot_right = np.linspace(right_corners['BL']['x'], right_corners['BR']['x'], num=self.ncols)
+            y_left_right = np.linspace(right_corners['TL']['y'], right_corners['BL']['y'], num=self.nrows)
+            y_right_right = np.linspace(right_corners['TR']['y'], right_corners['BR']['y'], num=self.nrows)
+
+            z_top_right = np.linspace(right_corners['TL']['z'], right_corners['TR']['z'], num=self.ncols)
+            z_bot_right = np.linspace(right_corners['BL']['z'], right_corners['BR']['z'], num=self.ncols)
+            z_left_right = np.linspace(right_corners['TL']['z'], right_corners['BL']['z'], num=self.nrows)
+            z_right_right= np.linspace(right_corners['TR']['z'], right_corners['BR']['z'], num=self.nrows)
+
+
+            def get_xyz_right(row, col):
+                x = np.linspace(x_top_right[col], x_bot_right[col], num=self.nrows)[row]
+                y = np.linspace(y_left_right[row], y_right_right[row], num=self.ncols)[col]
+
+                z_x_interp = np.linspace(z_top_right[col], z_bot_right[col], num=self.nrows)[row]
+                z_y_interp = np.linspace(z_left_right[row], z_right_right[row], num=self.ncols)[col]
+
+                # might have to do an acutual bilinear interp on a quadrilateral later on if this is causing trouble
+                # for interpolating in 'z' we assume we have something that looks more like a rectangle
+                # Interpolate 'z' first in x and then in y
+                #z_top_interp = (((corner['TR']['x'] - x)*corner['TL']['z']) + ((x - corner['TL']['x'])*corner['TR']['z'])) / (corner['TR']['x'] - corner['TL']['x'])
+                #z_bot_interp = (((corner['BR']['x'] - x)*corner['BL']['z']) + ((x - corner['BL']['x'])*corner['BR']['z'])) / (corner['BR']['x'] - corner['BL']['x'])
+                # Interpolate in 'y'
+                #z = () / (corner['BR']['y'] - corner['BL'])
+                z = (z_x_interp + z_y_interp)/2.0
+                return (x, y, z)
+                
+
+            right_half_tuples = self.make_dummy_pattern(self.nrows, self.ncols, movement_type='TR->TL')
+            # add dummy positions on the right half of the chip
+            dummy_positions = []
+            final_counter = start_position_no
+            for counter, (i, j) in enumerate(right_half_tuples, start_position_no):
+                one_position = get_xyz_right(i, j)
+                dummy_positions.append({
+                    'x': one_position[0],
+                    'y': one_position[1],
+                    'z': one_position[2],
+                    'grid_row': j,
+                    'grid_col': i,
+                    'label': 'Pos' + str(counter).zfill(5)
+                })
+                final_counter = counter
+
+            left_corners = self.first_half_motion.corner_pos_dict
+            x_top_left = np.linspace(left_corners['TL']['x'], left_corners['TR']['x'], num=self.ncols)
+            x_bot_left = np.linspace(left_corners['BL']['x'], left_corners['BR']['x'], num=self.ncols)
+            y_left_left = np.linspace(left_corners['TL']['y'], left_corners['BL']['y'], num=self.nrows)
+            y_right_left = np.linspace(left_corners['TR']['y'], left_corners['BR']['y'], num=self.nrows)
+
+            z_top_left = np.linspace(left_corners['TL']['z'], left_corners['TR']['z'], num=self.ncols)
+            z_bot_left = np.linspace(left_corners['BL']['z'], left_corners['BR']['z'], num=self.ncols)
+            z_left_left = np.linspace(left_corners['TL']['z'], left_corners['BL']['z'], num=self.nrows)
+            z_right_left= np.linspace(left_corners['TR']['z'], left_corners['BR']['z'], num=self.nrows)
+
+
+            def get_xyz_left(row, col):
+                x = np.linspace(x_top_left[col], x_bot_left[col], num=self.nrows)[row]
+                y = np.linspace(y_left_left[row], y_right_left[row], num=self.ncols)[col]
+
+                z_x_interp = np.linspace(z_top_left[col], z_bot_left[col], num=self.nrows)[row]
+                z_y_interp = np.linspace(z_left_left[row], z_right_left[row], num=self.ncols)[col]
+
+                # might have to do an acutual bilinear interp on a quadrilateral later on if this is causing trouble
+                # for interpolating in 'z' we assume we have something that looks more like a rectangle
+                # Interpolate 'z' first in x and then in y
+                #z_top_interp = (((corner['TR']['x'] - x)*corner['TL']['z']) + ((x - corner['TL']['x'])*corner['TR']['z'])) / (corner['TR']['x'] - corner['TL']['x'])
+                #z_bot_interp = (((corner['BR']['x'] - x)*corner['BL']['z']) + ((x - corner['BL']['x'])*corner['BR']['z'])) / (corner['BR']['x'] - corner['BL']['x'])
+                # Interpolate in 'y'
+                #z = () / (corner['BR']['y'] - corner['BL'])
+                z = (z_x_interp + z_y_interp)/2.0
+                return (x, y, z)
+
+            left_half_tuples = self.make_dummy_pattern(self.nrows, self.ncols, movement_type='TR->TL')
+            for counter, (i, j) in enumerate(left_half_tuples, final_counter+1):
+                one_position = get_xyz_left(i, j)
+                dummy_positions.append({
+                    'x': one_position[0],
+                    'y': one_position[1],
+                    'z': one_position[2],
+                    'grid_row': j,
+                    'grid_col': i,
+                    'label': 'Pos' + str(counter).zfill(5)
+                })
+
+            self.dummy_positions = dummy_positions
+        
+        elif self.chip_orientation == 'vertical':
+            # you need to add left column of the botton half
+            # followed by left colum of the top half
+
+            bottom_corners = self.second_half_motion.corner_pos_dict
+            x_top_bottom = np.linspace(bottom_corners['TL']['x'], bottom_corners['TR']['x'], num=self.ncols)
+            x_bot_bottom = np.linspace(bottom_corners['BL']['x'], bottom_corners['BR']['x'], num=self.ncols)
+            y_left_bottom = np.linspace(bottom_corners['TL']['y'], bottom_corners['BL']['y'], num=self.nrows)
+            y_right_bottom = np.linspace(bottom_corners['TR']['y'], bottom_corners['BR']['y'], num=self.nrows)
+
+            z_top_bottom = np.linspace(bottom_corners['TL']['z'], bottom_corners['TR']['z'], num=self.ncols)
+            z_bot_bottom = np.linspace(bottom_corners['BL']['z'], bottom_corners['BR']['z'], num=self.ncols)
+            z_left_bottom = np.linspace(bottom_corners['TL']['z'], bottom_corners['BL']['z'], num=self.nrows)
+            z_right_bottom = np.linspace(bottom_corners['TR']['z'], bottom_corners['BR']['z'], num=self.nrows)
+
+
+            def get_xyz_bottom(row, col):
+                x = np.linspace(x_top_bottom[col], x_bot_bottom[col], num=self.nrows)[row]
+                y = np.linspace(y_left_bottom[row], y_right_bottom[row], num=self.ncols)[col]
+
+                z_x_interp = np.linspace(z_top_bottom[col], z_bot_bottom[col], num=self.nrows)[row]
+                z_y_interp = np.linspace(z_left_bottom[row], z_right_bottom[row], num=self.ncols)[col]
+
+                # might have to do an acutual bilinear interp on a quadrilateral later on if this is causing trouble
+                # for interpolating in 'z' we assume we have something that looks more like a rectangle
+                # Interpolate 'z' first in x and then in y
+                #z_top_interp = (((corner['TR']['x'] - x)*corner['TL']['z']) + ((x - corner['TL']['x'])*corner['TR']['z'])) / (corner['TR']['x'] - corner['TL']['x'])
+                #z_bot_interp = (((corner['BR']['x'] - x)*corner['BL']['z']) + ((x - corner['BL']['x'])*corner['BR']['z'])) / (corner['BR']['x'] - corner['BL']['x'])
+                # Interpolate in 'y'
+                #z = () / (corner['BR']['y'] - corner['BL'])
+                z = (z_x_interp + z_y_interp)/2.0
+                return (x, y, z)
+                
+
+            bottom_half_tuples = self.make_dummy_pattern(self.nrows, self.ncols, movement_type='BL->TL')
+            # add dummy positions on the right half of the chip
+            dummy_positions = []
+            final_counter = start_position_no
+            for counter, (i, j) in enumerate(bottom_half_tuples, start_position_no):
+                one_position = get_xyz_bottom(i, j)
+                dummy_positions.append({
+                    'x': one_position[0],
+                    'y': one_position[1],
+                    'z': one_position[2],
+                    'grid_row': j,
+                    'grid_col': i,
+                    'label': 'Pos' + str(counter).zfill(5)
+                })
+                final_counter = counter
+
+            top_corners = self.first_half_motion.corner_pos_dict
+            x_top_top = np.linspace(top_corners['TL']['x'], top_corners['TR']['x'], num=self.ncols)
+            x_bot_top = np.linspace(top_corners['BL']['x'], top_corners['BR']['x'], num=self.ncols)
+            y_left_top = np.linspace(top_corners['TL']['y'], top_corners['BL']['y'], num=self.nrows)
+            y_right_top = np.linspace(top_corners['TR']['y'], top_corners['BR']['y'], num=self.nrows)
+
+            z_top_top = np.linspace(top_corners['TL']['z'], top_corners['TR']['z'], num=self.ncols)
+            z_bot_top = np.linspace(top_corners['BL']['z'], top_corners['BR']['z'], num=self.ncols)
+            z_left_top = np.linspace(top_corners['TL']['z'], top_corners['BL']['z'], num=self.nrows)
+            z_right_top = np.linspace(top_corners['TR']['z'], top_corners['BR']['z'], num=self.nrows)
+
+
+            def get_xyz_top(row, col):
+                x = np.linspace(x_top_top[col], x_bot_top[col], num=self.nrows)[row]
+                y = np.linspace(y_left_top[row], y_right_top[row], num=self.ncols)[col]
+
+                z_x_interp = np.linspace(z_top_top[col], z_bot_top[col], num=self.nrows)[row]
+                z_y_interp = np.linspace(z_left_top[row], z_right_top[row], num=self.ncols)[col]
+
+                # might have to do an acutual bilinear interp on a quadrilateral later on if this is causing trouble
+                # for interpolating in 'z' we assume we have something that looks more like a rectangle
+                # Interpolate 'z' first in x and then in y
+                #z_top_interp = (((corner['TR']['x'] - x)*corner['TL']['z']) + ((x - corner['TL']['x'])*corner['TR']['z'])) / (corner['TR']['x'] - corner['TL']['x'])
+                #z_bot_interp = (((corner['BR']['x'] - x)*corner['BL']['z']) + ((x - corner['BL']['x'])*corner['BR']['z'])) / (corner['BR']['x'] - corner['BL']['x'])
+                # Interpolate in 'y'
+                #z = () / (corner['BR']['y'] - corner['BL'])
+                z = (z_x_interp + z_y_interp)/2.0
+                return (x, y, z)
+
+            top_half_tuples = self.make_dummy_pattern(self.nrows, self.ncols, movement_type='BL->TL')
+
+            for counter, (i, j) in enumerate(top_half_tuples, final_counter+1):
+                one_position = get_xyz_top(i, j)
+                dummy_positions.append({
+                    'x': one_position[0],
+                    'y': one_position[1],
+                    'z': one_position[2],
+                    'grid_row': j,
+                    'grid_col': i,
+                    'label': 'Pos' + str(counter).zfill(5)
+                })
+
+            self.dummy_positions = dummy_positions
+ 
+
+    def make_dummy_pattern(self, nrows, ncols, movement_type=''):
+        """
+        Args:
+            nrows: number of rows of the grid
+            ncols: number of cols of the grid
+            movement_type: 'TR->TL', 'BL->TL', add others if you need
+        """
+        if movement_type == 'TR->TL':
+            tuples = []
+            for j in range(ncols-1, -1, -1):
+                tuples.append((0, j)) 
+            return tuples
+        elif movement_type == 'BL->TL':
+            tuples = []
+            for i in range(nrows-1, -1, -1):
+                tuples.append((i, 0))
+            return tuples
         
 class MotionFromFile(Motion):
     """
