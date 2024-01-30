@@ -4,6 +4,9 @@ import logging.handlers
 import multiprocessing as mp
 import pathlib
 from pathlib import Path
+from pycromanager import Acquisition # type: ignore
+def send_image():
+    pass
 
 def setup_root_logger(save_dir):
     """
@@ -85,20 +88,66 @@ class ExptRun():
         name = mp.current_process().name 
         print(f"Starting {name} process ... ")
 
-        logger = logging.getLogger(name)
-        logger.log(logging.INFO, "Acquired real ...")
-        self.acquire_kill.set()
+        def put_image_in_queue(image, metadata, event_queue):
+            
+            # put image in different queues depending on the type of image
+            # acquired
+            self.segment_queue.put({
+                'position': metadata['Axes']['position'],
+                'time': metadata['Axes']['time'],
+                'image': image.astype('float32')
+            })
+
+            logger = logging.getLogger('acquire')
+            logger.log(logging.INFO, "Acquired image of position: %s, time: %s",
+                        metadata['Axes']['position'], metadata['Axes']['time'])
+            
+            if self.acquire_kill.is_set():
+                event_queue.queue.clear()
+                event_queue.put(None)
+
+        try:
+            with Acquisition(image_process_fn=put_image_in_queue, show_display=False) as acq:
+                acq.acquire(self.acquisition.events)
+
+        except KeyboardInterrupt:
+            self.acquire_kill.set()
+            print("Acquire process interrupted using keyboard")
+        finally:
+            self.segment_queue.put(None)
+            print("Acquire process completed successfully")
+    
 
     def segment(self):
         self.setup_process_logger()
         name = mp.current_process().name 
         print(f"Starting {name} process ... ")
 
-        logger = logging.getLogger(name)
-        logger.log(logging.INFO, "Segment img ...")
+        while True:
+            try:
+                if self.segment_queue.qsize() > 0:
+                    data_in_seg_queue = self.segment_queue.get()
+                    if data_in_seg_queue is None:
+                        print("Got None in segementation image queue .. aborting segmentation function")
+                        break
+                else:
+                    continue
+                
+                try:
+                    result = send_image()
+                except Exception as e:
+                    print(f"Error {e} while sending image from segmentation queue")
+
+                logger = logging.getLogger(name)
+                logger.log(logging.INFO, "Segment img Pos: %s, time: %s, error: %s",
+                            data_in_seg_queue['position'],
+                            data_in_seg_queue['time'], result['error'])
+            except KeyboardInterrupt:
+                self.acquire_kill.set()
+                print("Segmentation process interrupted using keyboard")
+                break
+            
         self.segment_kill.set()
-
-
 
     def dots(self):
         self.setup_process_logger()
