@@ -21,6 +21,7 @@ class MainWindow(QMainWindow):
         self.acquisition = None
         self.selected_values = None
         self.expt_obj = None
+        self.simulated_acquisition = False
 
         self.setup_button_handlers()
 
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
         #print("Events list recieved.. constructing acquisition object: ", len(selected_values['events']))
         self.acquisition = Acquisition(selected_values['events'])
         self.save_dir = self.selected_values['save_dir']
+        self.simulated_acquisition = self.selected_values['simulated_acquisition']
         #print("Acquisition object set")
 
     def acquire_next_image(self):
@@ -66,7 +68,7 @@ class MainWindow(QMainWindow):
         try:
             self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir)
             self._ui.acquire_in_loop_button.setEnabled(False)
-            start_experiment(self.expt_obj)
+            start_experiment(self.expt_obj, sim=self.simulated_acquisition)
             print("Experiment run started .... ")
         except Exception as e:
             msg = QMessageBox()

@@ -5,8 +5,17 @@ import multiprocessing as mp
 import pathlib
 from pathlib import Path
 from pycromanager import Acquisition # type: ignore
-def send_image():
-    pass
+from skimage.io import imread
+
+RESOURES_PATH = Path(__file__).parent / Path('./resources/test_images/')
+RESOURES_PATH = RESOURES_PATH.resolve()
+DUMMY_PHASE = "phase.jpg"
+
+def send_phase_image(data): 
+    return {'error': True}
+
+def send_dots_image(data):
+    return {'error': True}
 
 def setup_root_logger(save_dir):
     """
@@ -77,10 +86,43 @@ class ExptRun():
         self.setup_process_logger()
         name = mp.current_process().name 
         print(f"Starting {name} process ... ")
+        # put the dummy phase and fluor image in different queues
+        phase_path = RESOURES_PATH / Path(DUMMY_PHASE)
+        dummy_phase = imread(phase_path).astype('float32')
+        dummy_fluor = imread(phase_path).astype('float32')
+        def put_image_queue(image, metadata, event_queue):
+            pass
 
-        logger = logging.getLogger(name)
-        logger.log(logging.INFO, "Acquired sim ...")
-
+        while not self.acquire_kill.is_set():
+            try:
+                # acquire and put two image in different queues
+                event = next(self.acquisition)
+                time.sleep(1)
+                logger = logging.getLogger(name)
+                if event['config_group'][1] == 'phase_fast':
+                    self.segment_queue.put({
+                        'position': 1,
+                        'time': 0,
+                        'image': dummy_phase
+                    })
+                    logger.log(logging.INFO, "Acquired phase image Pos: %s Time: %s", 1, 0)
+                if event['config_group'][1] == 'venus':
+                    self.dots_queue.put({
+                        'position': 1,
+                        'time': 0,
+                        'image': dummy_fluor
+                    })
+                    logger.log(logging.INFO, "Acquired fluor image Pos: %s Time: %s", 1, 0)
+            except KeyboardInterrupt:
+                self.acquire_kill.set()
+                print("Acquire process interrupted using keyboard")
+                break
+            except Exception as e:
+                print(f"Error {e} in acquire sim")
+        
+        self.segment_queue.put(None)
+        self.dots_queue.put(None)
+        print("Acquire sim process completed successfully")
 
 
     def acquire(self):
@@ -103,12 +145,14 @@ class ExptRun():
                         metadata['Axes']['position'], metadata['Axes']['time'])
             
             if self.acquire_kill.is_set():
-                event_queue.queue.clear()
                 event_queue.put(None)
+            else:
+                event_queue.put(next(self.acquisition))
 
         try:
+            event = next(self.acquisition)
             with Acquisition(image_process_fn=put_image_in_queue, show_display=False) as acq:
-                acq.acquire(self.acquisition.events)
+                acq.acquire(event)
 
         except KeyboardInterrupt:
             self.acquire_kill.set()
@@ -134,14 +178,14 @@ class ExptRun():
                     continue
                 
                 try:
-                    result = send_image()
+                    seg_result = send_phase_image(data_in_seg_queue)
                 except Exception as e:
                     print(f"Error {e} while sending image from segmentation queue")
 
                 logger = logging.getLogger(name)
-                logger.log(logging.INFO, "Segment img Pos: %s, time: %s, error: %s",
+                logger.log(logging.INFO, "Segmented img Pos: %s, time: %s, error: %s sent",
                             data_in_seg_queue['position'],
-                            data_in_seg_queue['time'], result['error'])
+                            data_in_seg_queue['time'], seg_result['error'])
             except KeyboardInterrupt:
                 self.acquire_kill.set()
                 print("Segmentation process interrupted using keyboard")
@@ -153,9 +197,33 @@ class ExptRun():
         self.setup_process_logger()
         name = mp.current_process().name 
         print(f"Starting {name} process ... ")
+        while True:
+            try:
+                if self.dots_queue.qsize() > 0:
+                    data_in_dots_queue = self.dots_queue.get()
+                    if data_in_dots_queue is None:
+                        print("Got None in dots image queue .. aborting dots function")
+                        break
+                else:
+                    # you can time.sleep(1) for a bit here
+                    continue 
 
-        logger = logging.getLogger(name)
-        logger.log(logging.INFO, "Dots detected ...")
+                try:
+                    dots_result = send_dots_image(data_in_dots_queue)
+                except Exception as e:
+                    print(f"Erro {e} while sending image form dots queue")
+
+                logger = logging.getLogger(name)
+                logger.log(logging.INFO, "Dots img Pos:%s, time: %s, error: %s sent",
+                            data_in_dots_queue['position'],
+                            data_in_dots_queue['time'],
+                            dots_result['error'])
+
+            except KeyboardInterrupt:
+                self.acquire_kill.set()
+                print("Dots process interrupted using keyboard")
+                break
+
         self.dots_kill.set()
 
     def stop(self):

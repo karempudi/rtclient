@@ -25,6 +25,7 @@ dependencies = [
     "torchvision",
     "docker",
     "matplotlib",
+    "scikit-image",
 ]
 
 [project.optional-dependencies]

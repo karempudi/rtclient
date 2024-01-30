@@ -323,7 +323,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_2 = QWidget(self.test_acquire_group)
         self.horizontalLayoutWidget_2.setObjectName(u"horizontalLayoutWidget_2")
-        self.horizontalLayoutWidget_2.setGeometry(QRect(0, 80, 211, 31))
+        self.horizontalLayoutWidget_2.setGeometry(QRect(0, 80, 228, 31))
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -331,6 +331,17 @@ class Ui_PositionsWindow(object):
         self.only_run_check.setObjectName(u"only_run_check")
 
         self.horizontalLayout.addWidget(self.only_run_check)
+
+        self.horizontalLayoutWidget_6 = QWidget(self.test_acquire_group)
+        self.horizontalLayoutWidget_6.setObjectName(u"horizontalLayoutWidget_6")
+        self.horizontalLayoutWidget_6.setGeometry(QRect(10, 120, 211, 25))
+        self.horizontalLayout_6 = QHBoxLayout(self.horizontalLayoutWidget_6)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.simulated_acquisition_check = QCheckBox(self.horizontalLayoutWidget_6)
+        self.simulated_acquisition_check.setObjectName(u"simulated_acquisition_check")
+
+        self.horizontalLayout_6.addWidget(self.simulated_acquisition_check)
 
         self.mark_positions_group = QGroupBox(self.centralwidget)
         self.mark_positions_group.setObjectName(u"mark_positions_group")
@@ -471,6 +482,7 @@ class Ui_PositionsWindow(object):
         self.test_acquire_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Test acquire", None))
         self.save_dir_button.setText(QCoreApplication.translate("PositionsWindow", u"Save dir", None))
         self.only_run_check.setText(QCoreApplication.translate("PositionsWindow", u"Test run only (dont save data)", None))
+        self.simulated_acquisition_check.setText(QCoreApplication.translate("PositionsWindow", u"Put dummies in queues", None))
         self.mark_positions_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Mark positions", None))
         self.bl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Bottom Left 1", None))
         self.tl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Top Left 1", None))

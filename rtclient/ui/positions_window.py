@@ -62,7 +62,8 @@ class PositionsWindow(QMainWindow):
             'dummy_position_numbers': [],
             'events': [],
             'selected_exposure': None,
-            'selected_freq': None
+            'selected_freq': None,
+            'simulated_acquisition': False
         }
 
         self.group_dummies = {
@@ -134,6 +135,7 @@ class PositionsWindow(QMainWindow):
         # Test acquire
         self._ui.save_dir_button.clicked.connect(self.set_save_dir)
         self._ui.only_run_check.toggled.connect(self.set_run_type)
+        self._ui.simulated_acquisition_check.stateChanged.connect(self.set_simulated_acquisition)
 
 
         # fill in the defaults for the presets and config groups
@@ -501,7 +503,7 @@ class PositionsWindow(QMainWindow):
             core = Core()
             if core.get_focus_device() != self.scope_devices['focus']:
                 raise ValueError('Focus device is not PFSOffset')
-            if core.get_xy_stage_device != self.scope_devices['XYStage']:
+            if core.get_xy_stage_device() != self.scope_devices['XYStage']:
                 raise ValueError('XY stage device is not XYStage')
 
             x = core.get_x_position()
@@ -594,6 +596,13 @@ class PositionsWindow(QMainWindow):
     @Slot()
     def set_run_type(self):
         pass
+
+    @Slot()
+    def set_simulated_acquisition(self):
+        if self._ui.simulated_acquisition_check.isChecked():
+            self.selected_values['simulated_acquisition'] = True
+        else:
+            self.selected_values['simulated_acquisition'] = False
 
     @Slot()
     def set_selected_group(self, text):
