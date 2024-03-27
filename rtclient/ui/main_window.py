@@ -4,6 +4,7 @@ from PySide6.QtCore import Slot
 from rtclient.ui.qt_ui_classes.ui_main import Ui_MainWindow
 from rtclient.ui.positions_window import PositionsWindow
 from rtclient.ui.tweezer_window import TweezerWindow
+from rtclient.ui.preview_window import PreviewWindow
 from rtclient.microscope.acquisition import Acquisition
 from rtclient.processes import ExptRun, start_experiment
 
@@ -17,6 +18,7 @@ class MainWindow(QMainWindow):
 
         self.positions_window = PositionsWindow()
         self.tweezer_window = TweezerWindow()
+        self.preview_window = PreviewWindow()
 
         self.acquisition = None
         self.selected_values = None
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow):
 
         self._ui.positions_button.clicked.connect(self.show_positions_window)
         self._ui.rules_button.clicked.connect(self.show_positions_window)
+        self._ui.preview_button.clicked.connect(self.show_preview_window)
         self.positions_window.send_events.connect(self.create_acquisition)
 
         self._ui.acquire_next_button.clicked.connect(self.acquire_next_image)
@@ -47,6 +50,23 @@ class MainWindow(QMainWindow):
     @Slot()
     def show_tweezer_window(self):
         self.tweezer_window.show()
+    
+    @Slot()
+    def show_preview_window(self):
+        self.preview_window.show()
+        if self.selected_values is None:
+            msg = QMessageBox()
+            msg.setText('Events not set, so no preview')
+            msg.setIcon(QMessageBox.Warning)
+            msg.exec()
+        else:
+            events = self.selected_values['events']
+            self.preview_window._ui.preview_list.clear()
+            for event in events:
+                self.preview_window._ui.preview_list.addItem('Pos' + str(event['tags']['position']) + ',' 
+                            + event['config_group'][0] + ',' + event['config_group'][1] + ', '
+                            + str(event['exposure']) + 'ms')
+
     
     def closeEvent(self, event):
         self.tweezer_window.close()
