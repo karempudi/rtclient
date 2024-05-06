@@ -13,12 +13,10 @@ DUMMY_PHASE = "phase.jpg"
 
 def send_phase_image(data): 
     print(f"Sending Pos: {data['position']}, Time: {data['time']}, Shape: {data['image'].shape} for segmentation")
-    time.sleep(0.5)
     return {'error': True}
 
 def send_dots_image(data):
     print(f"Sending Pos: {data['position']}, Time: {data['time']}, Shape: {data['image'].shape} for dots")
-    time.sleep(0.5)
     return {'error': True}
 
 def setup_root_logger(save_dir):
@@ -101,7 +99,7 @@ class ExptRun():
             try:
                 # acquire and put two image in different queues
                 event = next(self.acquisition)
-                time.sleep(0.3)
+                time.sleep(0.5)
                 logger = logging.getLogger(name)
                 if event['config_group'][1] == 'phase_fast':
                     self.segment_queue.put({
@@ -111,6 +109,14 @@ class ExptRun():
                     })
                     logger.log(logging.INFO, "Acquired phase image Pos: %s Time: %s", 
                             event['axes']['position'], 0)
+                elif event['config_group'][1] == 'phase_dummy':
+                    self.segment_queue.put({
+                        'position' : -1,
+                        'time': -1,
+                        'image': dummy_phase
+                    })
+                    logger.log(logging.INFO, "Acquired dummy image Pos: %s Time: %s", -1, -1)
+
                 if event['config_group'][1] == 'venus':
                     self.dots_queue.put({
                         'position': event['axes']['position'],
@@ -123,8 +129,8 @@ class ExptRun():
                 self.acquire_kill.set()
                 print("Acquire process interrupted using keyboard")
                 break
-            except Exception as e:
-                print(f"Error {e} in acquire sim")
+            except StopIteration:
+                print("Acquisition reached the end of the event list")
                 break
         
         self.segment_queue.put(None)

@@ -731,7 +731,7 @@ class PositionsWindow(QMainWindow):
                 dummy_event['x'] = one_dummy_position['x']
                 dummy_event['y'] = one_dummy_position['y']
                 dummy_event['z'] = one_dummy_position['z']
-                dummy_event['config_group'] = ['imaging', 'phase_fast']
+                dummy_event['config_group'] = ['imaging', 'phase_dummy']
                 dummy_event['exposure'] = 0
                 dummy_event['min_start_time'] = 0
                 dummy_event['tags'] = {

@@ -76,9 +76,10 @@ class MainWindow(QMainWindow):
         self.selected_values = selected_values
         #print("Events list recieved.. constructing acquisition object: ", len(selected_values['events']))
         self.acquisition = Acquisition(selected_values['events'])
-        self.save_dir = self.selected_values['save_dir']
-        self.simulated_acquisition = self.selected_values['simulated_acquisition']
+        self.save_dir = selected_values['save_dir']
+        self.simulated_acquisition = selected_values['simulated_acquisition']
         #print("Acquisition object set")
+        print(f"Acquisition object set with {len(selected_values['events'])} events, simulated: {selected_values['simulated_acquisition']}")
 
     def acquire_next_image(self):
         print(next(self.acquisition))
@@ -88,6 +89,7 @@ class MainWindow(QMainWindow):
         try:
             self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir)
             self._ui.acquire_in_loop_button.setEnabled(False)
+            print(f"Starting simulated acquisition: {self.simulated_acquisition}")
             start_experiment(self.expt_obj, sim=self.simulated_acquisition)
             print("Experiment run started .... ")
         except Exception as e:
