@@ -6,10 +6,46 @@ import pathlib
 from pathlib import Path
 from pycromanager import Acquisition # type: ignore
 from skimage.io import imread
+import pika # type: ignore
 
 RESOURES_PATH = Path(__file__).parent / Path('./resources/test_images/')
 RESOURES_PATH = RESOURES_PATH.resolve()
-DUMMY_PHASE = "phase.jpg"
+DUMMY_PHASE = "phase2.png"
+
+def queue_image(image_data, which_queue):
+    """
+    Publish image data to the appropriate queue to be retrieved by other worker
+    programs
+    Args:
+        image_data (dict) with keys 'position', 'time', 'image'
+        channel (str): 'phase', 'dummy', 'fluor'
+
+    """
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost')
+    )
+    channel = connection.channel()
+
+    # connect to an exchange
+    channel.exchange_declare(exchange='image_dispatch', exchange_type='direct')
+    #
+    H, W = image_data['image'].shape
+    message = image_data['image'].tobytes()
+    channel.basic_publish(
+        exchange='image_dispatch',
+        routing_key=which_queue,
+        body=message,
+        properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Persistent,
+            headers={
+                'position': image_data['position'],
+                'time': image_data['time'],
+                'H': H, 
+                'W': W,
+            }
+        )
+    )
+    connection.close()
 
 def send_phase_image(data): 
     print(f"Sending Pos: {data['position']}, Time: {data['time']}, Shape: {data['image'].shape} for segmentation")
@@ -65,7 +101,7 @@ class ExptRun():
         h = logging.handlers.QueueHandler(self.logger_queue)
         root = logging.getLogger()
         root.addHandler(h)
-        root.setLevel(logging.DEBUG)
+        root.setLevel(logging.INFO)
     
     def logger_listener(self):
         setup_root_logger(self.save_dir)
@@ -92,37 +128,50 @@ class ExptRun():
         phase_path = RESOURES_PATH / Path(DUMMY_PHASE)
         dummy_phase = imread(phase_path).astype('float32')
         dummy_fluor = imread(phase_path).astype('float32')
-        def put_image_queue(image, metadata, event_queue):
-            pass
 
         while not self.acquire_kill.is_set():
             try:
                 # acquire and put two image in different queues
                 event = next(self.acquisition)
-                time.sleep(0.5)
+                time.sleep(0.1)
                 logger = logging.getLogger(name)
                 if event['config_group'][1] == 'phase_fast':
-                    self.segment_queue.put({
+                    queue_image({
                         'position': event['axes']['position'],
                         'time': 0,
                         'image': dummy_phase
-                    })
+                    }, which_queue='segment')
+                    #self.segment_queue.put({
+                    #    'position': event['axes']['position'],
+                    #    'time': 0,
+                    #    'image': dummy_phase
+                    #})
                     logger.log(logging.INFO, "Acquired phase image Pos: %s Time: %s", 
                             event['axes']['position'], 0)
                 elif event['config_group'][1] == 'phase_dummy':
-                    self.segment_queue.put({
-                        'position' : -1,
+                    queue_image({
+                        'position': -1,
                         'time': -1,
                         'image': dummy_phase
-                    })
+                    }, which_queue='dummy')
+                    #self.segment_queue.put({
+                    #    'position' : -1,
+                    #    'time': -1,
+                    #    'image': dummy_phase
+                    #})
                     logger.log(logging.INFO, "Acquired dummy image Pos: %s Time: %s", -1, -1)
 
                 if event['config_group'][1] == 'venus':
-                    self.dots_queue.put({
+                    queue_image({
                         'position': event['axes']['position'],
                         'time': 0,
                         'image': dummy_fluor
-                    })
+                    }, which_queue='dotdetect')
+                    #self.dots_queue.put({
+                    #    'position': event['axes']['position'],
+                    #    'time': 0,
+                    #    'image': dummy_fluor
+                    #})
                     logger.log(logging.INFO, "Acquired fluor image Pos: %s Time: %s",
                             event['axes']['position'], 0)
             except KeyboardInterrupt:
@@ -244,8 +293,8 @@ class ExptRun():
         if not self.acquire_kill.is_set():
             self.acquire_kill.set()
 
-        while ((not self.segment_kill.is_set()) or (not self.dots_kill.is_set())):
-            time.sleep(1)
+        #while ((not self.segment_kill.is_set()) or (not self.dots_kill.is_set())):
+        #    time.sleep(1)
 
         self.logger_queue.put(None)
         time.sleep(1)
@@ -287,12 +336,12 @@ def start_experiment(expt_run, sim: bool = False):
         acquire_process.start()
 
         expt_run.segment_kill.clear()
-        segment_process = mp.Process(target=expt_run.segment, name='segment')
-        segment_process.start()
+        #segment_process = mp.Process(target=expt_run.segment, name='segment')
+        #segment_process.start()
 
-        expt_run.dots_kill.clear()
-        dots_process = mp.Process(target=expt_run.dots, name='dots')
-        dots_process.start()
+        #expt_run.dots_kill.clear()
+        #dots_process = mp.Process(target=expt_run.dots, name='dots')
+        #dots_process.start()
         
 
     except KeyboardInterrupt:

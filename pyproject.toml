@@ -26,6 +26,7 @@ dependencies = [
     "docker",
     "matplotlib",
     "scikit-image",
+    "pika"
 ]
 
 [project.optional-dependencies]
