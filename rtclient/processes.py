@@ -196,11 +196,31 @@ class ExptRun():
             
             # put image in different queues depending on the type of image
             # acquired
-            self.segment_queue.put({
-                'position': metadata['Axes']['position'],
-                'time': metadata['Axes']['time'],
-                'image': image.astype('float32')
-            })
+            #self.segment_queue.put({
+            #    'position': metadata['Axes']['position'],
+            #    'time': metadata['Axes']['time'],
+            #    'image': image.astype('float32')
+            #})
+            if metadata['extra_tags']['is_dummy']:
+                # this image will just be zeros sent by 
+                # pycromanager
+                queue_image({
+                    'position': metadata['extra_tags']['position'],
+                    'time': -1,
+                    'image': image.astype('float32'),
+                }, which_queue='dummy')
+            else:
+                # check preset of the non-dummy "image" and 
+                preset = metadata['Axes']['preset']
+                if preset == 'venus':
+                    which_queue = 'dotdetect'
+                elif preset == 'phase_fast' or preset == 'phase_slow':
+                    which_queue = 'segment'
+                queue_image({
+                        'position': metadata['Axes']['position'],
+                        'time': metadata['Axes']['time'],
+                        'image': image.astype('float32')
+                    }, which_queue=which_queue)
 
             logger = logging.getLogger('acquire')
             logger.log(logging.INFO, "Acquired image of position: %s, time: %s",
@@ -212,9 +232,18 @@ class ExptRun():
                 event_queue.put(next(self.acquisition))
 
         try:
-            event = next(self.acquisition)
-            with Acquisition(image_process_fn=put_image_in_queue, show_display=False) as acq:
-                acq.acquire(event)
+            #event = next(self.acquisition)
+            # warmp up whereever you are on the scope
+            warmup_event = {
+                'axes': {},
+                'config_group': ['imaging', 'phase_fast'],
+                'exposure': 0,
+                'min_start_time': 0,
+            }
+            acq = Acquisition(image_process_fn=put_image_in_queue, show_display=False)
+            acq.acquire(warmup_event)
+            #with Acquisition(image_process_fn=put_image_in_queue, show_display=False) as acq:
+            #    acq.acquire(event)
 
         except KeyboardInterrupt:
             self.acquire_kill.set()

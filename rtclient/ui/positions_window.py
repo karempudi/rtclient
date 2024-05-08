@@ -721,21 +721,24 @@ class PositionsWindow(QMainWindow):
                     event['config_group'] = [group, preset]
                     event['exposure'] = exposure
                     event['min_start_time'] = 0
-                    event['tags'] = {
-                        'position' : int(one_position['label'][3:])
+                    event['extra_tags'] = {
+                        'position' : int(one_position['label'][3:]),
+                        'is_dummy': False,
                     }
                     events.append(event)
             for i, one_dummy_position in enumerate(dummy_positions, 0):
                 dummy_event = {}
                 # for dummy positions you have to skip setting axes or channel
+                dummy_event['axes'] = {}
                 dummy_event['x'] = one_dummy_position['x']
                 dummy_event['y'] = one_dummy_position['y']
                 dummy_event['z'] = one_dummy_position['z']
                 dummy_event['config_group'] = ['imaging', 'phase_dummy']
                 dummy_event['exposure'] = 0
                 dummy_event['min_start_time'] = 0
-                dummy_event['tags'] = {
-                    'position' : int(one_dummy_position['label'][3:])
+                dummy_event['extra_tags'] = {
+                    'position' : int(one_dummy_position['label'][3:]),
+                    'is_dummy': True,
                 }
                 events.append(dummy_event)
         
