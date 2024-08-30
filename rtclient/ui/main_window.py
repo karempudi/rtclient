@@ -6,7 +6,7 @@ from rtclient.ui.positions_window import PositionsWindow
 from rtclient.ui.tweezer_window import TweezerWindow
 from rtclient.ui.preview_window import PreviewWindow
 from rtclient.microscope.acquisition import Acquisition
-from rtclient.processes import ExptRun, start_experiment
+from rtclient.processes2 import ExptRun
 
 
 class MainWindow(QMainWindow):
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
             events = self.selected_values['events']
             self.preview_window._ui.preview_list.clear()
             for event in events:
-                self.preview_window._ui.preview_list.addItem('Pos' + str(event['tags']['position']) + ',' 
+                self.preview_window._ui.preview_list.addItem('Pos' + str(event['extra_tags']['position']) + ',' 
                             + event['config_group'][0] + ',' + event['config_group'][1] + ', '
                             + str(event['exposure']) + 'ms')
 
@@ -87,10 +87,11 @@ class MainWindow(QMainWindow):
     def acquire_in_loop(self):
         # start processes initialize ther run object
         try:
-            self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir)
+            self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir, save=False)
             self._ui.acquire_in_loop_button.setEnabled(False)
             print(f"Starting simulated acquisition: {self.simulated_acquisition}")
-            start_experiment(self.expt_obj, sim=self.simulated_acquisition)
+            #start_experiment(self.expt_obj, sim=self.simulated_acquisition)
+            self.expt_obj.start(sim=self.simulated_acquisition)
             print("Experiment run started .... ")
         except Exception as e:
             msg = QMessageBox()

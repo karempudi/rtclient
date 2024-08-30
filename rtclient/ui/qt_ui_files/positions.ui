@@ -103,13 +103,20 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="num_dummy_positions_label">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>No of dummy  positions</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="num_dummy_positions"/>
+       <widget class="QLineEdit" name="num_dummy_positions">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="chip_orientation_label">
@@ -219,6 +226,9 @@
         </item>
         <item>
          <widget class="QRadioButton" name="auto_marking_button">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Auto</string>
           </property>
@@ -283,6 +293,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="reload_positions_button">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Reload positions</string>
         </property>
@@ -444,42 +457,20 @@
     <property name="title">
      <string>Test acquire</string>
     </property>
-    <widget class="QWidget" name="formLayoutWidget_3">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>191</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="save_dir_button">
-        <property name="text">
-         <string>Save dir</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="save_dir_path_display"/>
-      </item>
-     </layout>
-    </widget>
     <widget class="QWidget" name="horizontalLayoutWidget_2">
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>80</y>
+       <y>120</y>
        <width>228</width>
        <height>31</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QCheckBox" name="only_run_check">
+       <widget class="QCheckBox" name="dont_save_data">
         <property name="text">
-         <string>Test run only (dont save data)</string>
+         <string>Dont save data</string>
         </property>
        </widget>
       </item>
@@ -489,8 +480,8 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>120</y>
-       <width>211</width>
+       <y>170</y>
+       <width>240</width>
        <height>25</height>
       </rect>
      </property>
@@ -498,7 +489,39 @@
       <item>
        <widget class="QCheckBox" name="simulated_acquisition_check">
         <property name="text">
-         <string>Put dummies in queues</string>
+         <string>Put dummy images in queues</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>201</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="save_dir_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Save dir</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="save_dir_path_display">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -612,6 +635,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="reset_button">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Reset all</string>
        </property>
@@ -663,9 +689,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="versionGroup"/>
   <buttongroup name="sidesGroup"/>
-  <buttongroup name="markingGroup"/>
   <buttongroup name="orientationGroup"/>
+  <buttongroup name="versionGroup"/>
+  <buttongroup name="markingGroup"/>
  </buttongroups>
 </ui>

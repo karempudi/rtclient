@@ -82,11 +82,13 @@ class Ui_PositionsWindow(object):
 
         self.num_dummy_positions_label = QLabel(self.formLayoutWidget)
         self.num_dummy_positions_label.setObjectName(u"num_dummy_positions_label")
+        self.num_dummy_positions_label.setEnabled(False)
 
         self.positions_layout.setWidget(3, QFormLayout.LabelRole, self.num_dummy_positions_label)
 
         self.num_dummy_positions = QLineEdit(self.formLayoutWidget)
         self.num_dummy_positions.setObjectName(u"num_dummy_positions")
+        self.num_dummy_positions.setEnabled(False)
 
         self.positions_layout.setWidget(3, QFormLayout.FieldRole, self.num_dummy_positions)
 
@@ -175,6 +177,7 @@ class Ui_PositionsWindow(object):
         self.auto_marking_button = QRadioButton(self.formLayoutWidget)
         self.markingGroup.addButton(self.auto_marking_button)
         self.auto_marking_button.setObjectName(u"auto_marking_button")
+        self.auto_marking_button.setEnabled(False)
 
         self.horizontalLayout_2.addWidget(self.auto_marking_button)
 
@@ -215,6 +218,7 @@ class Ui_PositionsWindow(object):
 
         self.reload_positions_button = QPushButton(self.horizontalLayoutWidget_4)
         self.reload_positions_button.setObjectName(u"reload_positions_button")
+        self.reload_positions_button.setEnabled(False)
 
         self.horizontalLayout_4.addWidget(self.reload_positions_button)
 
@@ -305,36 +309,20 @@ class Ui_PositionsWindow(object):
         self.test_acquire_group = QGroupBox(self.centralwidget)
         self.test_acquire_group.setObjectName(u"test_acquire_group")
         self.test_acquire_group.setGeometry(QRect(270, 430, 231, 221))
-        self.formLayoutWidget_3 = QWidget(self.test_acquire_group)
-        self.formLayoutWidget_3.setObjectName(u"formLayoutWidget_3")
-        self.formLayoutWidget_3.setGeometry(QRect(10, 40, 191, 31))
-        self.formLayout_3 = QFormLayout(self.formLayoutWidget_3)
-        self.formLayout_3.setObjectName(u"formLayout_3")
-        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.save_dir_button = QPushButton(self.formLayoutWidget_3)
-        self.save_dir_button.setObjectName(u"save_dir_button")
-
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.save_dir_button)
-
-        self.save_dir_path_display = QLineEdit(self.formLayoutWidget_3)
-        self.save_dir_path_display.setObjectName(u"save_dir_path_display")
-
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.save_dir_path_display)
-
         self.horizontalLayoutWidget_2 = QWidget(self.test_acquire_group)
         self.horizontalLayoutWidget_2.setObjectName(u"horizontalLayoutWidget_2")
-        self.horizontalLayoutWidget_2.setGeometry(QRect(0, 80, 228, 31))
+        self.horizontalLayoutWidget_2.setGeometry(QRect(0, 120, 228, 31))
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.only_run_check = QCheckBox(self.horizontalLayoutWidget_2)
-        self.only_run_check.setObjectName(u"only_run_check")
+        self.dont_save_data = QCheckBox(self.horizontalLayoutWidget_2)
+        self.dont_save_data.setObjectName(u"dont_save_data")
 
-        self.horizontalLayout.addWidget(self.only_run_check)
+        self.horizontalLayout.addWidget(self.dont_save_data)
 
         self.horizontalLayoutWidget_6 = QWidget(self.test_acquire_group)
         self.horizontalLayoutWidget_6.setObjectName(u"horizontalLayoutWidget_6")
-        self.horizontalLayoutWidget_6.setGeometry(QRect(10, 120, 211, 25))
+        self.horizontalLayoutWidget_6.setGeometry(QRect(10, 170, 240, 25))
         self.horizontalLayout_6 = QHBoxLayout(self.horizontalLayoutWidget_6)
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
@@ -342,6 +330,28 @@ class Ui_PositionsWindow(object):
         self.simulated_acquisition_check.setObjectName(u"simulated_acquisition_check")
 
         self.horizontalLayout_6.addWidget(self.simulated_acquisition_check)
+
+        self.verticalLayoutWidget_2 = QWidget(self.test_acquire_group)
+        self.verticalLayoutWidget_2.setObjectName(u"verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setGeometry(QRect(20, 30, 201, 80))
+        self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget_2)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.save_dir_button = QPushButton(self.verticalLayoutWidget_2)
+        self.save_dir_button.setObjectName(u"save_dir_button")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.save_dir_button.sizePolicy().hasHeightForWidth())
+        self.save_dir_button.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.save_dir_button)
+
+        self.save_dir_path_display = QLineEdit(self.verticalLayoutWidget_2)
+        self.save_dir_path_display.setObjectName(u"save_dir_path_display")
+        self.save_dir_path_display.setReadOnly(True)
+
+        self.verticalLayout.addWidget(self.save_dir_path_display)
 
         self.mark_positions_group = QGroupBox(self.centralwidget)
         self.mark_positions_group.setObjectName(u"mark_positions_group")
@@ -410,6 +420,7 @@ class Ui_PositionsWindow(object):
 
         self.reset_button = QPushButton(self.horizontalLayoutWidget_3)
         self.reset_button.setObjectName(u"reset_button")
+        self.reset_button.setEnabled(False)
 
         self.reset_close_layout.addWidget(self.reset_button)
 
@@ -480,9 +491,9 @@ class Ui_PositionsWindow(object):
         self.add_preset_button.setText(QCoreApplication.translate("PositionsWindow", u"Add", None))
         self.remove_preset_button.setText(QCoreApplication.translate("PositionsWindow", u"Remove", None))
         self.test_acquire_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Test acquire", None))
+        self.dont_save_data.setText(QCoreApplication.translate("PositionsWindow", u"Dont save data", None))
+        self.simulated_acquisition_check.setText(QCoreApplication.translate("PositionsWindow", u"Put dummy images in queues", None))
         self.save_dir_button.setText(QCoreApplication.translate("PositionsWindow", u"Save dir", None))
-        self.only_run_check.setText(QCoreApplication.translate("PositionsWindow", u"Test run only (dont save data)", None))
-        self.simulated_acquisition_check.setText(QCoreApplication.translate("PositionsWindow", u"Put dummies in queues", None))
         self.mark_positions_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Mark positions", None))
         self.bl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Bottom Left 1", None))
         self.tl_button_1.setText(QCoreApplication.translate("PositionsWindow", u"Top Left 1", None))

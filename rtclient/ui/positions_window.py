@@ -54,9 +54,10 @@ class PositionsWindow(QMainWindow):
             'mm_version': 2.0,
             'orientation': 'horizontal',
             'marking_type': 'corners',
-            'dummy_type': 'Follow boundary', # can be 'Follow boundary' or 'Fastest way'
+            'dummy_type': 'Follow boundary', # can be 'Follow boundary' TODO: 'Fastest way'
             'corners': {},
             'save_dir': None,
+            'save_data': True,
             'to_image' : [], # add group and preset configs
             'positions': [],
             'dummy_position_numbers': [],
@@ -76,6 +77,7 @@ class PositionsWindow(QMainWindow):
         self.toolbar = NavigationToolbar2QT(self.view, self)
         self._ui.matplotlib_layout.addWidget(self.toolbar)
         self._ui.matplotlib_layout.addWidget(self.view)
+        self.statusBarWaitTime = 500
 
         self.setup_button_handlers()
 
@@ -134,7 +136,7 @@ class PositionsWindow(QMainWindow):
 
         # Test acquire
         self._ui.save_dir_button.clicked.connect(self.set_save_dir)
-        self._ui.only_run_check.toggled.connect(self.set_run_type)
+        self._ui.dont_save_data.toggled.connect(self.set_save_data)
         self._ui.simulated_acquisition_check.stateChanged.connect(self.set_simulated_acquisition)
 
 
@@ -210,7 +212,7 @@ class PositionsWindow(QMainWindow):
             self.selected_values['n_sides'] = 1
         
         self.selected_values['corners'].clear()
-        self.statusBar.showMessage(f"Imaging number of chip sides: {self.selected_values['n_sides']}", 200)
+        self.statusBar.showMessage(f"Imaging number of chip sides: {self.selected_values['n_sides']}", self.statusBarWaitTime)
 
 
     
@@ -218,7 +220,7 @@ class PositionsWindow(QMainWindow):
     def set_marking_type(self, clicked):
         marking_type = 'corners' if self._ui.corners_marking_button.isChecked() else 'auto'
         self.selected_values['marking_type'] = marking_type
-        self.statusBar.showMessage(f"Postion marking type: {marking_type}", 200) 
+        self.statusBar.showMessage(f"Postion marking type: {marking_type}", self.statusBarWaitTime) 
 
     @Slot()
     def set_dummy_positions_type(self, text):
@@ -228,7 +230,7 @@ class PositionsWindow(QMainWindow):
             case 'Fastest way':
                 self.selected_values['dummy_type'] = 'Fastest way'
         
-        self.statusBar.showMessage(f"Dummy positions path type set to: {self.selected_values['dummy_type']}", 200)
+        self.statusBar.showMessage(f"Dummy positions path type set to: {self.selected_values['dummy_type']}", self.statusBarWaitTime)
             
 
     @Slot()
@@ -246,20 +248,20 @@ class PositionsWindow(QMainWindow):
                 color = '#f6989d' # red color
                 self.selected_values['n_dummy_pos'] = None
         self._ui.num_dummy_positions.setStyleSheet('QLineEdit { background-color: %s }' % color)
-        self.statusBar.showMessage(f"Number of dummy positions: {self.selected_values['n_dummy_pos']}", 200)
+        self.statusBar.showMessage(f"Number of dummy positions: {self.selected_values['n_dummy_pos']}", self.statusBarWaitTime)
 
     @Slot()
     def set_chip_orientation(self, clicked):
         orientation = 'horizontal' if self._ui.chip_horizontal_button.isChecked() else 'vertical'
         self.selected_values['orientation'] = orientation
-        self.statusBar.showMessage(f'Chip orientation selected: {orientation}', 1000)
+        self.statusBar.showMessage(f'Chip orientation selected: {orientation}', self.statusBarWaitTime)
 
     @Slot()
     def set_mm_version(self, clicked):
         # set micromanager version to generate positon lists for
         mm_version = 2.0 if self._ui.mm20_button.isChecked() else 1.4
         self.selected_values['mm_version'] = mm_version
-        self.statusBar.showMessage(f'MM version selected: {mm_version}', 200)
+        self.statusBar.showMessage(f'MM version selected: {mm_version}', self.statusBarWaitTime)
     
     @Slot()
     def set_num_rows(self):
@@ -276,7 +278,7 @@ class PositionsWindow(QMainWindow):
                 color = '#f6989d' # red color
                 self.selected_values['n_rows'] = 0
         self._ui.num_rows_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
-        self.statusBar.showMessage(f'Num of rows set to {n_rows}', 200)
+        self.statusBar.showMessage(f'Num of rows set to {n_rows}', self.statusBarWaitTime)
 
     
     @Slot()
@@ -294,7 +296,7 @@ class PositionsWindow(QMainWindow):
                 color = '#f6989d' # red color
                 self.selected_values['n_cols'] = 0
         self._ui.num_cols_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
-        self.statusBar.showMessage(f'Num of columns set to {n_cols}', 200)
+        self.statusBar.showMessage(f'Num of columns set to {n_cols}', self.statusBarWaitTime)
    
     @Slot()
     def save_corners(self):
@@ -412,7 +414,7 @@ class PositionsWindow(QMainWindow):
             msg.setIcon(QMessageBox.Critical)
             msg.exec()
         finally:
-            self.statusBar.showMessage(f"Generated positions saved to file: {filename}", 200)
+            self.statusBar.showMessage(f"Generated positions saved to file: {filename}", self.statusBarWaitTime)
     
     @Slot()
     def save_dummy_positions(self):
@@ -437,7 +439,7 @@ class PositionsWindow(QMainWindow):
             msg.setIcon(QMessageBox.Critical)
             msg.exec()
         finally:
-            self.statusBar.showMessage(f"Generated dummy positions saved to file: {filename}", 200)
+            self.statusBar.showMessage(f"Generated dummy positions saved to file: {filename}", self.statusBarWaitTime)
        
     
     @Slot()
@@ -477,7 +479,7 @@ class PositionsWindow(QMainWindow):
         if check_mm_server_alive():
             position_dict = self.get_mm_current_position(label)
             self.selected_values['corners'][label] = position_dict
-            self.statusBar.showMessage(f"{label} position grabbed from micromanager ...", 200)
+            self.statusBar.showMessage(f"{label} position grabbed from micromanager ...", self.statusBarWaitTime)
         else:
             
             # load dummies if there is no micromanager connection
@@ -486,13 +488,13 @@ class PositionsWindow(QMainWindow):
             else:
                 dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[0])
 
-            self.statusBar.showMessage(f'Setting dummy position for position: {label}')
+            self.statusBar.showMessage(f'Setting dummy position for position: {label}', self.statusBarWaitTime)
             _, corner_positions = parse_positions_file(dummy_filename,
                                 positions_type='corners')
             for position in corner_positions:
                 if position['label'] == 'Pos' + label:
                     self.selected_values['corners'][label] = position
-            self.statusBar.showMessage(f'Setting dummy position for position: {label}', 200)
+            self.statusBar.showMessage(f'Setting dummy position for position: {label}', self.statusBarWaitTime)
 
     def get_mm_current_position(self, label):
         core = None
@@ -525,7 +527,7 @@ class PositionsWindow(QMainWindow):
         finally:
             if core:
                 del core
-            self.statusBar.showMessage(f"Positon {label} set to {position_dict}", 200)
+            self.statusBar.showMessage(f"Positon {label} set to {position_dict}", self.statusBarWaitTime)
             return position_dict
 
     @Slot()
@@ -590,12 +592,17 @@ class PositionsWindow(QMainWindow):
             msg.exec()
         else:
             self.selected_values['save_dir'] = Path(saving_dir)
-        self.statusBar.showMessage(f"Saving dir set to {str(self.selected_values['save_dir'])}", 200)
+            self._ui.save_dir_path_display.setText(saving_dir)
+        self.statusBar.showMessage(f"Saving dir set to {str(self.selected_values['save_dir'])}", self.statusBarWaitTime)
 
     
     @Slot()
-    def set_run_type(self):
-        pass
+    def set_save_data(self):
+        if self._ui.dont_save_data.isChecked():
+            self.selected_values['save_data'] = False
+        else:
+            self.selected_values['save_data'] = True
+        self.statusBar.showMessage(f"Is data saved: {str(self.selected_values['save_data'])}", self.statusBarWaitTime)
 
     @Slot()
     def set_simulated_acquisition(self):
@@ -603,6 +610,7 @@ class PositionsWindow(QMainWindow):
             self.selected_values['simulated_acquisition'] = True
         else:
             self.selected_values['simulated_acquisition'] = False
+        self.statusBar.showMessage(f"Is simulated acquisition: {str(self.selected_values['simulated_acquisition'])}", self.statusBarWaitTime)
 
     @Slot()
     def set_selected_group(self, text):
@@ -647,7 +655,7 @@ class PositionsWindow(QMainWindow):
                 color = '#f6989d' # red color
                 valid = False
         self._ui.exposure_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
-        self.statusBar.showMessage(f'Exposure set to {state[1]}', 200)
+        self.statusBar.showMessage(f'Exposure set to {state[1]}', self.statusBarWaitTime)
         self.selected_values['selected_exposure'] = int(state[1]) if valid else None
 
     
@@ -667,7 +675,7 @@ class PositionsWindow(QMainWindow):
                 color = '#f6989d' # red color
                 valid = False
         self._ui.imaging_freq_edit.setStyleSheet('QLineEdit { background-color: %s }' % color)
-        self.statusBar.showMessage(f'Imaging freq set to {state[1]}', 200)
+        self.statusBar.showMessage(f'Imaging freq set to {state[1]}', self.statusBarWaitTime)
         self.selected_values['selected_freq'] = int(state[1]) if valid else None
 
     @Slot()
@@ -750,7 +758,7 @@ class PositionsWindow(QMainWindow):
         
         self.selected_values['events'] = events
 
-        self.statusBar.showMessage(f"Generated {len(self.selected_values['events'])} for one loop over the chip", 200)
+        self.statusBar.showMessage(f"Generated {len(self.selected_values['events'])} for one loop over the chip", self.statusBarWaitTime)
         self.send_events.emit(self.selected_values.copy())
 
     @Slot()
@@ -758,7 +766,7 @@ class PositionsWindow(QMainWindow):
         events = self.selected_values['events']
         self._ui.preview_list.clear()
         for event in events:
-            self._ui.preview_list.addItem('Pos' + str(event['tags']['position']) + ',' 
+            self._ui.preview_list.addItem('Pos' + str(event['extra_tags']['position']) + ',' 
                         + event['config_group'][0] + ',' + event['config_group'][1] + ', '
                         + str(event['exposure']) + 'ms')
 
