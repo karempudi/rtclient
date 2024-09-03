@@ -8,7 +8,7 @@ from dask.distributed import Client, LocalCluster, Event, fire_and_forget
 #from rtseg.forkplot import compute_forkplot_stats
 #from rtseg.dotdetect import detect_dots
 
-def acquire_events(acquisition, sim=False):
+def acquire_events(acquisition, sim):
 
     def process_image(image, metadata):
         # submit the image to other places
@@ -75,8 +75,8 @@ class ExptRun():
             print(event)
 
     # submit to the cluster the acquisition of events.
-    def start(self, sim=False):
-        future = self.client.submit(acquire_events, sim)
+    def start(self, acquisition, sim):
+        future = self.client.submit(acquire_events, acquisition, sim)
         # will not wait for the result
         fire_and_forget(future)
         print("Submitted the task to dask cluster ...")
