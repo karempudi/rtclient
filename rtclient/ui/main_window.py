@@ -42,6 +42,8 @@ class MainWindow(QMainWindow):
         self._ui.stop_button.clicked.connect(self.stop_acquisition)
 
         self._ui.tweezer_button.clicked.connect(self.show_tweezer_window)
+
+        self._ui.parameters_button.clicked.connect(self.load_analysis_parameters)
     
     @Slot()
     def show_positions_window(self):
@@ -67,6 +69,12 @@ class MainWindow(QMainWindow):
                             + event['config_group'][0] + ',' + event['config_group'][1] + ', '
                             + str(event['exposure']) + 'ms')
 
+    @Slot()
+    def load_analysis_parameters(self):
+        print("Loading analysis parameters .....")
+        # open file dialog and load a yaml file containing parameters for analysis
+        
+        pass
     
     def closeEvent(self, event):
         self.tweezer_window.close()
