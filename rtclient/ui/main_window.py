@@ -5,9 +5,12 @@ from rtclient.ui.qt_ui_classes.ui_main import Ui_MainWindow
 from rtclient.ui.positions_window import PositionsWindow
 from rtclient.ui.tweezer_window import TweezerWindow
 from rtclient.ui.preview_window import PreviewWindow
-from rtclient.microscope.acquisition import Acquisition
-from rtclient.processes2 import ExptRun
-from rtseg.utils.param_io import load_params # type: ignore
+#from rtclient.microscope.acquisition import Acquisition
+#from rtclient.processes2 import ExptRun
+from rtseg.utils.param_io import load_params, save_params # type: ignore
+from copy import deepcopy
+import json
+from pathlib import Path
 
 
 class MainWindow(QMainWindow):
@@ -21,12 +24,11 @@ class MainWindow(QMainWindow):
         self.tweezer_window = TweezerWindow()
         self.preview_window = PreviewWindow()
 
-        self.acquisition = None
         self.selected_values = None
-        self.expt_obj = None
         self.simulated_acquisition = False
-
-        self.params = None
+        self.save_dir = None
+        self.analysis_params = None
+        self.events = None
 
         self.setup_button_handlers()
 
@@ -36,17 +38,18 @@ class MainWindow(QMainWindow):
         self._ui.positions_button.clicked.connect(self.show_positions_window)
         self._ui.rules_button.clicked.connect(self.show_positions_window)
         self._ui.preview_button.clicked.connect(self.show_preview_window)
-        self.positions_window.send_events.connect(self.create_acquisition)
+        self.positions_window.send_events.connect(self.generate_run_params)
 
-        self._ui.acquire_next_button.clicked.connect(self.acquire_next_image)
-
-        self._ui.acquire_in_loop_button.clicked.connect(self.acquire_in_loop)
-
-        self._ui.stop_button.clicked.connect(self.stop_acquisition)
 
         self._ui.tweezer_button.clicked.connect(self.show_tweezer_window)
 
         self._ui.parameters_button.clicked.connect(self.load_analysis_parameters)
+
+        self._ui.write_run_params_button.clicked.connect(self.write_run_params)
+
+        self._ui.load_run_params_button.clicked.connect(self.load_run_params)
+
+        self._ui.quit_button.clicked.connect(self.closeEvent)
     
     @Slot()
     def show_positions_window(self):
@@ -104,39 +107,69 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         self.tweezer_window.close()
         self.positions_window.close()
-    
-    def create_acquisition(self, selected_values):
+        sys.exit()
+
+    def generate_run_params(self, selected_values):
         self.selected_values = selected_values
-        #print("Events list recieved.. constructing acquisition object: ", len(selected_values['events']))
-        self.acquisition = Acquisition(selected_values['events'])
+        self.events = selected_values['events']
         self.save_dir = selected_values['save_dir']
         self.simulated_acquisition = selected_values['simulated_acquisition']
-        #print("Acquisition object set")
-        print(f"Acquisition object set with {len(selected_values['events'])} events, simulated: {selected_values['simulated_acquisition']}")
 
-    def acquire_next_image(self):
-        print(next(self.acquisition))
+    def write_run_params(self):
+        self.analysis_params = self.params
+        write_params = deepcopy(self.analysis_params)
+        write_params.Save.directory = str(self.save_dir)
+        write_params.Save.sim = self.simulated_acquisition
+
+
+        # write events to json file in the save directory
+        events_path = Path(str(self.save_dir)) / Path('events.json')
+        with open(events_path, 'w') as fp:
+            json.dump(self.events, fp)
+
+        write_params.Events.path = str(Path(str(self.save_dir)) / Path('events.json'))
+        
+        # select a directory and write params to file
+        save_path = Path(write_params.Save.directory) / Path('expt_params.yaml')
+        save_params(save_path, write_params)
+
+        print(f"Writing parameters to path {str(save_path)}")
+
+    def load_run_params(self):
+        pass
+   
+    #def create_acquisition(self, selected_values):
+    #    self.selected_values = selected_values
+    #    #print("Events list recieved.. constructing acquisition object: ", len(selected_values['events']))
+    #    self.acquisition = Acquisition(selected_values['events'])
+    #    self.save_dir = selected_values['save_dir']
+    #    self.simulated_acquisition = selected_values['simulated_acquisition']
+    #   #print("Acquisition object set")
+    #    print(f"Acquisition object set with {len(selected_values['events'])} events, simulated: {selected_values['simulated_acquisition']}")
+
+    #def acquire_next_image(self):
+    #    print(next(self.acquisition))
     
-    def acquire_in_loop(self):
+    #def acquire_in_loop(self):
         # start processes initialize ther run object
-        try:
-            self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir, save=False)
-            self._ui.acquire_in_loop_button.setEnabled(False)
-            print(f"Starting simulated acquisition: {self.simulated_acquisition}")
-            #start_experiment(self.expt_obj, sim=self.simulated_acquisition)
-            self.expt_obj.start(events=self.acquisition.events.copy(), sim=self.simulated_acquisition)
-            print("Experiment run started .... ")
-        except Exception as e:
-            msg = QMessageBox()
-            msg.setText(f"Experiment acquisition couldn't start due to: {e}")
-            msg.setIcon(QMessageBox.Critical)
-            msg.exec()
+    #    try:
+    #        self.expt_obj = ExptRun(acquisition=self.acquisition, save_dir=self.save_dir, params=deepcopy(self.params))
+    #        self._ui.acquire_in_loop_button.setEnabled(False)
+    #        print(f"Starting simulated acquisition: {self.simulated_acquisition}")
+    #        #start_experiment(self.expt_obj, sim=self.simulated_acquisition)
+    #       self.expt_obj.start(events=self.acquisition.events.copy(), sim=self.simulated_acquisition)
+    #        print("Experiment run started .... ")
+    #    except Exception as e:
+    #        msg = QMessageBox()
+    #        msg.setText(f"Experiment acquisition couldn't start due to: {e}")
+    #        msg.setIcon(QMessageBox.Critical)
+    #        msg.exec()
 
-    def stop_acquisition(self):
-        if self.expt_obj is not None:
-            self.expt_obj.stop()
-        self._ui.acquire_in_loop_button.setEnabled(True)
-        self.expt_obj = None
+    #def stop_acquisition(self):
+    #    if self.expt_obj is not None:
+    #        self.expt_obj.stop()
+    #    self._ui.acquire_in_loop_button.setEnabled(True)
+    #    self.expt_obj = None
         
 
 def run_ui():

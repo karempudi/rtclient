@@ -120,6 +120,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QRadioButton" name="radioButton">
+       <property name="text">
+        <string>Fluor</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QRadioButton" name="cell_tracks_image">
        <property name="text">
         <string>Dots</string>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>829</width>
-    <height>657</height>
+    <width>546</width>
+    <height>313</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,73 +20,6 @@
    <string/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>10</y>
-      <width>221</width>
-      <height>141</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Analysis Progress</string>
-    </property>
-    <widget class="QWidget" name="formLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>199</width>
-       <height>101</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Segmentation</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Tracking</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Fork Plots</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QProgressBar" name="progressBar">
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QProgressBar" name="progressBar_2">
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QProgressBar" name="progressBar_3">
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
@@ -104,11 +37,18 @@
       <rect>
        <x>20</x>
        <y>30</y>
-       <width>82</width>
+       <width>91</width>
        <height>101</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="live_button">
+        <property name="text">
+         <string>Live</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QPushButton" name="tweezer_button">
         <property name="text">
@@ -116,84 +56,8 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_6">
-        <property name="accessibleDescription">
-         <string extracomment="testa"/>
-        </property>
-        <property name="text">
-         <string>Live</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_4">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>10</y>
-      <width>171</width>
-      <height>151</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Controls</string>
-    </property>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>158</width>
-       <height>121</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QPushButton" name="start_analysis_button">
-        <property name="text">
-         <string>Start analysis services</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="acquire_next_button">
-        <property name="text">
-         <string>Acquire next event</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="acquire_in_loop_button">
-        <property name="text">
-         <string>Acquire</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="stop_button">
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="Line" name="line">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>220</y>
-      <width>751</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
    </widget>
    <widget class="Line" name="line_2">
     <property name="geometry">
@@ -201,7 +65,7 @@
       <x>180</x>
       <y>10</y>
       <width>20</width>
-      <height>151</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="orientation">
@@ -214,7 +78,7 @@
       <x>370</x>
       <y>10</y>
       <width>20</width>
-      <height>151</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="orientation">
@@ -227,7 +91,7 @@
       <x>520</x>
       <y>10</y>
       <width>20</width>
-      <height>151</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="orientation">
@@ -252,7 +116,7 @@
        <x>10</x>
        <y>30</y>
        <width>154</width>
-       <height>120</height>
+       <height>131</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -287,70 +151,11 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QPushButton" name="quit_button">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>190</y>
-      <width>611</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QCheckBox" name="checkBox_4">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Acquire</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox_3">
-       <property name="text">
-        <string>Segment</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox_2">
-       <property name="text">
-        <string>Track (mCells Data structures)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBox">
-       <property name="text">
-        <string>Fork Plots</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QPushButton" name="pushButton_9">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>240</y>
-      <width>89</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Force quit</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_10">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>240</y>
+      <x>140</x>
+      <y>230</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -359,13 +164,39 @@
      <string>Quit</string>
     </property>
    </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>30</y>
+      <width>161</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QPushButton" name="write_run_params_button">
+       <property name="text">
+        <string>Write Run parameters</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="load_run_params_button">
+       <property name="text">
+        <string>Load Run parameters</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>829</width>
+     <width>546</width>
      <height>22</height>
     </rect>
    </property>

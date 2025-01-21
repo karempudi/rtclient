@@ -89,6 +89,11 @@ class Ui_TweezerWindow(object):
 
         self.data_to_plot.addWidget(self.cell_seg_image)
 
+        self.radioButton = QRadioButton(self.horizontalLayoutWidget_2)
+        self.radioButton.setObjectName(u"radioButton")
+
+        self.data_to_plot.addWidget(self.radioButton)
+
         self.cell_tracks_image = QRadioButton(self.horizontalLayoutWidget_2)
         self.cell_tracks_image.setObjectName(u"cell_tracks_image")
 
@@ -147,6 +152,7 @@ class Ui_TweezerWindow(object):
         self.fetch_button.setText(QCoreApplication.translate("TweezerWindow", u"Fetch", None))
         self.phase_image.setText(QCoreApplication.translate("TweezerWindow", u"Phase", None))
         self.cell_seg_image.setText(QCoreApplication.translate("TweezerWindow", u"Cell Seg", None))
+        self.radioButton.setText(QCoreApplication.translate("TweezerWindow", u"Fluor", None))
         self.cell_tracks_image.setText(QCoreApplication.translate("TweezerWindow", u"Dots", None))
         self.get_last20_radio.setText(QCoreApplication.translate("TweezerWindow", u"Last 20 images", None))
         self.get_all_images_radio.setText(QCoreApplication.translate("TweezerWindow", u"All Images", None))

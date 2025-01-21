@@ -41,7 +41,8 @@ gpu=[]
 find = {}
 
 [project.scripts]
-rtclient-app = "rtclient.app:run"
+rtSetAndView-app = "rtclient.set_or_view:run"
+rtRun-app = "rtclient.run:run"
 
 
 [tool.pyright.defineConstant]
@@ -55,3 +56,4 @@ PYSIDE6 = true
 "rtclient/ui/qt_ui_classes/ui_positions.py" = ["F401"]
 "rtclient/ui/qt_ui_classes/ui_tweezer.py" = ["F401"]
 "rtclient/ui/qt_ui_classes/ui_preview.py" = ["F401"]
+"rtclient/ui/qt_ui_classes/ui_run.py" = ["F401"]
