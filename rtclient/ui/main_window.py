@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog
 from PySide6.QtCore import Slot
 from rtclient.ui.qt_ui_classes.ui_main import Ui_MainWindow
 from rtclient.ui.positions_window import PositionsWindow
@@ -7,6 +7,7 @@ from rtclient.ui.tweezer_window import TweezerWindow
 from rtclient.ui.preview_window import PreviewWindow
 from rtclient.microscope.acquisition import Acquisition
 from rtclient.processes2 import ExptRun
+from rtseg.utils.param_io import load_params # type: ignore
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,8 @@ class MainWindow(QMainWindow):
         self.expt_obj = None
         self.simulated_acquisition = False
 
+        self.params = None
+
         self.setup_button_handlers()
 
 
@@ -42,6 +45,8 @@ class MainWindow(QMainWindow):
         self._ui.stop_button.clicked.connect(self.stop_acquisition)
 
         self._ui.tweezer_button.clicked.connect(self.show_tweezer_window)
+
+        self._ui.parameters_button.clicked.connect(self.load_analysis_parameters)
     
     @Slot()
     def show_positions_window(self):
@@ -67,6 +72,34 @@ class MainWindow(QMainWindow):
                             + event['config_group'][0] + ',' + event['config_group'][1] + ', '
                             + str(event['exposure']) + 'ms')
 
+    @Slot()
+    def load_analysis_parameters(self):
+        print("Loading analysis parameters .....")
+        # open file dialog and load a yaml file containing parameters for analysis
+        try:
+            filename, _ = QFileDialog.getOpenFileName(self,
+                                self.tr("Open analysis parameter yaml file"),
+                                '../rtseg/rtseg/resources/reference_params',
+                                self.tr("yaml file (*.yaml *.yml)"))
+            if filename == '':
+                msg = QMessageBox()
+                msg.setText("Analysis paramters not selected")
+                msg.exec()
+            else:
+                #load params
+                self.params = load_params(filename, ref_type='expt')
+        except Exception as e:
+            sys.stdout.write(f"Error in loading analysis setup file --- {e}\n")
+            sys.stdout.flush()
+        
+        finally:
+            if self.params is not None:
+                sys.stdout.write("Parameters for analysis set from file. \n")
+                sys.stdout.flush()
+                print("--------- Params ------------")
+                print(self.params)
+                print("----------------------------")
+        
     
     def closeEvent(self, event):
         self.tweezer_window.close()

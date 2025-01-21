@@ -689,9 +689,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="sidesGroup"/>
-  <buttongroup name="orientationGroup"/>
   <buttongroup name="versionGroup"/>
+  <buttongroup name="sidesGroup"/>
   <buttongroup name="markingGroup"/>
+  <buttongroup name="orientationGroup"/>
  </buttongroups>
 </ui>
