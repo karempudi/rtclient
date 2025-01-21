@@ -12,7 +12,7 @@ class Acquisition:
 
     def __next__(self):
         if self.next_event_no > self.one_loop_length - 1:
-            raise StopIteration
+            return None
         else:
             current_event = self.events[self.next_event_no]
             self.next_event_no += 1

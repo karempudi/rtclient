@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
             self._ui.acquire_in_loop_button.setEnabled(False)
             print(f"Starting simulated acquisition: {self.simulated_acquisition}")
             #start_experiment(self.expt_obj, sim=self.simulated_acquisition)
-            self.expt_obj.start(acquisition=self.acquisition, sim=self.simulated_acquisition)
+            self.expt_obj.start(events=self.acquisition.events.copy(), sim=self.simulated_acquisition)
             print("Experiment run started .... ")
         except Exception as e:
             msg = QMessageBox()

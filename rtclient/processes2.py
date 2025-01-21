@@ -8,11 +8,23 @@ from dask.distributed import Client, LocalCluster, Event, fire_and_forget
 #from rtseg.forkplot import compute_forkplot_stats
 #from rtseg.dotdetect import detect_dots
 
-def acquire_events(acquisition, sim):
+class Events:
+    def __init__(self, events):
+        self.i = 0
+        self.events = events
+        self.max = len(self.events)
 
-    def process_image(image, metadata):
-        # submit the image to other places
-        pass
+    def __next__(self):
+        if self.i < self.max:
+            event = self.events[self.i]
+            self.i += 1
+            return event
+        else:
+            return None
+
+def acquire_events(events, sim):
+
+ 
     if sim:
         try:
             warmup_event = {
@@ -35,12 +47,23 @@ def acquire_events(acquisition, sim):
             print("Acquire process completed successfully")
     else:
         try:
-            with Acquisition(image_process_fn=process_image, show_display=False) as acq:
-                acq.acquire(next(acquisition))
+            e = Events(events)
+            def process_image(image, metadata, event_queue):
+                # submit the image to other places
+                print(f'Image acquired: {image.shape}')
+                #if not Event('kill_acquisition').is_set():
+                next_event = next(e)
+                event_queue.put(next_event)
+                return 
+            first_event = next(e)
+            acq = Acquisition(name='test', image_process_fn=process_image, show_display=False)
+            acq.acquire(first_event)
+            acq.await_completion()
         except KeyboardInterrupt:
             Event('kill_acquisition').set()
             print("Acquire process interrupted using keyboard")
         finally:
+            Event('kill_acquisition').set()
             print("Acquire process completed successufully")
 
 
@@ -69,14 +92,14 @@ class ExptRun():
         self.client = Client(self.cluster)
 
         # cluster wide variable, can be used to kill acquisition function
-        self.acquire_kill =  Event('kill_acquisition')
+        acquire_kill =  Event('kill_acquisition')
         print("Prinitng events ... ")
         for event in self.acquisition.events:
             print(event)
 
     # submit to the cluster the acquisition of events.
-    def start(self, acquisition, sim):
-        future = self.client.submit(acquire_events, acquisition, sim)
+    def start(self, events, sim):
+        future = self.client.submit(acquire_events, events, sim)
         # will not wait for the result
         fire_and_forget(future)
         print("Submitted the task to dask cluster ...")
@@ -85,8 +108,8 @@ class ExptRun():
     # set the event to kill 
     def stop(self):
         
-        if not self.acquire_kill.is_set():
-            self.acquire_kill.set()
+        if not Event('kill_acquisition').is_set():
+            Event('kill_acquisition').set()
         
         time.sleep(1)
         print("Experiment stopped")
