@@ -8,6 +8,7 @@ import multiprocessing as mp
 import logging
 from rtclient.utils.logger import setup_root_logger
 from rtseg.segmentation import get_live_model, live_segment
+from rtseg.dotdetect import compute_dot_coordinates
 from rtseg.utils.db_ops import create_databases, write_to_db
 from rtseg.utils.param_io import save_params
 from rtseg.utils.disk_ops import write_files
@@ -240,6 +241,8 @@ class ExptRun:
                         'timepoint': data_seg_queue['timepoint'],
                         'seg_mask': seg_result['seg_mask'],
                         'fluor': seg_result['fluor'],
+                        # needs channel locations to cut dots by trap
+                        'trap_locations_list': seg_result['trap_locations_list']
                     })
 
             except KeyboardInterrupt:
@@ -271,23 +274,38 @@ class ExptRun:
                     continue
                 
                 # write code to call dots calculation here
-
+                dots_on_image  = compute_dot_coordinates(data_dots_queue['fluor'],
+                                            data_dots_queue['seg_mask'], self.params)
 
 
                 # write to db that you are done dot calcuation 
 
+
+                # write dot results
+
+
+                # send of the results towards calculating internal coordinates
+                self.internal_queue.put({
+                    'seg_mask': data_dots_queue['seg_mask'],
+                    'dots': dots_on_image,
+                    'position': data_dots_queue['position'],
+                    'timepoint': data_dots_queue['timepoint'],
+                    'trap_locations_list': data_dots_queue['trap_locations_list'],
+                })
+
                 # logging 
                 logger = logging.getLogger(name)
-                logger.log(logging.INFO, "Dots queue  got Pos: %s time %s", 
+                logger.log(logging.INFO, "Dots queue  got Pos: %s time %s dots: %s", 
                                 data_dots_queue['position'],
-                                data_dots_queue['timepoint'])
+                                data_dots_queue['timepoint'], dots_on_image.shape)
                 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
                 sys.stdout.write("Dots process interrupted using keyboard\n")
                 sys.stdout.flush()
                 break
-        
+
+        self.internal_queue.put(None)
         self.dots_kill_event.set()
         sys.stdout.write("Dots process completed successfully\n")
         sys.stdout.flush()
@@ -301,9 +319,28 @@ class ExptRun:
         while True:
             try:
                 if self.internal_queue.qsize() > 0:
-                    pass
+                    data_internal_queue = self.internal_queue.get()
+                    if data_internal_queue is None:
+                        sys.stdout.write("Got None in internal queue .. aborting internal function ...\n")
+                        sys.stdout.flush()
+                        break
                 else:
                     continue
+
+                # computer internal coordinates using props and backbone fits
+                
+                # write results
+
+                # write to db
+
+                #  log
+ 
+                # logging 
+                logger = logging.getLogger(name)
+                logger.log(logging.INFO, "Internal queue  got Pos: %s time %s dots: %s, traps: %s", 
+                                data_internal_queue['position'],
+                                data_internal_queue['timepoint'], 
+                                data_internal_queue['dots'].shape, len(data_internal_queue['trap_locations_list']))
                     
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
