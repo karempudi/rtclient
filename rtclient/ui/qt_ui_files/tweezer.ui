@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1039</width>
-    <height>677</height>
+    <width>1296</width>
+    <height>751</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,10 +17,10 @@
    </sizepolicy>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="show_button">
+   <widget class="QPushButton" name="current_trap_forks_button">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>710</x>
       <y>80</y>
       <width>181</width>
       <height>25</height>
@@ -30,7 +30,7 @@
      <string>Plot Current TrapForks</string>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="image_plot">
+   <widget class="ImageView" name="image_plot">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -40,13 +40,13 @@
      </rect>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="properties_view">
+   <widget class="ImageView" name="fork_plots_trap">
     <property name="geometry">
      <rect>
       <x>650</x>
       <y>140</y>
-      <width>371</width>
-      <height>291</height>
+      <width>291</width>
+      <height>241</height>
      </rect>
     </property>
    </widget>
@@ -71,14 +71,14 @@
       <widget class="QLineEdit" name="pos_no_edit"/>
      </item>
      <item>
-      <widget class="QLabel" name="ch_no_label">
+      <widget class="QLabel" name="trap_no_label">
        <property name="text">
-        <string>Channel No</string>
+        <string>Trap No</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="ch_no_edit"/>
+      <widget class="QLineEdit" name="trap_no_edit"/>
      </item>
      <item>
       <widget class="QPushButton" name="fetch_button">
@@ -120,16 +120,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton">
+      <widget class="QRadioButton" name="fluor_image">
        <property name="text">
         <string>Fluor</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="cell_tracks_image">
+      <widget class="QRadioButton" name="dots_on_mask_image">
        <property name="text">
-        <string>Dots</string>
+        <string>Dots on mask</string>
        </property>
       </widget>
      </item>
@@ -164,7 +164,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QGraphicsView" name="barcode_plot_1">
+   <widget class="ImageView" name="barcode_plot_1">
     <property name="geometry">
      <rect>
       <x>490</x>
@@ -174,7 +174,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="barcode_plot_2">
+   <widget class="ImageView" name="barcode_plot_2">
     <property name="geometry">
      <rect>
       <x>550</x>
@@ -184,20 +184,20 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="fork_label">
     <property name="geometry">
      <rect>
-      <x>790</x>
+      <x>740</x>
       <y>120</y>
-      <width>81</width>
+      <width>101</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Fork Plots</string>
+     <string>Trap fork plot</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="barcodes_label">
     <property name="geometry">
      <rect>
       <x>520</x>
@@ -210,10 +210,10 @@
      <string>Barcodes</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="show_button_2">
+   <widget class="QPushButton" name="all_data_forks_button">
     <property name="geometry">
      <rect>
-      <x>840</x>
+      <x>1020</x>
       <y>80</y>
       <width>181</width>
       <height>25</height>
@@ -223,19 +223,49 @@
      <string>All data forks</string>
     </property>
    </widget>
+   <widget class="ImageView" name="fork_plots_all">
+    <property name="geometry">
+     <rect>
+      <x>960</x>
+      <y>140</y>
+      <width>281</width>
+      <height>241</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="fork_label_2">
+    <property name="geometry">
+     <rect>
+      <x>1050</x>
+      <y>120</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>All data fork plot</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1039</width>
+     <width>1296</width>
      <height>22</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImageView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">pyqtgraph</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

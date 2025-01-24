@@ -136,7 +136,31 @@ class MainWindow(QMainWindow):
         print(f"Writing parameters to path {str(save_path)}")
 
     def load_run_params(self):
-        pass
+        try:
+            filename, _ = QFileDialog.getOpenFileName(self,
+                                self.tr("Open parameters used yaml file"),
+                                '.',
+                                self.tr("yaml file (*.yaml *.yml)"))
+            if filename == '':
+                msg = QMessageBox()
+                msg.setText("Experiment paramters not selected")
+                msg.exec()
+            else:
+                #load params
+                self.params = load_params(filename, ref_type='expt')
+                self.tweezer_window.set_params(self.params)
+        except Exception as e:
+            sys.stdout.write(f"Error in loading experiment setup file --- {e}\n")
+            sys.stdout.flush()
+        
+        finally:
+            if self.params is not None:
+                sys.stdout.write("Parameters for experiment set from file. \n")
+                sys.stdout.flush()
+                print("--------- Params ------------")
+                print(self.params)
+                print("----------------------------")
+        
    
     #def create_acquisition(self, selected_values):
     #    self.selected_values = selected_values

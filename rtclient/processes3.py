@@ -89,6 +89,9 @@ class ExptRun:
         self.dots_kill_event = mp.Event()
         self.dots_queue = mp.Queue()
 
+        self.internal_kill_event = mp.Event()
+        self.internal_queue = mp.Queue()
+
 
     def logger_listener(self):
         setup_root_logger(self.params, self.expt_save_dir)
@@ -269,7 +272,7 @@ class ExptRun:
                 
                 # write code to call dots calculation here
 
-                
+
 
                 # write to db that you are done dot calcuation 
 
@@ -289,11 +292,35 @@ class ExptRun:
         sys.stdout.write("Dots process completed successfully\n")
         sys.stdout.flush()
 
+
+    def internal(self):
+        self.set_process_logger()
+        name = mp.current_process().name
+        print(f"Starting {name} process ..")
+
+        while True:
+            try:
+                if self.internal_queue.qsize() > 0:
+                    pass
+                else:
+                    continue
+                    
+            except KeyboardInterrupt:
+                self.acquire_kill_event.set()
+                sys.stdout.write("Internal process interrupted using keyboard\n")
+                sys.stdout.flush()
+                break
+        
+        self.internal_kill_event.set()
+        sys.stdout.write("Internal process completed successfully\n")
+        sys.stdout.flush()
+
+
     def stop(self):
         if not self.acquire_kill_event.is_set():
             self.acquire_kill_event.set()
         
-        while ((not self.segment_kill_event.is_set()) or (not self.dots_kill_event.is_set())):
+        while ((not self.segment_kill_event.is_set()) or (not self.dots_kill_event.is_set()) or (not self.internal_kill_event.is_set())):
             time.sleep(1)
         self.logger_queue.put(None)
         time.sleep(1)
@@ -333,6 +360,12 @@ def start_live_experiment(expt_run, sim = False):
         expt_run.dots_kill_event.clear()
         dots_process = mp.Process(target=expt_run.dots, name='dots')
         dots_process.start()
+
+
+        # internal coordinates process
+        expt_run.internal_kill_event.clear()
+        internal_process = mp.Process(target=expt_run.internal, name='internal')
+        internal_process.start()
 
     except KeyboardInterrupt:
         pass

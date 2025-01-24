@@ -28,6 +28,7 @@ dependencies = [
     "scikit-image",
     "dask[complete]",
     "pandas",
+    "pyqtgraph"
 ]
 
 [project.optional-dependencies]
