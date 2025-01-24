@@ -40,20 +40,23 @@ class RunWindow(QMainWindow):
                 msg.exec()
 
             else:
-                params_filenmame = Path(expt_save_dir) / Path('expt_params.yaml')
+                params_filename = Path(expt_save_dir) / Path('expt_params.yaml')
                 events_filename = Path(expt_save_dir) / Path('events.json')
 
-                self.params = load_params(params_filenmame, ref_type='expt')
+                print(expt_save_dir)
+                print(params_filename)
+                print(events_filename)
+                self.params = load_params(params_filename, ref_type='expt')
 
                 with open(events_filename) as f:
                     self.events = json.load(f)
 
-                #print('----- Loaded parameters ------')
-                #print(self.params)
-                #print('------------------------------')
-                #print('-------- Events --------------')
-                #print(self.events)
-                #print('------------------------------')
+                print('----- Loaded parameters ------')
+                print(self.params)
+                print('------------------------------')
+                print('-------- Events --------------')
+                print(self.events)
+                print('------------------------------')
         except Exception as e:
             sys.stdout.write(f"Error in loading the experimental setup file -- {e}\n")
             sys.stdout.flush()

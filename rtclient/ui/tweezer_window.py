@@ -8,3 +8,8 @@ class TweezerWindow(QMainWindow):
         super(TweezerWindow, self).__init__()
         self._ui = Ui_TweezerWindow()
         self._ui.setupUi(self)
+
+        self.setup_button_handlers()
+
+    def setup_button_handlers(self):
+        pass

@@ -7,6 +7,10 @@ from skimage.io import imread
 import multiprocessing as mp
 import logging
 from rtclient.utils.logger import setup_root_logger
+from rtseg.segmentation import get_live_model, live_segment
+from rtseg.utils.db_ops import create_databases, write_to_db
+from rtseg.utils.param_io import save_params
+from rtseg.utils.disk_ops import write_files
 
 DUMMY_IMAGES_PATH = Path(__file__).parent / Path('resources/test_images')
 DUMMY_IMAGES_PATH = DUMMY_IMAGES_PATH.resolve()
@@ -36,6 +40,21 @@ class AcquisitionEvents:
         else:
             return None
 
+class AcquisitionEventsSim:
+    def __init__(self, events):
+        self.i = 0
+        self.events = events
+        self.max = len(self.events)
+
+    def __next__(self):
+        if self.i < self.max:
+            event = self.events[self.i:self.i+2]
+            self.i += 2
+            return event
+        else:
+            return None
+
+
 
 class ExptRun:
     """
@@ -47,9 +66,16 @@ class ExptRun:
     def __init__(self, params, events):
         self.params = params
         self.events = events
-        self.expt_save_dir = self.params.Save.directory
+        self.expt_save_dir = Path(str(self.params.Save.directory))
+
+
+        # save parameters used
+        save_param_path = self.expt_save_dir / Path('param_used.yaml')
+        save_params(save_param_path, self.params)
 
         # create databases
+
+        create_databases(self.expt_save_dir, ['acquire_phase', 'acquire_fluor', 'segment'])
 
         self.logger_queue = mp.Queue(-1)
         self.logger_kill_event = mp.Event()
@@ -93,47 +119,48 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ...")
 
-        e = AcquisitionEvents(self.events)
+        e = AcquisitionEventsSim(self.events)
         data = None
         while not self.acquire_kill_event.is_set():
             try:
                 next_event = next(e)
                 if next_event is None:
                     data = None
-                elif next_event['axes'] == {}:
+                elif next_event[0]['axes'] == {}:
                     data = {
-                        'image': np.zeros((10, 10)),
+                        'phase': np.zeros((10, 10)),
+                        'fluor': np.zeros((10, 10)),
                         'position': None,
                         'timepoint': None,
                         'chan': None
                     }
-                elif next_event['axes']['preset'] == 'phase_fast':
+                elif next_event[0]['axes']['preset'] == 'phase_fast' and next_event[1]['axes']['preset'] == 'venus':
                     data = {
-                        'image': imread(DUMMY_PHASE_PATH),
-                        'position': next_event['axes']['position'],
-                        'timepoint': next_event['axes']['time'],
-                        'chan': 'phase',
-                    }
-                elif next_event['axes']['preset'] == 'venus':
-                    data = {
-                        'image': imread(DUMMY_FLUOR_PATH),
-                        'position': next_event['axes']['position'],
-                        'timepoint': next_event['axes']['time'],
-                        'chan': 'venus'
+                        'phase': imread(DUMMY_PHASE_PATH),
+                        'fluor': imread(DUMMY_FLUOR_PATH),
+                        'position': next_event[0]['axes']['position'],
+                        'timepoint': next_event[0]['axes']['time'],
+                        'chan': 'phase_fluor',
                     }
 
                 if data is not None:
                     logger = logging.getLogger(name)
-                    logger.log(logging.INFO, "Acquired image of shape: %s Pos: %s time: %s chan: %s",
-                                data['image'].shape, data['position'], data['timepoint'], data['chan'])
+                    logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
+                                data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['chan'])
                     self.segment_queue.put({
                         'position': data['position'],
                         'timepoint': data['timepoint'],
-                        'image': data['image'],
+                        'phase': data['phase'],
+                        'fluor': data['fluor'],
                         'type': data['chan'],
                     })
 
                     # write to db that you acquired image
+                    write_to_db({
+                        'position': data['position'],
+                        'timepoint': data['timepoint']}, self.expt_save_dir, 'acquire_phase')
+                    write_to_db({'position': data['position'],
+                            'timepoint': data['timepoint']}, self.expt_save_dir, 'acquire_fluor')
 
                 else:
                     break
@@ -156,6 +183,9 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ..")
 
+        # Load network
+        net = get_live_model(self.params)
+
         while True:
             try:
                 if self.segment_queue.qsize() > 0:
@@ -168,14 +198,46 @@ class ExptRun:
                     continue
 
                 # do something with the image ... process or something
+                if data_seg_queue['type'] is not None:
 
-                # write to database that we processes something
+                    seg_result = live_segment(data_seg_queue, net, self.params)
 
-                # put the result in  dots queue for further processing
+                    # write files now
+                    write_files({
+                        'position': seg_result['position'],
+                        'image': seg_result['phase'],
+                        'timepoint': seg_result['timepoint'],
+                    }, 'phase', self.params)
 
-                logger = logging.getLogger(name)
-                logger.log(logging.INFO, "Segmented Pos: %s, time: %s chan: %s", 
-                            data_seg_queue['position'], data_seg_queue['timepoint'], data_seg_queue['type'])
+                    write_files({
+                        'position': seg_result['position'],
+                        'image': seg_result['fluor'],
+                        'timepoint': seg_result['timepoint'],
+                    }, 'fluor', self.params)
+
+                    write_files({
+                        'position': seg_result['position'],
+                        'image': seg_result['seg_mask'],
+                        'timepoint': seg_result['timepoint'],
+                    }, 'seg_mask', self.params)
+
+                    # write to database that we processes something and also barcodes and channel locations
+                    
+                    write_to_db(seg_result, self.expt_save_dir, 'segment')
+
+                    # logging  
+                    logger = logging.getLogger(name)
+                    logger.log(logging.INFO, "Segmented Pos: %s, time: %s chan: %s, result: %s, bboxes: %s, num_traps: %s", 
+                                data_seg_queue['position'], data_seg_queue['timepoint'], data_seg_queue['type'],
+                                seg_result['seg_mask'].shape, len(seg_result['barcode_locations']), seg_result['num_traps'])
+
+                    # put the result in  dots queue for further processing
+                    self.dots_queue.put({
+                        'position': data_seg_queue['position'],
+                        'timepoint': data_seg_queue['timepoint'],
+                        'seg_mask': seg_result['seg_mask'],
+                        'fluor': seg_result['fluor'],
+                    })
 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
@@ -207,13 +269,15 @@ class ExptRun:
                 
                 # write code to call dots calculation here
 
+                
+
                 # write to db that you are done dot calcuation 
 
                 # logging 
                 logger = logging.getLogger(name)
                 logger.log(logging.INFO, "Dots queue  got Pos: %s time %s", 
                                 data_dots_queue['position'],
-                                data_dots_queue['time'])
+                                data_dots_queue['timepoint'])
                 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
