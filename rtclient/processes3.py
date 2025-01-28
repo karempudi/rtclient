@@ -9,6 +9,7 @@ import logging
 from rtclient.utils.logger import setup_root_logger
 from rtseg.segmentation import get_live_model, live_segment
 from rtseg.dotdetect import compute_dot_coordinates
+from rtseg.forkplot import compute_forkplot_stats
 from rtseg.utils.db_ops import create_databases, write_to_db
 from rtseg.utils.param_io import save_params
 from rtseg.utils.disk_ops import write_files
@@ -125,6 +126,7 @@ class ExptRun:
 
         e = AcquisitionEventsSim(self.events)
         data = None
+        time.sleep(4)
         while not self.acquire_kill_event.is_set():
             try:
                 next_event = next(e)
@@ -282,12 +284,17 @@ class ExptRun:
 
 
                 # write dot results
+                write_files({'position': data_dots_queue['position'],
+                             'timepoint': data_dots_queue['timepoint'],
+                             'raw_coords': dots_on_image['raw_coords'],
+                             'rotated_coords': dots_on_image['rotated_coords']},
+                             'dot_coordinates', self.params)
 
 
                 # send of the results towards calculating internal coordinates
                 self.internal_queue.put({
                     'seg_mask': data_dots_queue['seg_mask'],
-                    'dots': dots_on_image,
+                    'rotated_coords': dots_on_image['rotated_coords'],
                     'position': data_dots_queue['position'],
                     'timepoint': data_dots_queue['timepoint'],
                     'trap_locations_list': data_dots_queue['trap_locations_list'],
@@ -297,7 +304,7 @@ class ExptRun:
                 logger = logging.getLogger(name)
                 logger.log(logging.INFO, "Dots queue  got Pos: %s time %s dots: %s", 
                                 data_dots_queue['position'],
-                                data_dots_queue['timepoint'], dots_on_image.shape)
+                                data_dots_queue['timepoint'], dots_on_image['raw_coords'].shape)
                 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
@@ -328,19 +335,29 @@ class ExptRun:
                     continue
 
                 # computer internal coordinates using props and backbone fits
+                forkplot_data = compute_forkplot_stats(data_internal_queue['seg_mask'], 
+                                        data_internal_queue['rotated_coords'],
+                                        data_internal_queue['position'],
+                                        data_internal_queue['timepoint'],
+                                        data_internal_queue['trap_locations_list'])
                 
                 # write results
+                write_files({
+                    'position': data_internal_queue['position'],
+                    'timepoint': data_internal_queue['timepoint'],
+                    'fork_data': forkplot_data
+                }, 'forkplot_data', self.params)
 
                 # write to db
 
-                #  log
  
                 # logging 
                 logger = logging.getLogger(name)
-                logger.log(logging.INFO, "Internal queue  got Pos: %s time %s dots: %s, traps: %s", 
+                logger.log(logging.INFO, "Internal queue  got Pos: %s time %s dots: %s, traps: %s, forks: %s", 
                                 data_internal_queue['position'],
                                 data_internal_queue['timepoint'], 
-                                data_internal_queue['dots'].shape, len(data_internal_queue['trap_locations_list']))
+                                data_internal_queue['rotated_coords'].shape, len(data_internal_queue['trap_locations_list']),
+                                len(forkplot_data))
                     
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
