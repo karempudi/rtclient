@@ -51,6 +51,27 @@ class DataFetchThread(QThread):
     def get_data(self):
         return self.data
 
+class ForkFetchThread(QThread):
+
+    fork_fetched = Signal()
+
+    def __init__(self):
+        
+        self.headmap = None
+
+    def run(self):
+        try:
+            pass
+        except Exception as e:
+            sys.stdout.write(f"Fork plot data fetching failed due to {e}")
+            sys.stdout.flush()
+            self.data = None
+
+        finally:
+            self.fork_fetched.emit()
+    
+    def get_data(self):
+        return self.data
 
 class TweezerWindow(QMainWindow):
 
@@ -72,6 +93,7 @@ class TweezerWindow(QMainWindow):
         self.show_seg = False
         self.show_fluor = False
         self.show_dots_on_mask = False
+        self.read_type = None
 
         self.max_imgs = 20
 
@@ -125,6 +147,11 @@ class TweezerWindow(QMainWindow):
         # how many images to get
         self._ui.get_last20_radio.toggled.connect(self.set_no_images2get)
         self._ui.get_all_images_radio.toggled.connect(self.set_no_images2get)
+        
+
+        # fork plotting buttons
+        self._ui.current_trap_forks_button.clicked.connect(self.update_single_trap_forks)
+        self._ui.all_data_forks_button.clicked.connect(self.update_all_data_forks)
 
     def set_params(self, param):
         self.param = param
@@ -176,6 +203,9 @@ class TweezerWindow(QMainWindow):
         elif self.show_dots_on_mask:
             read_type = 'dots_on_mask'
 
+        
+        self.read_type = read_type
+
         if self.data_fetch_thread is None:
             self.data_fetch_thread = DataFetchThread(read_type, self.param, 
                         self.current_pos, self.current_trap_no, self.max_imgs)
@@ -191,6 +221,70 @@ class TweezerWindow(QMainWindow):
         if img_data is not None:
             # based on image type and data retrieved plot the image
 
+            if self.read_type == 'phase':
+                #self.image_axes.clear()
+                self.image_axes.imshow(img_data['image'], cmap='gray')
+                self.image_view.draw()
+
+                self.barcode_left_axes.clear()
+                self.barcode_left_axes.imshow(img_data['left_barcode'], cmap='gray')
+                self.barcode_left_view.draw()
+
+                self.barcode_right_axes.clear()
+                self.barcode_right_axes.imshow(img_data['right_barcode'], cmap='gray')
+                self.barcode_right_view.draw()
+
+            elif self.read_type == 'segmented_cells_by_trap':
+               #self.image_axes.clear()
+                self.image_axes.imshow(img_data['image'], cmap='viridis')
+                self.image_view.draw()
+
+
+                self.barcode_left_axes.clear()
+                self.barcode_left_axes.imshow(img_data['left_barcode'], cmap='gray')
+                self.barcode_left_view.draw()
+
+                self.barcode_right_axes.clear()
+                self.barcode_right_axes.imshow(img_data['right_barcode'], cmap='gray')
+                self.barcode_right_view.draw()
+
+
+            elif self.read_type == 'fluor':
+                #self.image_axes.clear()
+                self.image_axes.imshow(img_data['image'], cmap='gray')
+
+
+                # plot dot coordinates
+                self.image_axes.plot(img_data['dots'][:, 1], img_data['dots'][:, 0], 'ro')
+
+                self.image_view.draw()
+
+                self.barcode_left_axes.clear()
+                self.barcode_left_axes.imshow(img_data['left_barcode'], cmap='gray') 
+                self.barcode_left_view.draw()
+
+                self.barcode_right_axes.clear()
+                self.barcode_right_axes.imshow(img_data['right_barcode'], cmap='gray')
+                self.barcode_right_view.draw()
+
+
+            elif self.read_type == 'dots_on_mask':
+                #self.image_axes.clear()
+                self.image_axes.imshow(img_data['image'], cmap='viridis')
+                self.image_axes.plot(img_data['dots'][:, 1], img_data['dots'][:, 0], 'ro')
+                self.image_view.draw()
+
+                # plot dot coordinates
+
+                self.barcode_left_axes.clear()
+                self.barcode_left_axes.imshow(img_data['left_barcode'], cmap='gray')
+                self.barcode_left_view.draw()
+
+                self.barcode_right_axes.clear()
+                self.barcode_right_axes.imshow(img_data['right_barcode'], cmap='gray')
+                self.barcode_right_view.draw()
+
+
             sys.stdout.write("Image updated ....\n")
             sys.stdout.flush()
 
@@ -198,4 +292,14 @@ class TweezerWindow(QMainWindow):
         self.data_fetch_thread.wait()
         self.data_fetch_thread = None
 
+        return None
+
+    def update_single_trap_forks(self):
+        sys.stdout.write(f"Getting single trap forks for Pos: {self.current_pos} Trap: {self.current_trap_no}\n")
+        sys.stdout.flush()
+        return None
+
+    def update_all_data_forks(self):
+        sys.stdout.write("Getting all data forks ...\n")
+        sys.stdout.flush()
         return None
