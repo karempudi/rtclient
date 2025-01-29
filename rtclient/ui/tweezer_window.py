@@ -55,23 +55,30 @@ class ForkFetchThread(QThread):
 
     fork_fetched = Signal()
 
-    def __init__(self):
-        
-        self.headmap = None
+    def __init__(self, read_type, param, position, trap_no):
+        super(ForkFetchThread, self).__init__()
+        self.read_type = read_type
+        self.param = param
+        self.position = position
+        self.trap_no = trap_no
+        self.fork_data = None
 
     def run(self):
         try:
-            pass
+            self.fork_data = read_files(self.read_type, self.param, self.position, self.trap_no)
         except Exception as e:
             sys.stdout.write(f"Fork plot data fetching failed due to {e}")
             sys.stdout.flush()
-            self.data = None
-
+            self.fork_data = {
+                'heatmap': np.random.normal(loc=0.0, scale=1.0, size=(100, 100)),
+                'mean_cell_lengths': np.random.normal(loc=0.0, scale=1.0, size=(100,)),
+                'extent': (None, None)
+            }
         finally:
             self.fork_fetched.emit()
     
     def get_data(self):
-        return self.data
+        return self.fork_data
 
 class TweezerWindow(QMainWindow):
 
@@ -99,6 +106,13 @@ class TweezerWindow(QMainWindow):
 
         self.data_fetch_thread = None
         self.data_thread_running = False
+
+
+
+        self.fork_type = None
+        self.fork_fetch_thread = None
+        self.fork_thread_running = False
+
 
     def setup_button_handlers(self):
 
@@ -203,7 +217,6 @@ class TweezerWindow(QMainWindow):
         elif self.show_dots_on_mask:
             read_type = 'dots_on_mask'
 
-        
         self.read_type = read_type
 
         if self.data_fetch_thread is None:
@@ -297,9 +310,67 @@ class TweezerWindow(QMainWindow):
     def update_single_trap_forks(self):
         sys.stdout.write(f"Getting single trap forks for Pos: {self.current_pos} Trap: {self.current_trap_no}\n")
         sys.stdout.flush()
-        return None
+
+        self.fork_type = 'single'
+        if self.fork_fetch_thread is None:
+            self.fork_fetch_thread = ForkFetchThread('single_trap_data_forks', self.param, 
+                        self.current_pos, self.current_trap_no)
+
+            self.fork_fetch_thread.start()
+            self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
 
     def update_all_data_forks(self):
         sys.stdout.write("Getting all data forks ...\n")
         sys.stdout.flush()
+
+        self.fork_type = 'all'
+
+        if self.fork_fetch_thread is None:
+            self.fork_fetch_thread = ForkFetchThread('all_forks', self.param, 
+                        self.current_pos, self.current_trap_no)
+
+            self.fork_fetch_thread.start()
+            self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
+
+    def update_forks_image(self):
+        
+        fork_data = self.fork_fetch_thread.get_data()
+
+        if fork_data is not None:
+            if self.fork_type == 'all':
+                (x, y) = fork_data['extent']
+                self.all_forks_axes.clear()
+                self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
+                                extent=[x[0], x[-1], y[-1], y[0]], origin='upper')
+                self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
+                self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
+                self.all_forks_axes.set_xlabel('Cell long axis (µm)')
+                self.all_forks_axes.set_ylabel('Cell size (µm^2)')
+
+                self.all_forks_view.draw()
+
+            elif self.fork_type == 'single':
+                (x, y) = fork_data['extent']
+                self.single_fork_axes.clear()
+                self.single_fork_axes.imshow(fork_data['heatmap'], aspect='auto', interpolation='none',
+                                extent=[x[0], x[-1], y[-1], y[0]], origin='upper')
+                self.single_fork_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
+                self.single_fork_axes.plot(+0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
+                self.single_fork_axes.set_xlabel('Cell long axis (µm)')
+                self.single_fork_axes.set_ylabel('Cell size (µm^2)')
+
+                self.single_fork_view.draw()
+
+        self.fork_fetch_thread.quit()
+        self.fork_fetch_thread.wait()
+        self.fork_fetch_thread = None
+
         return None
+
+
+
+
+
+            
+        
+
