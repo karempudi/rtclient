@@ -3,9 +3,19 @@ import sys
 import numpy as np
 from PySide6.QtWidgets import QMainWindow
 from rtclient.ui.qt_ui_classes.ui_tweezer import Ui_TweezerWindow
-
+from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT #type: ignore
+from matplotlib.figure import Figure
 from PySide6.QtCore import Signal, QThread
 from rtseg.utils.disk_ops import read_files
+import pyqtgraph as pg
+from matplotlib import cm
+
+def mpl_cmap_to_pg_colormap(cmap_name):
+    cmap = cm.get_cmap(cmap_name)
+    colors = cmap(np.linspace(0.0, 1.0, 256))
+    colors = [pg.mkColor(int(r*255), int(g*255), int(b*255)) for r, g, b, _ in colors]
+    positions = np.linspace(0, 1, 256)
+    return pg.ColorMap(positions, colors)
 
 class DataFetchThread(QThread):
 
@@ -69,21 +79,36 @@ class TweezerWindow(QMainWindow):
         self.data_thread_running = False
 
     def setup_button_handlers(self):
-        self._ui.image_plot.ui.histogram.hide()
-        self._ui.image_plot.ui.roiBtn.hide()
-        self._ui.image_plot.ui.menuBtn.hide()
-        self._ui.barcode_plot_1.ui.histogram.hide()
-        self._ui.barcode_plot_1.ui.roiBtn.hide()
-        self._ui.barcode_plot_1.ui.menuBtn.hide()
-        self._ui.barcode_plot_2.ui.histogram.hide()
-        self._ui.barcode_plot_2.ui.roiBtn.hide()
-        self._ui.barcode_plot_2.ui.menuBtn.hide()
-        self._ui.fork_plots_all.ui.histogram.hide()
-        self._ui.fork_plots_all.ui.roiBtn.hide()
-        self._ui.fork_plots_all.ui.menuBtn.hide()
-        self._ui.fork_plots_trap.ui.histogram.hide()
-        self._ui.fork_plots_trap.ui.roiBtn.hide()
-        self._ui.fork_plots_trap.ui.menuBtn.hide()
+
+        self.image_view = FigureCanvas(Figure(figsize=(8, 12)))
+        self.image_axes = self.image_view.figure.subplots()
+        self.image_toolbar = NavigationToolbar2QT(self.image_view, self)
+        self._ui.image_layout.addWidget(self.image_toolbar)
+        self._ui.image_layout.addWidget(self.image_view)
+
+
+        self.barcode_left_view = FigureCanvas(Figure(figsize=(8, 3)))
+        self.barcode_left_axes = self.barcode_left_view.figure.subplots()
+        self._ui.barcode_left_layout.addWidget(self.barcode_left_view)
+
+        self.barcode_right_view = FigureCanvas(Figure(figsize=(8, 3)))
+        self.barcode_right_axes = self.barcode_right_view.figure.subplots()
+        self._ui.barcode_right_layout.addWidget(self.barcode_right_view)
+
+
+        self.single_fork_view = FigureCanvas(Figure(figsize=(5,3)))
+        self.single_fork_axes = self.single_fork_view.figure.subplots()
+        self.single_fork_toolbar = NavigationToolbar2QT(self.single_fork_view, self)
+        self._ui.single_trap_fork_layout.addWidget(self.single_fork_toolbar)
+        self._ui.single_trap_fork_layout.addWidget(self.single_fork_view)
+
+
+        self.all_forks_view = FigureCanvas(Figure(figsize=(5, 3)))
+        self.all_forks_axes = self.all_forks_view.figure.subplots()
+        self.all_forks_toolbar = NavigationToolbar2QT(self.all_forks_view, self)
+        self._ui.all_data_fork_layout.addWidget(self.all_forks_toolbar)
+        self._ui.all_data_fork_layout.addWidget(self.all_forks_view)
+
 
 
         self._ui.pos_no_edit.textChanged.connect(self.position_changed)
@@ -145,12 +170,12 @@ class TweezerWindow(QMainWindow):
         if self.show_phase:
             read_type = 'phase'
         elif self.show_seg:
-            read_type = 'cell_seg'
+            read_type = 'segmented_cells_by_trap'
         elif self.show_fluor:
             read_type = 'fluor'
         elif self.show_dots_on_mask:
             read_type = 'dots_on_mask'
-        
+
         if self.data_fetch_thread is None:
             self.data_fetch_thread = DataFetchThread(read_type, self.param, 
                         self.current_pos, self.current_trap_no, self.max_imgs)
@@ -164,9 +189,8 @@ class TweezerWindow(QMainWindow):
         img_data = self.data_fetch_thread.get_data()
 
         if img_data is not None:
-            self._ui.image_plot.setImage(img_data['image'].T, autoLevels=True, autoRange=False)
-            self._ui.barcode_plot_1.setImage(img_data['left_barcode'].T, autoLevels=True, autoRange=True)
-            self._ui.barcode_plot_2.setImage(img_data['right_barcode'].T, autoLevels=True, autoRange=True)
+            # based on image type and data retrieved plot the image
+
             sys.stdout.write("Image updated ....\n")
             sys.stdout.flush()
 

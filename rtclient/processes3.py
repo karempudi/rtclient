@@ -227,6 +227,13 @@ class ExptRun:
                         'timepoint': seg_result['timepoint'],
                     }, 'seg_mask', self.params)
 
+                    write_files({
+                        'position': seg_result['position'],
+                        'image': seg_result['seg_mask'],
+                        'timepoint': seg_result['timepoint'],
+                        'trap_locations_list': seg_result['trap_locations_list'],
+                    }, 'segmented_cells_by_trap', self.params)
+
                     # write to database that we processes something and also barcodes and channel locations
                     
                     write_to_db(seg_result, self.expt_save_dir, 'segment')
