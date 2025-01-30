@@ -76,6 +76,7 @@ class Ui_PositionsWindow(object):
         self.dummy_positions_combo = QComboBox(self.formLayoutWidget)
         self.dummy_positions_combo.addItem("")
         self.dummy_positions_combo.addItem("")
+        self.dummy_positions_combo.addItem("")
         self.dummy_positions_combo.setObjectName(u"dummy_positions_combo")
 
         self.positions_layout.setWidget(2, QFormLayout.FieldRole, self.dummy_positions_combo)
@@ -441,7 +442,7 @@ class Ui_PositionsWindow(object):
         PositionsWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(PositionsWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1182, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1182, 21))
         PositionsWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(PositionsWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -460,8 +461,9 @@ class Ui_PositionsWindow(object):
         self.two_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"Two sides", None))
         self.making_patterns_label.setText(QCoreApplication.translate("PositionsWindow", u"Marking patterns", None))
         self.dummy_positions_label.setText(QCoreApplication.translate("PositionsWindow", u"Dummy", None))
-        self.dummy_positions_combo.setItemText(0, QCoreApplication.translate("PositionsWindow", u"Follow boundary", None))
-        self.dummy_positions_combo.setItemText(1, QCoreApplication.translate("PositionsWindow", u"Fastest way", None))
+        self.dummy_positions_combo.setItemText(0, QCoreApplication.translate("PositionsWindow", u"None", None))
+        self.dummy_positions_combo.setItemText(1, QCoreApplication.translate("PositionsWindow", u"Follow boundary", None))
+        self.dummy_positions_combo.setItemText(2, QCoreApplication.translate("PositionsWindow", u"Fastest way", None))
 
         self.num_dummy_positions_label.setText(QCoreApplication.translate("PositionsWindow", u"No of dummy  positions", None))
         self.chip_orientation_label.setText(QCoreApplication.translate("PositionsWindow", u"Chip orientation", None))

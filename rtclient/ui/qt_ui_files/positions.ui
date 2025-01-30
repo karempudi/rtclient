@@ -91,6 +91,11 @@
        <widget class="QComboBox" name="dummy_positions_combo">
         <item>
          <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Follow boundary</string>
          </property>
         </item>
@@ -680,7 +685,7 @@
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -689,9 +694,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="versionGroup"/>
   <buttongroup name="sidesGroup"/>
   <buttongroup name="markingGroup"/>
   <buttongroup name="orientationGroup"/>
+  <buttongroup name="versionGroup"/>
  </buttongroups>
 </ui>

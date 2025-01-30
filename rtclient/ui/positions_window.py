@@ -54,7 +54,7 @@ class PositionsWindow(QMainWindow):
             'mm_version': 2.0,
             'orientation': 'horizontal',
             'marking_type': 'corners',
-            'dummy_type': 'Follow boundary', # can be 'Follow boundary' TODO: 'Fastest way'
+            'dummy_type': 'None', 
             'corners': {},
             'save_dir': None,
             'save_data': True,
@@ -225,6 +225,8 @@ class PositionsWindow(QMainWindow):
     @Slot()
     def set_dummy_positions_type(self, text):
         match text:
+            case 'None':
+                self.selected_values['dummy_type'] = 'None'
             case 'Follow boundary':
                 self.selected_values['dummy_type'] = 'Follow boundary'
             case 'Fastest way':
@@ -343,9 +345,14 @@ class PositionsWindow(QMainWindow):
             motion_object.set_corner_position(corner_key, corner_position)
         
         motion_object.construct_grid()
-        motion_object.construct_dummy_grid()
+
         self.selected_values['positions'] = motion_object.positions
-        self.selected_values['dummy_positions'] = motion_object.dummy_positions
+
+        self.selected_values['dummy_positions'] = []
+        if nrows > 2:
+            motion_object.construct_dummy_grid()
+            self.selected_values['dummy_positions'] = motion_object.dummy_positions
+
         print(f"Number of generated positions: {len(self.selected_values['positions'])}")
         print(f"Number of generated dummy positions: {len(self.selected_values['dummy_positions'])}")
 

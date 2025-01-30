@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import time
 from pathlib import Path
-#from pycromanager import Acquisition # type: ignore
+from pycromanager import Acquisition # type: ignore
 from skimage.io import imread
 import multiprocessing as mp
 import logging
@@ -182,7 +182,56 @@ class ExptRun:
         sys.stdout.flush()
 
     def acquire(self):
-        pass
+        self.set_process_logger()
+        name = mp.current_process().name
+        print(f"Starting {name} process ..")
+        e = AcquisitionEvents(self.events)
+
+        time.sleep(4)
+
+        def put_images_in_queue(image, metadata, event_queue):
+            #print(metadata['Axes'], '----->', image.shape)
+
+            if not hasattr(put_images_in_queue, 'datapoint'):
+                put_images_in_queue.datapoint = {}
+
+            img_type = metadata['Axes']['preset']
+            if img_type == 'phase_fast':
+                key = 'phase'
+            elif img_type == 'venus':
+                key = 'fluor'
+                
+            put_images_in_queue.datapoint[key] = image
+            put_images_in_queue.datapoint['position'] = metadata['Axes']['position']
+            put_images_in_queue.datapoint['timepoint'] = metadata['Axes']['time']
+
+            #print(put_images_in_queue.datapoint.keys())
+
+            if 'phase' in put_images_in_queue.datapoint.keys() and 'fluor' in put_images_in_queue.datapoint.keys():
+                put_images_in_queue.datapoint['type'] = 'phase_fluor'
+
+                data = put_images_in_queue.datapoint
+                logger = logging.getLogger(name)
+                logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
+                                data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['type'])
+                self.segment_queue.put(data)
+                #print('Put a datapoint in the queue')
+                put_images_in_queue.datapoint = {}
+            
+
+            next_event = next(e)
+            #print(f"Next event: {next_event}")
+            event_queue.put(next_event)
+            return 
+        acq = Acquisition(name='acquire_one_loop', image_process_fn=put_images_in_queue, show_display=False)
+        acq.acquire(next(e))
+        acq.await_completion()
+
+                
+        self.segment_queue.put(None)
+        sys.stdout.write("Acquire real process completed successfully\n")
+        sys.stdout.flush()
+        
 
     def segment(self):
         self.set_process_logger()
