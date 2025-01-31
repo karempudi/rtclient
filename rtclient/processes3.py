@@ -29,9 +29,12 @@ def worker_process(queue, configurer):
     configurer(queue)
 
 class AcquisitionEvents:
-    def __init__(self, events):
+    def __init__(self, events, cycle_no=0, min_start_time=0):
         self.i = 0
         self.events = events
+        for event in self.events:
+            event['min_start_time'] = min_start_time
+            event['axes']['time'] = cycle_no
         self.max = len(self.events)
 
     def __next__(self):
@@ -193,9 +196,13 @@ class ExptRun:
         self.set_process_logger()
         name = mp.current_process().name
         print(f"Starting {name} process ..")
-        e = AcquisitionEvents(self.events)
+        self.current_cycle_no = 0
+        self.max_cycles = 90
+        self.cycle_time = 120
+        self.e = AcquisitionEvents(self.events, self.current_cycle_no)
 
         time.sleep(4)
+
 
         def put_images_in_queue(image, metadata, event_queue):
             #print(metadata['Axes'], '----->', image.shape)
@@ -227,12 +234,19 @@ class ExptRun:
                 put_images_in_queue.datapoint = {}
             
 
-            next_event = next(e)
+            next_event = next(self.e)
+            if next_event is None:
+                if self.current_cycle_no == self.max_cycles:
+                    next_event = None
+                else:
+                    self.current_cycle_no += 1
+                    self.e = AcquisitionEvents(self.events, self.current_cycle_no, self.current_cycle_no * self.cycle_time)
+                    next_event = next(self.e)
             #print(f"Next event: {next_event}")
             event_queue.put(next_event)
             return 
         acq = Acquisition(name='acquire_one_loop', image_process_fn=put_images_in_queue, show_display=False)
-        acq.acquire(next(e))
+        acq.acquire(next(self.e))
         acq.await_completion()
 
                 
