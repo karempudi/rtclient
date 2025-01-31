@@ -235,7 +235,7 @@ class TweezerWindow(QMainWindow):
             # based on image type and data retrieved plot the image
 
             if self.read_type == 'phase':
-                #self.image_axes.clear()
+                self.image_axes.clear()
                 self.image_axes.imshow(img_data['image'], cmap='gray')
                 self.image_view.draw()
 
@@ -248,7 +248,7 @@ class TweezerWindow(QMainWindow):
                 self.barcode_right_view.draw()
 
             elif self.read_type == 'segmented_cells_by_trap':
-               #self.image_axes.clear()
+                self.image_axes.clear()
                 self.image_axes.imshow(img_data['image'], cmap='viridis')
                 self.image_view.draw()
 
@@ -263,7 +263,7 @@ class TweezerWindow(QMainWindow):
 
 
             elif self.read_type == 'fluor':
-                #self.image_axes.clear()
+                self.image_axes.clear()
                 self.image_axes.imshow(img_data['image'], cmap='gray')
 
 
@@ -282,7 +282,7 @@ class TweezerWindow(QMainWindow):
 
 
             elif self.read_type == 'dots_on_mask':
-                #self.image_axes.clear()
+                self.image_axes.clear()
                 self.image_axes.imshow(img_data['image'], cmap='viridis')
                 self.image_axes.plot(img_data['dots'][:, 1], img_data['dots'][:, 0], 'ro')
                 self.image_view.draw()

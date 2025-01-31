@@ -43,9 +43,12 @@ class AcquisitionEvents:
             return None
 
 class AcquisitionEventsSim:
-    def __init__(self, events):
+    def __init__(self, events, cylce_no=0, min_start_time=0):
         self.i = 0
         self.events = events
+        for event in self.events:
+            event['min_start_time'] = min_start_time
+            event['axes']['time'] = cylce_no
         self.max = len(self.events)
 
     def __next__(self):
@@ -123,14 +126,16 @@ class ExptRun:
         self.set_process_logger()
         name = mp.current_process().name
         print(f"Starting {name} process ...")
-
-        e = AcquisitionEventsSim(self.events)
+        current_cycle_no = 0
+        max_cycles = 1
+        e = AcquisitionEventsSim(self.events, current_cycle_no)
         data = None
         time.sleep(4)
         while not self.acquire_kill_event.is_set():
             try:
                 next_event = next(e)
                 if next_event is None:
+                    print("Got None in next event")
                     data = None
                 elif next_event[0]['axes'] == {}:
                     data = {
@@ -169,7 +174,10 @@ class ExptRun:
                             'timepoint': data['timepoint']}, self.expt_save_dir, 'acquire_fluor')
 
                 else:
-                    break
+                    if current_cycle_no == max_cycles:
+                        break
+                    current_cycle_no += 1
+                    e = AcquisitionEventsSim(self.events, current_cycle_no, 0)
                 time.sleep(0.50)
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
