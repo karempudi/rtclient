@@ -197,8 +197,8 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ..")
         self.current_cycle_no = 0
-        self.max_cycles = 90
-        self.cycle_time = 120
+        self.max_cycles = 400
+        self.cycle_time = 180
         self.e = AcquisitionEvents(self.events, self.current_cycle_no)
 
         time.sleep(4)
@@ -243,6 +243,8 @@ class ExptRun:
                     self.e = AcquisitionEvents(self.events, self.current_cycle_no, self.current_cycle_no * self.cycle_time)
                     next_event = next(self.e)
             #print(f"Next event: {next_event}")
+            if self.acquire_kill_event.is_set():
+                next_event = None
             event_queue.put(next_event)
             return 
         acq = Acquisition(name='acquire_one_loop', image_process_fn=put_images_in_queue, show_display=False)

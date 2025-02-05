@@ -219,7 +219,7 @@ class Ui_PositionsWindow(object):
 
         self.reload_positions_button = QPushButton(self.horizontalLayoutWidget_4)
         self.reload_positions_button.setObjectName(u"reload_positions_button")
-        self.reload_positions_button.setEnabled(False)
+        self.reload_positions_button.setEnabled(True)
 
         self.horizontalLayout_4.addWidget(self.reload_positions_button)
 
