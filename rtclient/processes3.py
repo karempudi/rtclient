@@ -62,6 +62,14 @@ class AcquisitionEventsSim:
         else:
             return None
 
+class AcquisitionPost:
+
+    def __init__(self):
+        pass
+
+    def __next__(self):
+        pass
+
 
 
 class ExptRun:
@@ -130,15 +138,16 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ...")
         current_cycle_no = 0
-        max_cycles = 1
+        max_cycles = 400
         e = AcquisitionEventsSim(self.events, current_cycle_no)
         data = None
         time.sleep(4)
+        logger = logging.getLogger(name)
         while not self.acquire_kill_event.is_set():
             try:
                 next_event = next(e)
                 if next_event is None:
-                    print("Got None in next event")
+                    logger.log(logging.INFO, "Got None in next event ... aborting acquire sim function ..")
                     data = None
                 elif next_event[0]['axes'] == {}:
                     data = {
@@ -158,7 +167,7 @@ class ExptRun:
                     }
 
                 if data is not None:
-                    logger = logging.getLogger(name)
+                    #logger = logging.getLogger(name)
                     logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
                                 data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['chan'])
                     self.segment_queue.put({
@@ -181,16 +190,19 @@ class ExptRun:
                         break
                     current_cycle_no += 1
                     e = AcquisitionEventsSim(self.events, current_cycle_no, 0)
+                    time.sleep(5)
                 time.sleep(0.50)
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
-                sys.stdout.write("Acquire process interrupted using keyboard\n")
-                sys.stdout.flush()
+                logger.log(logging.INFO, "Acquire process interrupted using keyboard")
+                #sys.stdout.write("Acquire process interrupted using keyboard\n")
+                #sys.stdout.flush()
                 break
         
         self.segment_queue.put(None)
-        sys.stdout.write("Acquire sim process completed successfully\n")
-        sys.stdout.flush()
+        logger.log(logging.INFO, "Acquire sim process completed successfully")
+        #sys.stdout.write("Acquire sim process completed successfully\n")
+        #sys.stdout.flush()
 
     def acquire(self):
         self.set_process_logger()
@@ -204,6 +216,7 @@ class ExptRun:
         time.sleep(4)
 
 
+        logger = logging.getLogger(name)
         def put_images_in_queue(image, metadata, event_queue):
             #print(metadata['Axes'], '----->', image.shape)
 
@@ -226,7 +239,6 @@ class ExptRun:
                 put_images_in_queue.datapoint['type'] = 'phase_fluor'
 
                 data = put_images_in_queue.datapoint
-                logger = logging.getLogger(name)
                 logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
                                 data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['type'])
                 self.segment_queue.put(data)
@@ -251,8 +263,9 @@ class ExptRun:
 
                 
         self.segment_queue.put(None)
-        sys.stdout.write("Acquire real process completed successfully\n")
-        sys.stdout.flush()
+        logger.log(logging.INFO, "Acquire real process completed successfully")
+        #sys.stdout.write("Acquire real process completed successfully\n")
+        #sys.stdout.flush()
         
 
     def segment(self):
@@ -263,13 +276,16 @@ class ExptRun:
         # Load network
         net = get_live_model(self.params)
 
+        logger = logging.getLogger(name)
+
         while True:
             try:
                 if self.segment_queue.qsize() > 0:
                     data_seg_queue = self.segment_queue.get()
                     if data_seg_queue is None:
-                        sys.stdout.write("Got None in seg image queue .. aborting segment function ..\n")
-                        sys.stdout.flush()
+                        logger.log(logging.INFO, "Got None in seg image queue ... aborting segment function ..")
+                        #sys.stdout.write("Got None in seg image queue .. aborting segment function ..\n")
+                        #sys.stdout.flush()
                         break
                 else:
                     continue
@@ -310,7 +326,6 @@ class ExptRun:
                     write_to_db(seg_result, self.expt_save_dir, 'segment')
 
                     # logging  
-                    logger = logging.getLogger(name)
                     logger.log(logging.INFO, "Segmented Pos: %s, time: %s chan: %s, result: %s, bboxes: %s, num_traps: %s", 
                                 data_seg_queue['position'], data_seg_queue['timepoint'], data_seg_queue['type'],
                                 seg_result['seg_mask'].shape, len(seg_result['barcode_locations']), seg_result['num_traps'])
@@ -327,14 +342,16 @@ class ExptRun:
 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
-                sys.stdout.write("Segment process interrupted using keyboard\n")
-                sys.stdout.flush()
+                logger.log(logging.INFO, "Segment process interrupted using keyboard")
+                #sys.stdout.write("Segment process interrupted using keyboard\n")
+                #sys.stdout.flush()
                 break
         
         self.dots_queue.put(None)
         self.segment_kill_event.set()
-        sys.stdout.write("Segment process completed sucessfully\n")
-        sys.stdout.flush()
+        logger.log(logging.INFO, "Segment process completed successfully")
+        #sys.stdout.write("Segment process completed sucessfully\n")
+        #sys.stdout.flush()
 
 
     def dots(self):
@@ -342,13 +359,15 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ..")
 
+        logger = logging.getLogger(name)
         while True:
             try:
                 if self.dots_queue.qsize() > 0:
                     data_dots_queue = self.dots_queue.get()
                     if data_dots_queue is None:
-                        sys.stdout.write("Got None in dots queue .. aborting dots function ...\n")
-                        sys.stdout.flush()
+                        logger.log(logging.INFO, "Got None in dots queue .. aborting dots function ..")
+                        #sys.stdout.write("Got None in dots queue .. aborting dots function ...\n")
+                        #sys.stdout.flush()
                         break
                 else:
                     continue
@@ -379,21 +398,22 @@ class ExptRun:
                 })
 
                 # logging 
-                logger = logging.getLogger(name)
                 logger.log(logging.INFO, "Dots queue  got Pos: %s time %s dots: %s", 
                                 data_dots_queue['position'],
                                 data_dots_queue['timepoint'], dots_on_image['raw_coords'].shape)
                 
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
-                sys.stdout.write("Dots process interrupted using keyboard\n")
-                sys.stdout.flush()
+                logger.log(logging.INFO, "Dots process interrupted using keyboard")
+                #sys.stdout.write("Dots process interrupted using keyboard\n")
+                #sys.stdout.flush()
                 break
 
         self.internal_queue.put(None)
         self.dots_kill_event.set()
-        sys.stdout.write("Dots process completed successfully\n")
-        sys.stdout.flush()
+        logger.log(logging.INFO, "Dots process completed successfully")
+        #sys.stdout.write("Dots process completed successfully\n")
+        #sys.stdout.flush()
 
 
     def internal(self):
@@ -401,13 +421,16 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ..")
 
+        logger = logging.getLogger(name)
+
         while True:
             try:
                 if self.internal_queue.qsize() > 0:
                     data_internal_queue = self.internal_queue.get()
                     if data_internal_queue is None:
-                        sys.stdout.write("Got None in internal queue .. aborting internal function ...\n")
-                        sys.stdout.flush()
+                        logger.log(logging.INFO, "Got None in internal queue .. aborting internal function ...")
+                        #sys.stdout.write("Got None in internal queue .. aborting internal function ...\n")
+                        #sys.stdout.flush()
                         break
                 else:
                     continue
@@ -430,7 +453,6 @@ class ExptRun:
 
  
                 # logging 
-                logger = logging.getLogger(name)
                 logger.log(logging.INFO, "Internal queue  got Pos: %s time %s dots: %s, traps: %s, forks: %s", 
                                 data_internal_queue['position'],
                                 data_internal_queue['timepoint'], 
@@ -439,13 +461,15 @@ class ExptRun:
                     
             except KeyboardInterrupt:
                 self.acquire_kill_event.set()
-                sys.stdout.write("Internal process interrupted using keyboard\n")
-                sys.stdout.flush()
+                logger.log(logging.INFO, "Internal process interrupted using keyboard")
+                #sys.stdout.write("Internal process interrupted using keyboard\n")
+                #sys.stdout.flush()
                 break
         
         self.internal_kill_event.set()
-        sys.stdout.write("Internal process completed successfully\n")
-        sys.stdout.flush()
+        logger.log(logging.INFO, "Internal process completed successfully")
+        #sys.stdout.write("Internal process completed successfully\n")
+        #sys.stdout.flush()
 
 
     def stop(self):
