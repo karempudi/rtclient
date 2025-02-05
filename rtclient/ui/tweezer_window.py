@@ -51,12 +51,12 @@ class DataFetchThread(QThread):
     def get_data(self):
         return self.data
 
-class ForkFetchThread(QThread):
+class AllForkFetchThread(QThread):
 
     fork_fetched = Signal()
 
     def __init__(self, read_type, param, position, trap_no):
-        super(ForkFetchThread, self).__init__()
+        super(AllForkFetchThread, self).__init__()
         self.read_type = read_type
         self.param = param
         self.position = position
@@ -79,6 +79,36 @@ class ForkFetchThread(QThread):
     
     def get_data(self):
         return self.fork_data
+
+class SingleForkFetchThread(QThread):
+
+    fork_fetched = Signal()
+
+    def __init__(self, read_type, param, position, trap_no):
+        super(SingleForkFetchThread, self).__init__()
+        self.read_type = read_type
+        self.param = param
+        self.position = position
+        self.trap_no = trap_no
+        self.fork_data = None
+
+    def run(self):
+        try:
+            self.fork_data = read_files(self.read_type, self.param, self.position, self.trap_no)
+        except Exception as e:
+            sys.stdout.write(f"Fork plot data fetching failed due to {e}")
+            sys.stdout.flush()
+            self.fork_data = {
+                'heatmap': np.random.normal(loc=0.0, scale=1.0, size=(100, 100)),
+                'mean_cell_lengths': np.random.normal(loc=0.0, scale=1.0, size=(100,)),
+                'extent': (None, None)
+            }
+        finally:
+            self.fork_fetched.emit()
+    
+    def get_data(self):
+        return self.fork_data
+
 
 class TweezerWindow(QMainWindow):
 
@@ -313,7 +343,7 @@ class TweezerWindow(QMainWindow):
 
         self.fork_type = 'single'
         if self.fork_fetch_thread is None:
-            self.fork_fetch_thread = ForkFetchThread('single_trap_data_forks', self.param, 
+            self.fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
                         self.current_pos, self.current_trap_no)
 
             self.fork_fetch_thread.start()
@@ -326,7 +356,7 @@ class TweezerWindow(QMainWindow):
         self.fork_type = 'all'
 
         if self.fork_fetch_thread is None:
-            self.fork_fetch_thread = ForkFetchThread('all_forks', self.param, 
+            self.fork_fetch_thread = AllForkFetchThread('all_forks', self.param, 
                         self.current_pos, self.current_trap_no)
 
             self.fork_fetch_thread.start()
