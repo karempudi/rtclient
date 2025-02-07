@@ -396,8 +396,29 @@ class PositionsWindow(QMainWindow):
     
     @Slot()
     def reload_positions(self):
-        pass
-    
+        try:
+            filename, _ = QFileDialog.getSaveFileName(self, "Load .pos positions file",
+                        '.', "Position files (*.pos)", options=QFileDialog.DontUseNativeDialog)
+
+            if filename == '':
+                raise FileNotFoundError('Filename  not set correctly')
+
+
+            microscope_props, positions = parse_positions_file(filename, self.selected_values['mm_version'])
+
+            self.selected_values['positions'] = positions
+            self.selected_values['dummy_positions'] = []
+            self.selected_values['XYStage'] = microscope_props['XYStage']
+            self.selected_values['foucs'] = microscope_props['ZStage']
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.SetText(f'Loading positions failed due to ... {e}')
+            msg.setIcon(QMessageBox.critical)
+            msg.exec()
+        finally:
+            self.statusBar.showMessage(f"Positions file loaded from: {filename}", self.statusBarWaitTime)
+        
     @Slot()
     def save_positions(self):
         write_json = None

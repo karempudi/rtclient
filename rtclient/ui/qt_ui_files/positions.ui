@@ -299,7 +299,7 @@
       <item>
        <widget class="QPushButton" name="reload_positions_button">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Reload positions</string>
@@ -694,9 +694,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="sidesGroup"/>
-  <buttongroup name="markingGroup"/>
   <buttongroup name="orientationGroup"/>
   <buttongroup name="versionGroup"/>
+  <buttongroup name="sidesGroup"/>
+  <buttongroup name="markingGroup"/>
  </buttongroups>
 </ui>
