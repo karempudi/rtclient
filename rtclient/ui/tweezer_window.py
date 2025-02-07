@@ -340,13 +340,24 @@ class TweezerWindow(QMainWindow):
             if self.fork_type == 'all':
                 (x, y) = fork_data['extent']
                 self.all_forks_axes.clear()
-                self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
-                                extent=[x[0], x[-1], y[-1], y[0]], origin='upper')
-                self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
-                self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
-                self.all_forks_axes.set_xlabel('Cell long axis (µm)')
-                self.all_forks_axes.set_ylabel('Cell size (µm^2)')
+                #Commenting out the full fork plot code for now, but it can be added back in if needed 
 
+                #self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
+                #                extent=[x[0], x[-1], y[-1], y[0]], origin='upper')
+                #self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
+                #self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
+                #self.all_forks_axes.set_xlabel('Cell long axis (µm)')
+                #self.all_forks_axes.set_ylabel('Cell size (µm^2)')
+
+                #Around initiation fork plot 
+                lbins_around_init = fork_data['lbins_around_init']
+                area_bins_around_init = fork_data['area_bins_around_init']
+                abins_inds_around_init = fork_data['abins_inds_around_init']
+                self.all_forks_axes.matshow(fork_data['heatmap_around_init'], aspect='auto', interpolation='none',
+                                            extent=[lbins_around_init[0], lbins_around_init[-1], area_bins_around_init[-1], area_bins_around_init[0]], origin='upper')
+                self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_length_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
+                self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_length_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
+                self.all_forks_axes.axhline(fork_data['init_area'], color='red', linestyle='--', linewidth=2)
                 self.all_forks_view.draw()
 
             elif self.fork_type == 'single':
