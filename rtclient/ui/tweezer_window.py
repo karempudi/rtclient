@@ -407,7 +407,7 @@ class TweezerWindow(QMainWindow):
                 self.full_heatmap_init = fork_data['heatmap_around_init']
                 self.plot_extent = fork_data['extent']
 
-                sys.stdout.write(f"Updated fork data for all positions ...\n")
+                sys.stdout.write("Updated fork data for all positions ...\n")
                 sys.stdout.flush()
 
 

@@ -277,6 +277,71 @@
      <string>Right</string>
     </property>
    </widget>
+   <widget class="QListWidget" name="active_pos_list">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>490</y>
+      <width>241</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::ExtendedSelection</enum>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="tweeze_pos_list">
+    <property name="geometry">
+     <rect>
+      <x>1050</x>
+      <y>490</y>
+      <width>241</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::ExtendedSelection</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="to_tweeze_list_button">
+    <property name="geometry">
+     <rect>
+      <x>960</x>
+      <y>600</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&gt;&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="to_active_list_button">
+    <property name="geometry">
+     <rect>
+      <x>960</x>
+      <y>640</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;&lt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>30</y>
+      <width>151</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Convert to Polars</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

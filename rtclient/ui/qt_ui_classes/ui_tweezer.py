@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit,
-    QMainWindow, QMenuBar, QPushButton, QRadioButton,
-    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QLabel,
+    QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
+    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
+    QStatusBar, QVBoxLayout, QWidget)
 
 class Ui_TweezerWindow(object):
     def setupUi(self, TweezerWindow):
@@ -158,6 +159,20 @@ class Ui_TweezerWindow(object):
         self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setGeometry(QRect(550, 140, 41, 17))
+        self.active_pos_list = QListWidget(self.centralwidget)
+        self.active_pos_list.setObjectName(u"active_pos_list")
+        self.active_pos_list.setGeometry(QRect(680, 490, 241, 281))
+        self.active_pos_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.active_pos_list_2 = QListWidget(self.centralwidget)
+        self.active_pos_list_2.setObjectName(u"active_pos_list_2")
+        self.active_pos_list_2.setGeometry(QRect(1050, 490, 241, 281))
+        self.active_pos_list_2.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.toTweezeListButton = QPushButton(self.centralwidget)
+        self.toTweezeListButton.setObjectName(u"toTweezeListButton")
+        self.toTweezeListButton.setGeometry(QRect(960, 600, 41, 21))
+        self.to_active_list_button = QPushButton(self.centralwidget)
+        self.to_active_list_button.setObjectName(u"to_active_list_button")
+        self.to_active_list_button.setGeometry(QRect(960, 640, 41, 21))
         TweezerWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(TweezerWindow)
         self.menubar.setObjectName(u"menubar")
@@ -189,6 +204,8 @@ class Ui_TweezerWindow(object):
         self.fork_label_2.setText(QCoreApplication.translate("TweezerWindow", u"All data fork plot", None))
         self.label.setText(QCoreApplication.translate("TweezerWindow", u"Left", None))
         self.label_2.setText(QCoreApplication.translate("TweezerWindow", u"Right", None))
+        self.toTweezeListButton.setText(QCoreApplication.translate("TweezerWindow", u">>", None))
+        self.to_active_list_button.setText(QCoreApplication.translate("TweezerWindow", u"<<", None))
         pass
     # retranslateUi
 

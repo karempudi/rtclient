@@ -138,7 +138,7 @@ class ExptRun:
         name = mp.current_process().name
         print(f"Starting {name} process ...")
         current_cycle_no = 0
-        max_cycles = 400
+        max_cycles = 20
         e = AcquisitionEventsSim(self.events, current_cycle_no)
         data = None
         time.sleep(4)
