@@ -21,17 +21,18 @@ class DataFetchThread(QThread):
 
     data_fetched = Signal()
 
-    def __init__(self, read_type, param, position, trap_no, max_imgs):
+    def __init__(self, read_type, param, position, trap_no, trap_no_disp, max_imgs):
         super(DataFetchThread, self).__init__()
         self.read_type = read_type
         self.param = param
         self.position = position
         self.trap_no = trap_no
+        self.trap_no_disp = trap_no_disp
         self.max_imgs = max_imgs
         self.data = None
 
     def run(self):
-        sys.stdout.write(f"Data fetching from Pos: {self.position} Trap no: {self.trap_no}\n")        
+        sys.stdout.write(f"Data fetching from Pos: {self.position} Trap no: {self.trap_no_disp}\n")        
         sys.stdout.flush()
 
         try:
@@ -55,12 +56,13 @@ class AllForkFetchThread(QThread):
 
     fork_fetched = Signal()
 
-    def __init__(self, read_type, param, position, trap_no):
+    def __init__(self, read_type, param, position, trap_no, trap_no_disp):
         super(AllForkFetchThread, self).__init__()
         self.read_type = read_type
         self.param = param
         self.position = position
         self.trap_no = trap_no
+        self.trap_no_disp = trap_no_disp
         self.fork_data = None
 
     def run(self):
@@ -84,12 +86,13 @@ class SingleForkFetchThread(QThread):
 
     fork_fetched = Signal()
 
-    def __init__(self, read_type, param, position, trap_no):
+    def __init__(self, read_type, param, position, trap_no, trap_no_disp):
         super(SingleForkFetchThread, self).__init__()
         self.read_type = read_type
         self.param = param
         self.position = position
         self.trap_no = trap_no
+        self.trap_no_disp = trap_no_disp
         self.fork_data = None
 
     def run(self):
@@ -123,6 +126,7 @@ class TweezerWindow(QMainWindow):
 
         self.current_pos = None
         self.current_trap_no = None
+        self.current_trap_no_disp = None
         self.position_no_validator = None
         self.trap_no_validator = None
 
@@ -144,6 +148,7 @@ class TweezerWindow(QMainWindow):
         self.init_area = None 
         self.full_heatmap_init = None
         self.area_plot_extent = None 
+        self.color_lims = None
 
         self.fork_type = None
         self.fork_fetch_thread = None
@@ -227,8 +232,10 @@ class TweezerWindow(QMainWindow):
             self._ui.trap_no_edit.setText("")
             int_trap_no = None
         finally:
-            self.current_trap_no = int_trap_no
-        sys.stdout.write(f"Trap no set to {self.current_trap_no}\n")
+            self.current_trap_no = int_trap_no - 1
+            self.current_trap_no_disp = int_trap_no 
+
+        sys.stdout.write(f"Trap no set to {self.current_trap_no_disp}\n")
         sys.stdout.flush()
 
     def set_image_type(self):
@@ -257,7 +264,8 @@ class TweezerWindow(QMainWindow):
 
         if self.data_fetch_thread is None:
             self.data_fetch_thread = DataFetchThread(read_type, self.param, 
-                        self.current_pos, self.current_trap_no, self.max_imgs)
+                        self.current_pos, self.current_trap_no, 
+                        self.current_trap_no_disp, self.max_imgs)
 
             self.data_fetch_thread.start()
             self.data_fetch_thread.data_fetched.connect(self.update_image)
@@ -344,13 +352,13 @@ class TweezerWindow(QMainWindow):
         return None
 
     def update_single_trap_forks(self):
-        sys.stdout.write(f"Getting single trap forks for Pos: {self.current_pos} Trap: {self.current_trap_no}\n")
+        sys.stdout.write(f"Getting single trap forks for Pos: {self.current_pos} Trap: {self.current_trap_no_disp}\n")
         sys.stdout.flush()
 
         self.fork_type = 'single'
         if self.fork_fetch_thread is None:
             self.fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
-                        self.current_pos, self.current_trap_no)
+                        self.current_pos, self.current_trap_no, self.current_trap_no_disp)
 
             self.fork_fetch_thread.start()
             self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
@@ -363,7 +371,7 @@ class TweezerWindow(QMainWindow):
 
         if self.fork_fetch_thread is None:
             self.fork_fetch_thread = AllForkFetchThread('all_forks', self.param, 
-                        self.current_pos, self.current_trap_no)
+                        self.current_pos, self.current_trap_no, self.current_trap_no_disp)
 
             self.fork_fetch_thread.start()
             self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
@@ -378,7 +386,7 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.clear()
                 #Commenting out the full fork plot code for now, but it can be added back in if needed 
                 
-                self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
+                plot_heatmap = self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
                                 extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet')
                 self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
                 self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
@@ -388,6 +396,7 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.set_xlim(-3, 3)
                 self.all_forks_axes.set_ylim(3, y[0])
                 
+             
                 #Around initiation fork plot 
                 lbins_around_init = fork_data['lbins_around_init']
                 area_bins_around_init = fork_data['area_bins_around_init']
@@ -406,6 +415,7 @@ class TweezerWindow(QMainWindow):
                 self.init_area = fork_data['init_area']
                 self.full_heatmap_init = fork_data['heatmap_around_init']
                 self.plot_extent = fork_data['extent']
+                self.color_lims = (plot_heatmap.norm.vmin, plot_heatmap.norm.vmax)
 
                 sys.stdout.write("Updated fork data for all positions ...\n")
                 sys.stdout.flush()
@@ -422,8 +432,9 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.clear()
 
                 #Full fork plot for a single trap
-                self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
-                                              extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet')
+                single_heatmap = self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
+                                              extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet', 
+                                              vmin=self.color_lims[0], vmax=self.color_lims[1])
                 self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
                 self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
                 self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
@@ -431,7 +442,7 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.set_ylabel('Cell size (µm^2)')
                 self.single_fork_axes.set_xlim(-3, 3)
                 self.single_fork_axes.set_ylim(3, y[0])
-
+                
 
 
                 #Fork plot around initiation for a single trap
@@ -445,7 +456,7 @@ class TweezerWindow(QMainWindow):
 
                 self.single_fork_view.draw()
 
-                sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no}\n")
+                sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no_disp}\n")
                 sys.stdout.flush()
 
 
