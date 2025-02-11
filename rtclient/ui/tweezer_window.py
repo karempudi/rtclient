@@ -404,6 +404,10 @@ class TweezerWindow(QMainWindow):
                 self.full_heatmap_init = fork_data['heatmap_around_init']
                 self.area_plot_extent = y
 
+                sys.stdout.write(f"Updated fork data for all positions ...\n")
+                sys.stdout.flush()
+
+
             elif self.fork_type == 'single':
                 #(x, y) = fork_data['extent']
 
@@ -423,9 +427,14 @@ class TweezerWindow(QMainWindow):
 
                 self.single_fork_view.draw()
 
+                sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no}\n")
+                sys.stdout.flush()
+
+
         self.fork_fetch_thread.quit()
         self.fork_fetch_thread.wait()
         self.fork_fetch_thread = None
+
 
         return None
 
