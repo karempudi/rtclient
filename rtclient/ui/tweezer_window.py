@@ -377,23 +377,26 @@ class TweezerWindow(QMainWindow):
                 (x, y) = fork_data['extent']
                 self.all_forks_axes.clear()
                 #Commenting out the full fork plot code for now, but it can be added back in if needed 
-
-                #self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
-                #                extent=[x[0], x[-1], y[-1], y[0]], origin='upper')
-                #self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
-                #self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
-                #self.all_forks_axes.set_xlabel('Cell long axis (µm)')
-                #self.all_forks_axes.set_ylabel('Cell size (µm^2)')
-
+                
+                self.all_forks_axes.matshow(fork_data['heatmap'], aspect='auto', interpolation='none', 
+                                extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet')
+                self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths'], y, 'w', linewidth=2)
+                self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
+                self.all_forks_axes.axhline(fork_data['init_area'], color='red', linestyle='--', linewidth=2)
+                self.all_forks_axes.set_xlabel('Cell long axis (µm)')
+                self.all_forks_axes.set_ylabel('Cell size (µm^2)')
+                self.all_forks_axes.set_xlim(-3, 3)
+                self.all_forks_axes.set_ylim(3, y[0])
+                
                 #Around initiation fork plot 
                 lbins_around_init = fork_data['lbins_around_init']
                 area_bins_around_init = fork_data['area_bins_around_init']
                 abins_inds_around_init = fork_data['abins_inds_around_init']
-                self.all_forks_axes.matshow(fork_data['heatmap_around_init'], aspect='auto', interpolation='none',
-                                            extent=[lbins_around_init[0], lbins_around_init[-1], area_bins_around_init[-1], area_bins_around_init[0]], origin='upper', cmap='jet')
-                self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
-                self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
-                self.all_forks_axes.axhline(fork_data['init_area'], color='red', linestyle='--', linewidth=2)
+                #self.all_forks_axes.matshow(fork_data['heatmap_around_init'], aspect='auto', interpolation='none',
+                #                            extent=[lbins_around_init[0], lbins_around_init[-1], area_bins_around_init[-1], area_bins_around_init[0]], origin='upper', cmap='jet')
+                #self.all_forks_axes.plot(-0.5 * fork_data['mean_cell_lengths_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
+                #self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths_around_init'], y[abins_inds_around_init[0:-1]], 'w', linewidth=2)
+                #self.all_forks_axes.axhline(fork_data['init_area'], color='red', linestyle='--', linewidth=2)
                 self.all_forks_view.draw()
 
                 self.abins_init = area_bins_around_init
@@ -402,24 +405,39 @@ class TweezerWindow(QMainWindow):
                 self.lbins_init_inds = fork_data['lbins_inds_around_init'] 
                 self.init_area = fork_data['init_area']
                 self.full_heatmap_init = fork_data['heatmap_around_init']
-                self.area_plot_extent = y
+                self.plot_extent = fork_data['extent']
 
             elif self.fork_type == 'single':
-                #(x, y) = fork_data['extent']
+                (x, y) = self.plot_extent
 
                 heatmap_trap = fork_data['heatmap_trap']
                 mean_cell_lengths_trap = fork_data['mean_cell_lengths_trap']
-                heatmap_trap_init = heatmap_trap[np.ix_(self.abins_init_inds, self.lbins_init_inds)]
-                mean_cell_lengths_trap_init = mean_cell_lengths_trap[self.abins_init_inds[0:-1]]
+                #heatmap_trap_init = heatmap_trap[np.ix_(self.abins_init_inds, self.lbins_init_inds)]
+                #mean_cell_lengths_trap_init = mean_cell_lengths_trap[self.abins_init_inds[0:-1]]
 
                 self.single_fork_axes.clear()
-                self.single_fork_axes.matshow(heatmap_trap_init, aspect='auto', interpolation='none',
-                            extent=[self.lbins_init[0], self.lbins_init[-1], self.abins_init[-1], self.abins_init[0]], origin='upper', cmap='jet')
-                self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
-                self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
+
+                #Full fork plot for a single trap
+                self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
+                                              extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet')
+                self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
+                self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
+                self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
                 self.single_fork_axes.set_xlabel('Cell long axis (µm)')
                 self.single_fork_axes.set_ylabel('Cell size (µm^2)')
-                self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
+                self.single_fork_axes.set_xlim(-3, 3)
+                self.single_fork_axes.set_ylim(3, y[0])
+
+
+
+                #Fork plot around initiation for a single trap
+                #self.single_fork_axes.matshow(heatmap_trap_init, aspect='auto', interpolation='none',
+                 #           extent=[self.lbins_init[0], self.lbins_init[-1], self.abins_init[-1], self.abins_init[0]], origin='upper', cmap='jet')
+                #self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
+                #self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
+                #self.single_fork_axes.set_xlabel('Cell long axis (µm)')
+                #self.single_fork_axes.set_ylabel('Cell size (µm^2)')
+                #self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
 
                 self.single_fork_view.draw()
 
