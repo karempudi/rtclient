@@ -228,11 +228,11 @@ class TweezerWindow(QMainWindow):
         trap_no = self._ui.trap_no_edit.text()
         try:
             int_trap_no = int(trap_no)
+            self.current_trap_no = int_trap_no - 1
         except Exception:
             self._ui.trap_no_edit.setText("")
             int_trap_no = None
         finally:
-            self.current_trap_no = int_trap_no - 1
             self.current_trap_no_disp = int_trap_no 
 
         sys.stdout.write(f"Trap no set to {self.current_trap_no_disp}\n")
