@@ -277,7 +277,7 @@
      <string>Right</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="active_pos_list">
+   <widget class="QListWidget" name="active_traps_list">
     <property name="geometry">
      <rect>
       <x>680</x>
@@ -290,7 +290,7 @@
      <enum>QAbstractItemView::ExtendedSelection</enum>
     </property>
    </widget>
-   <widget class="QListWidget" name="tweeze_pos_list">
+   <widget class="QListWidget" name="tweeze_traps_list">
     <property name="geometry">
      <rect>
       <x>1050</x>
@@ -340,6 +340,45 @@
     </property>
     <property name="text">
      <string>Convert to Polars</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="precompute_forks_button">
+    <property name="geometry">
+     <rect>
+      <x>1140</x>
+      <y>30</y>
+      <width>161</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pre-compute forks</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="get_traps_button">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>530</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Get all traps</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="reset_button">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>560</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reset</string>
     </property>
    </widget>
   </widget>
