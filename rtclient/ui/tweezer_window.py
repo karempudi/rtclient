@@ -10,6 +10,7 @@ from rtseg.utils.disk_ops import read_files
 import pyqtgraph as pg
 from matplotlib import cm
 from pathlib import Path
+import rtseg.cells.scoring as sco
 
 def mpl_cmap_to_pg_colormap(cmap_name):
     cmap = cm.get_cmap(cmap_name)
@@ -150,6 +151,9 @@ class TweezerWindow(QMainWindow):
         self.full_heatmap_init = None
         self.area_plot_extent = None 
         self.color_lims = None
+        self.flat_full_heatmap_init = None
+        self.moran_weight = None
+        self.e_dists = None
 
         self.fork_type = None
         self.single_fork_fetch_thread = None
@@ -445,6 +449,9 @@ class TweezerWindow(QMainWindow):
                 self.full_heatmap_init = fork_data['heatmap_around_init']
                 self.plot_extent = fork_data['extent']
                 self.color_lims = (plot_heatmap.norm.vmin, plot_heatmap.norm.vmax)
+                self.flat_full_heatmap_init = fork_data['flat_heatmap_init']
+                self.moran_weight = fork_data['moran_weight']
+                self.e_dists = fork_data['e_dists']
 
                 sys.stdout.write("Updated fork data for all positions ...\n")
                 sys.stdout.flush()
@@ -472,6 +479,17 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.set_xlim(-3, 3)
                 self.single_fork_axes.set_ylim(3, y[0])
                 
+                #Cropped single trap fork plot and scoring 
+                heatmap_trap_init = sco.crop_single_trap_fork_plot(heatmap_trap, self.abins_init_inds, self.lbins_init_inds)
+                flat_heatmap_trap_init = heatmap_trap_init.flatten()
+
+                corrcoeff = sco.score_correlation_coefficient(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                ssim_score = sco.score_ssim(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                cross_moran_I, moran_pval, moran_z_score = sco.score_cross_moran(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.moran_weight)
+                ks_score, ks_pval = sco.score_kolmogorov_smirnov(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                sobolev_norm = sco.score_sobolev_norm(self.full_heatmap_init, heatmap_trap_init)
+                enery_score = sco.score_energy_test(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.e_dists)
+
 
 
                 #Fork plot around initiation for a single trap
@@ -486,6 +504,7 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_view.draw()
 
                 sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no_disp}\n")
+                sys.stdout.write(f"Correlation coefficient: {corrcoeff}\n SSIM: {ssim_score}\n Cross-Moran I: {cross_moran_I}\n KS-score: {ks_score}\n Sobolev norm: {sobolev_norm}\n Energy test score:{enery_score}\n")
                 sys.stdout.flush()
 
         if self.fork_type == 'all':
