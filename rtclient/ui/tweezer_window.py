@@ -1,7 +1,7 @@
 
 import sys
 import numpy as np
-from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QListWidget
 from rtclient.ui.qt_ui_classes.ui_tweezer import Ui_TweezerWindow
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT #type: ignore
 from matplotlib.figure import Figure
@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal, QThread
 from rtseg.utils.disk_ops import read_files
 import pyqtgraph as pg
 from matplotlib import cm
+from pathlib import Path
 
 def mpl_cmap_to_pg_colormap(cmap_name):
     cmap = cm.get_cmap(cmap_name)
@@ -151,8 +152,16 @@ class TweezerWindow(QMainWindow):
         self.color_lims = None
 
         self.fork_type = None
-        self.fork_fetch_thread = None
-        self.fork_thread_running = False
+        self.single_fork_fetch_thread = None
+        self.all_fork_fetch_thread = None
+        self.single_fork_thread_running = False
+        self.all_fork_thread_running = False
+
+        self.selected_pos = None
+        self.selected_trap_no = None
+        self.show_active_or_tweeze = 'acitve' # will use to toggle between 'active' and 'tweeze'
+        self.active_traps_list = []
+        self.tweeze_traps_list = []
 
 
     def setup_button_handlers(self):
@@ -207,6 +216,23 @@ class TweezerWindow(QMainWindow):
         # fork plotting buttons
         self._ui.current_trap_forks_button.clicked.connect(self.update_single_trap_forks)
         self._ui.all_data_forks_button.clicked.connect(self.update_all_data_forks)
+
+
+
+        # populate the active list
+        self._ui.get_traps_button.clicked.connect(self.get_all_traps_list)
+        self._ui.reset_button.clicked.connect(self.reset_lists)
+
+        # Viewer list of positions trap wise (active and tweeze positions lists)
+        self._ui.active_traps_list.setSortingEnabled(True)
+        self._ui.active_traps_list.setSelectionMode(QListWidget.SingleSelection)
+        self._ui.tweeze_traps_list.setSortingEnabled(True)
+        self._ui.tweeze_traps_list.setSelectionMode(QListWidget.SingleSelection)
+        self._ui.active_traps_list.itemSelectionChanged.connect(self.show_selected_active_trap)
+        self._ui.tweeze_traps_list.itemSelectionChanged.connect(self.show_selected_tweeze_trap)
+
+        self._ui.to_tweeze_list_button.clicked.connect(self.send_trap_to_tweeze_list)
+        self._ui.to_active_list_button.clicked.connect(self.send_trap_to_active_list)
 
     def set_params(self, param):
         self.param = param
@@ -356,12 +382,12 @@ class TweezerWindow(QMainWindow):
         sys.stdout.flush()
 
         self.fork_type = 'single'
-        if self.fork_fetch_thread is None:
-            self.fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
+        if self.single_fork_fetch_thread is None:
+            self.single_fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
                         self.current_pos, self.current_trap_no, self.current_trap_no_disp)
 
-            self.fork_fetch_thread.start()
-            self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
+            self.single_fork_fetch_thread.start()
+            self.single_fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
 
     def update_all_data_forks(self):
         sys.stdout.write("Getting all data forks ...\n")
@@ -369,16 +395,19 @@ class TweezerWindow(QMainWindow):
 
         self.fork_type = 'all'
 
-        if self.fork_fetch_thread is None:
-            self.fork_fetch_thread = AllForkFetchThread('all_forks', self.param, 
+        if self.all_fork_fetch_thread is None:
+            self.all_fork_fetch_thread = AllForkFetchThread('all_forks', self.param, 
                         self.current_pos, self.current_trap_no, self.current_trap_no_disp)
 
-            self.fork_fetch_thread.start()
-            self.fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
+            self.all_fork_fetch_thread.start()
+            self.all_fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
 
     def update_forks_image(self):
         
-        fork_data = self.fork_fetch_thread.get_data()
+        if self.fork_type == 'all':
+            fork_data = self.all_fork_fetch_thread.get_data()
+        elif self.fork_type == 'single':
+            fork_data = self.single_fork_fetch_thread.get_data()
 
         if fork_data is not None:
             if self.fork_type == 'all':
@@ -432,7 +461,7 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.clear()
 
                 #Full fork plot for a single trap
-                single_heatmap = self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
+                self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
                                               extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet', 
                                               vmin=self.color_lims[0], vmax=self.color_lims[1])
                 self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
@@ -459,18 +488,139 @@ class TweezerWindow(QMainWindow):
                 sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no_disp}\n")
                 sys.stdout.flush()
 
-
-        self.fork_fetch_thread.quit()
-        self.fork_fetch_thread.wait()
-        self.fork_fetch_thread = None
-
+        if self.fork_type == 'all':
+            self.all_fork_fetch_thread.quit()
+            self.all_fork_fetch_thread.wait()
+            self.all_fork_fetch_thread = None
+        elif self.fork_type == 'single':
+            self.single_fork_fetch_thread.quit()
+            self.single_fork_fetch_thread.wait()
+            self.single_fork_fetch_thread = None
+ 
 
         return None
 
 
+    def get_all_traps_list(self, clicked):
+
+        # Populate all the traps in the active list
+        self.active_traps_list.clear()
+        self.tweeze_traps_list.clear()
+
+        try:
+
+            # get traps
+            save_dir  = Path(self.param.Save.directory)
+
+            # get all position directories
+            position_dirs = sorted(list(save_dir.glob('Pos*')))
+            num_traps = self.param.BarcodeAndChannels.num_blocks_per_image * self.param.BarcodeAndChannels.num_traps_per_block
+
+            for directory in position_dirs:
+                pos = int(directory.name[3:])
+                for trap_no in range(1, num_traps+1):
+                    self.active_traps_list.append((pos, trap_no))
+                    item = 'Pos: ' + str(pos) + ' Trap: ' + str(trap_no)
+                    self._ui.active_traps_list.addItem(item)
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setText(f'Unable to fetch traps list due to: {e}')
+            msg.setIcon(QMessageBox.Warning)
+            msg.exec()
+
+    def reset_lists(self, clicked):
+        self.active_traps_list.clear()
+        self.tweeze_traps_list.clear()
+        self._ui.active_traps_list.clear()
+        self._ui.tweeze_traps_list.clear()
+
+    def show_selected_tweeze_trap(self):
+
+        # clear selection so that the highlight goes away in the active traps list
+        self._ui.active_traps_list.clearSelection()
+        # what is selected 
+        selected_items = self._ui.tweeze_traps_list.selectedItems()
+
+        # only one item # a bit weird. but ok. works
+        position = None
+        trap_no = None
+        for item in selected_items:
+            item_text = item.text()
+            position = int(item_text.split(" ")[1])
+            trap_no = int(item_text.split(" ")[3])
+            sys.stdout.write(f"Getting tweeze single trap forks for Pos: {position} Trap: {trap_no}\n")
+            sys.stdout.flush()
+
+        self.fork_type = 'single'
+        if self.single_fork_fetch_thread is None and (position is not None and trap_no is not None):
+            self.single_fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
+                        position, trap_no-1, trap_no)
+
+            self.single_fork_fetch_thread.start()
+            self.single_fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
+
+
+         
+    def show_selected_active_trap(self):
+        # clear selection so that the highlight goes away in the tweeze traps list
+        self._ui.tweeze_traps_list.clearSelection()
+        # what is selected 
+        selected_items = self._ui.active_traps_list.selectedItems()
+
+        # only one item # a bit weird. but ok. works
+        position = None
+        trap_no = None
+        for item in selected_items:
+            item_text = item.text()
+            position = int(item_text.split(" ")[1])
+            trap_no = int(item_text.split(" ")[3])
+            sys.stdout.write(f"Getting active single trap forks for Pos: {position} Trap: {trap_no}\n")
+            sys.stdout.flush()
+    
+        self.fork_type = 'single'
+        if self.single_fork_fetch_thread is None and (position is not None and trap_no is not None):
+            self.single_fork_fetch_thread = SingleForkFetchThread('single_trap_data_forks', self.param, 
+                        position, trap_no-1, trap_no)
+
+            self.single_fork_fetch_thread.start()
+            self.single_fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
 
 
 
+    def send_trap_to_tweeze_list(self, clicked):
+        try:
+            selected_items = self._ui.active_traps_list.selectedItems()
+            for item in selected_items:
+                self._ui.active_traps_list.takeItem(self._ui.active_traps_list.row(item))
+                item_text = item.text()
+                position = int(item_text.split(" ")[1])
+                trap_no = int(item_text.split(" ")[3])
+                self._ui.tweeze_traps_list.addItem(item_text)
+                self.active_traps_list.remove((position, trap_no))
+                self.tweeze_traps_list.append((position, trap_no))
+                sys.stdout.write(f"Moved Pos: {position}  Trap: {trap_no} to tweeze list\n")
+                sys.stdout.flush()
+        except Exception as e:
+            sys.stdout.write(f"Moving trap to tweeeze list failed due to {e}\n")
+            sys.stdout.flush()
+    
+    def send_trap_to_active_list(self, clicked):
+        try:
+            selected_items = self._ui.tweeze_traps_list.selectedItems()
+            for item in selected_items:
+                self._ui.tweeze_traps_list.takeItem(self._ui.tweeze_traps_list.row(item))
+                item_text = item.text()
+                position = int(item_text.split(" ")[1])
+                trap_no = int(item_text.split(" ")[3])
+                self._ui.active_traps_list.addItem(item_text)
+                self.tweeze_traps_list.remove((position, trap_no))
+                self.active_traps_list.append((position, trap_no))
+                sys.stdout.write(f"Moved Pos: {position}  Trap: {trap_no} to active list\n")
+                sys.stdout.flush()
+        except Exception as e:
+            sys.stdout.write(f"Moving trap to active list failed due to {e}\n")
+            sys.stdout.flush()
             
         
 
