@@ -392,7 +392,7 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.plot(+0.5 * fork_data['mean_cell_lengths'],y, 'w', linewidth=2)
                 self.all_forks_axes.axhline(fork_data['init_area'], color='red', linestyle='--', linewidth=2)
                 self.all_forks_axes.set_xlabel('Cell long axis (µm)')
-                self.all_forks_axes.set_ylabel('Cell size (µm^2)')
+                self.all_forks_axes.set_ylabel('Cell size (µm$^2$)')
                 self.all_forks_axes.set_xlim(-3, 3)
                 self.all_forks_axes.set_ylim(3, y[0])
                 
@@ -439,7 +439,7 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
                 self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
                 self.single_fork_axes.set_xlabel('Cell long axis (µm)')
-                self.single_fork_axes.set_ylabel('Cell size (µm^2)')
+                self.single_fork_axes.set_ylabel('Cell size (µm$^2$)')
                 self.single_fork_axes.set_xlim(-3, 3)
                 self.single_fork_axes.set_ylim(3, y[0])
                 
