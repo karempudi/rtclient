@@ -12,11 +12,11 @@ from matplotlib import cm
 from pathlib import Path
 import rtseg.cells.scoring as sco
 from rtseg.utils.get_fork_init import read_all_fork_data_around_init
-from rtseg.cells.scoring import score_all_fork_plots, score_plotter
+from rtseg.cells.scoring import score_all_fork_plots #score_plotter
 from os.path import exists
 import h5py
-import libpysal
-import matplotlib.pyplot as plt
+#import libpysal
+#import matplotlib.pyplot as plt
 
 def mpl_cmap_to_pg_colormap(cmap_name):
     cmap = cm.get_cmap(cmap_name)
@@ -112,7 +112,9 @@ class SingleForkFetchThread(QThread):
             self.fork_data = {
                 'heatmap': np.random.normal(loc=0.0, scale=1.0, size=(100, 100)),
                 'mean_cell_lengths': np.random.normal(loc=0.0, scale=1.0, size=(100,)),
-                'extent': (None, None)
+                'extent': (None, None),
+                'position': self.position,
+                'trap_no': self.trap_no
             }
         finally:
             self.fork_fetched.emit()
@@ -232,13 +234,14 @@ class TweezerWindow(QMainWindow):
 
         self.all_scores = None
         self.scores_median_mad = None
+        self.score_plot_exists = False
+        self.plot_key = None
 
         self.fork_type = None
         self.single_fork_fetch_thread = None
         self.all_fork_fetch_thread = None
+
         self.precomputed_fork_thread = None
-        self.single_fork_thread_running = False
-        self.all_fork_thread_running = False
         
         self.selected_pos = None
         self.selected_trap_no = None
@@ -278,7 +281,11 @@ class TweezerWindow(QMainWindow):
         self._ui.all_data_fork_layout.addWidget(self.all_forks_toolbar)
         self._ui.all_data_fork_layout.addWidget(self.all_forks_view)
 
-
+        self.score_plot_view = FigureCanvas(Figure(figsize=(5, 3)))
+        self.score_plot_axes = self.score_plot_view.figure.subplots()
+        self.score_plot_toolbar = NavigationToolbar2QT(self.score_plot_view, self)
+        self._ui.score_plot_layout.addWidget(self.score_plot_toolbar)
+        self._ui.score_plot_layout.addWidget(self.score_plot_view)
 
         self._ui.pos_no_edit.textChanged.connect(self.position_changed)
         self._ui.trap_no_edit.textChanged.connect(self.trap_changed)
@@ -318,6 +325,14 @@ class TweezerWindow(QMainWindow):
         self._ui.to_active_list_button.clicked.connect(self.send_trap_to_active_list)
 
         self._ui.precompute_forks_button.clicked.connect(self.precompute_forks_and_score)
+
+        # Radio button hooking up for trapwise score plot...
+        self._ui.correlation_radio.toggled.connect(self.plot_scores)
+        self._ui.moran_radio.toggled.connect(self.plot_scores)
+        self._ui.sobolev_radio.toggled.connect(self.plot_scores)
+        self._ui.ssim_radio.toggled.connect(self.plot_scores)
+        self._ui.kolmogorov_radio.toggled.connect(self.plot_scores)
+        self._ui.energy_radio.toggled.connect(self.plot_scores)
 
     def set_params(self, param):
         self.param = param
@@ -499,55 +514,95 @@ class TweezerWindow(QMainWindow):
     def precomputed_fork_data_scores_init(self):
         # The _ is fork_data, currently not using it, and it is only sliced fork plots
         _, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
+        print("Precomputing done ....")
 
         self.precomputed_fork_thread.quit()
         self.precomputed_fork_thread.wait()
         self.precomputed_fork_thread = None
 
-    def plot_scores(self):
+    def plot_scores(self, clear_current_score=False):
         #Hook this to a button
         
         if self.all_scores is None and self.scores_median_mad is None:
-            sys.stdout.write(f"Fork plots were not pre-computed or not loaded into memory. Doing that now.\n")
+            sys.stdout.write("Fork plots were not pre-computed or not loaded into memory. Doing that now.\n")
             sys.stdout.flush()
             self.precompute_forks_and_score()
 
-            
+        self.score_plot_axes.clear()
         tot_nr_traps = self.all_scores['correlation'].flatten().size
         plot_range = np.arange(1, tot_nr_traps+1, 1)
         x_fill = np.array([1, tot_nr_traps, tot_nr_traps, 1])
+ 
+        if self._ui.correlation_radio.isChecked():
+            plot_key = 'correlation'
+            scores = self.all_scores[plot_key].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+        elif self._ui.moran_radio.isChecked():
+            plot_key = 'moran'
+            scores = self.all_scores[plot_key][:,:, 0].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+        elif self._ui.sobolev_radio.isChecked():
+            plot_key = 'sobolev'
+            scores = self.all_scores[plot_key].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+        elif self._ui.ssim_radio.isChecked():
+            plot_key = 'ssim'
+            scores = self.all_scores[plot_key].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+        elif self._ui.kolmogorov_radio.isChecked():
+            plot_key = 'ks'
+            scores = self.all_scores[plot_key][:, :, 0].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+        elif self._ui.energy_radio.isChecked():
+            plot_key = 'energies'
+            scores = self.all_scores[plot_key].flatten()
+            median_mad = self.scores_median_mad[plot_key]
+
+        trap_index = (self.current_pos - 1 )* 28 + self.current_trap_no
+        current_score = scores[trap_index]
+        #print(current_score)
+        medi = median_mad[0]
+        mad_below_med = median_mad[1]
+        mad_above_med = median_mad[2]
+        fill_area = [mad_below_med, mad_below_med, mad_above_med, mad_above_med]
+        self.score_plot_axes.plot(plot_range, scores, 'o')
+        if clear_current_score is True:
+            self.score_plot_axes.plot(1 + trap_index, current_score, 'ko')
+        self.score_plot_axes.axhline(medi, linestyle='--', color='red')
+        self.score_plot_axes.fill(x_fill, fill_area, color='red', alpha=0.25, zorder=3)
+        self.score_plot_axes.set_xlabel('Channel')
+        self.score_plot_axes.set_title(plot_key)
+
+        self.score_plot_view.draw()
+
+        self.score_plot_exists = True
+        self.plot_key = plot_key
+    
+        #score_plotter(self.all_scores['correlation'], self.scores_median_mad['correlation'], 
+        #            plot_range, x_fill, 'Pearson correlation coefficient')
+
+        #score_plotter(self.all_scores['ssim'], self.scores_median_mad['ssim'], 
+        #            plot_range, x_fill, 'SSIM')
         
-        score_plotter(self.all_scores['correlation'], self.scores_median_mad['correlation'], 
-                    plot_range, x_fill, 'Pearson correlation coefficient')
+        #score_plotter(self.all_scores['moran'][0], self.scores_median_mad['moran'][0], 
+        #            plot_range, x_fill, 'Cross-Moran\'s I')
 
-        score_plotter(self.all_scores['ssim'], self.scores_median_mad['ssim'], 
-                    plot_range, x_fill, 'SSIM')
-        
-        score_plotter(self.all_scores['moran'][0], self.scores_median_mad['moran'][0], 
-                    plot_range, x_fill, 'Cross-Moran\'s I')
+        #score_plotter(self.all_scores['ks'][0], self.scores_median_mad['ks'][0], 
+        #            plot_range, x_fill, 'Kolmogorov-Smirnov results')
 
-        score_plotter(self.all_scores['ks'][0], self.scores_median_mad['ks'][0], 
-                    plot_range, x_fill, 'Kolmogorov-Smirnov results')
-
-        score_plotter(self.all_scores['sobolevs'], self.scores_median_mad['sobolevs'], 
-                    plot_range, x_fill, 'Sobolev norm')
-
-        score_plotter(self.all_scores['energies'], self.scores_median_mad['energies'], 
-                    plot_range, x_fill, 'Energy test')
-        
-        print('Plotting')
+        #score_plotter(self.all_scores['sobolevs'], self.scores_median_mad['sobolevs'], 
+        #            plot_range, x_fill, 'Sobolev norm')
+#        score_plotter(self.all_scores['energies'], self.scores_median_mad['energies'], 
+#                    plot_range, x_fill, 'Energy test')
+#        
+        print('Score Plotting .....')
        
 
     
     def update_forks_image(self):
-        
-        if self.fork_type == 'all':
-            fork_data = self.all_fork_fetch_thread.get_data()
-        elif self.fork_type == 'single':
-            fork_data = self.single_fork_fetch_thread.get_data()
-
-        if fork_data is not None:
+        try:
             if self.fork_type == 'all':
+                fork_data = self.all_fork_fetch_thread.get_data()
                 (x, y) = fork_data['extent']
                 self.all_forks_axes.clear()
                 #Commenting out the full fork plot code for now, but it can be added back in if needed 
@@ -562,7 +617,7 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.set_xlim(-3, 3)
                 self.all_forks_axes.set_ylim(3, y[0])
                 
-             
+            
                 #Around initiation fork plot 
                 lbins_around_init = fork_data['lbins_around_init']
                 area_bins_around_init = fork_data['area_bins_around_init']
@@ -589,70 +644,112 @@ class TweezerWindow(QMainWindow):
                 sys.stdout.write("Updated fork data for all positions ...\n")
                 sys.stdout.flush()
 
-
             elif self.fork_type == 'single':
-                (x, y) = self.plot_extent
+                fork_data = self.single_fork_fetch_thread.get_data()
+                self.current_pos = fork_data['position']
+                self.current_trap_no = fork_data['trap_no']
+                if fork_data['heatmap_trap'] is not None:
+                    (x, y) = self.plot_extent
 
-                heatmap_trap = fork_data['heatmap_trap']
-                mean_cell_lengths_trap = fork_data['mean_cell_lengths_trap']
-                #heatmap_trap_init = heatmap_trap[np.ix_(self.abins_init_inds, self.lbins_init_inds)]
-                #mean_cell_lengths_trap_init = mean_cell_lengths_trap[self.abins_init_inds[0:-1]]
+                    heatmap_trap = fork_data['heatmap_trap']
+                    mean_cell_lengths_trap = fork_data['mean_cell_lengths_trap']
+                    position = fork_data['position']
+                    trap_no = fork_data['trap_no']
+                    #heatmap_trap_init = heatmap_trap[np.ix_(self.abins_init_inds, self.lbins_init_inds)]
+                    #mean_cell_lengths_trap_init = mean_cell_lengths_trap[self.abins_init_inds[0:-1]]
+                    self.single_fork_axes.clear()
 
-                self.single_fork_axes.clear()
+                    #Full fork plot for a single trap
+                    self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
+                                                extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet', 
+                                                vmin=self.color_lims[0], vmax=self.color_lims[1])
+                    self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
+                    self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
+                    self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
+                    self.single_fork_axes.set_xlabel('Cell long axis (µm)')
+                    self.single_fork_axes.set_ylabel('Cell size (µm$^2$)')
+                    self.single_fork_axes.set_xlim(-3, 3)
+                    self.single_fork_axes.set_ylim(3, y[0])
+                    
+                    # grab score for the variables
 
-                #Full fork plot for a single trap
-                self.single_fork_axes.matshow(heatmap_trap, aspect='auto', interpolation='none', 
-                                              extent=[x[0], x[-1], y[-1], y[0]], origin='upper', cmap='jet', 
-                                              vmin=self.color_lims[0], vmax=self.color_lims[1])
-                self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
-                self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap, y, 'w', linewidth=2)
-                self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
-                self.single_fork_axes.set_xlabel('Cell long axis (µm)')
-                self.single_fork_axes.set_ylabel('Cell size (µm$^2$)')
-                self.single_fork_axes.set_xlim(-3, 3)
-                self.single_fork_axes.set_ylim(3, y[0])
+                    if self.all_scores is not None:
+                        correlation = self.all_scores['correlation'][position-1, trap_no]
+                        ssim = self.all_scores['ssim'][position-1, trap_no]
+                        moran = self.all_scores['moran'][position-1, trap_no, 0]
+                        ks = self.all_scores['ks'][position-1, trap_no, 0]
+                        sobolev = self.all_scores['sobolev'][position-1, trap_no]
+                        energies = self.all_scores['energies'][position-1, trap_no]
+                    else:
+                        #Cropped single trap fork plot and scoring 
+                        heatmap_trap_init = sco.crop_single_trap_fork_plot(heatmap_trap, self.abins_init_inds, self.lbins_init_inds)
+                        flat_heatmap_trap_init = heatmap_trap_init.flatten()
+
+                        correlation = sco.score_correlation_coefficient(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                        ssim = sco.score_ssim(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                        moran, _, _ = sco.score_cross_moran(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.moran_weight)
+                        ks, _ = sco.score_kolmogorov_smirnov(self.flat_full_heatmap_init, flat_heatmap_trap_init)
+                        sobolev = sco.score_sobolev_norm(self.full_heatmap_init, heatmap_trap_init)
+                        energies = sco.score_energy_test(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.e_dists)
+
+                    # hook scores to the ui
+                    self._ui.correlation_edit.setText(str(round(correlation, 3)))
+                    self._ui.ssim_edit.setText(str(round(ssim, 3)))
+                    self._ui.moran_edit.setText(str(round(moran, 3)))
+                    self._ui.ks_edit.setText(str(round(ks, 3)))
+                    self._ui.sobolev_edit.setText(str(round(sobolev, 3)))
+                    self._ui.energy_edit.setText(str(round(energies, 3)))
                 
+                    # update the plot
+                    if self.score_plot_exists:
+                        self.plot_scores(clear_current_score=True)
+
+                    #Fork plot around initiation for a single trap
+                    #self.single_fork_axes.matshow(heatmap_trap_init, aspect='auto', interpolation='none',
+                    #           extent=[self.lbins_init[0], self.lbins_init[-1], self.abins_init[-1], self.abins_init[0]], origin='upper', cmap='jet')
+                    #self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
+                    #self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
+                    #self.single_fork_axes.set_xlabel('Cell long axis (µm)')
+                    #self.single_fork_axes.set_ylabel('Cell size (µm^2)')
+                    #self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
+
+                    self.single_fork_view.draw()
+
+                    sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no + 1}\n")
+                    #sys.stdout.write(f"Correlation coefficient: {correlation}\n SSIM: {ssim}\n Cross-Moran I: {moran}\n KS-score: {ks}\n Sobolev norm: {sobolev}\n Energy test score:{energies}\n")
+                    sys.stdout.flush()
+                else:
+                    self._ui.correlation_edit.clear()
+                    self._ui.ssim_edit.clear()
+                    self._ui.moran_edit.clear()
+                    self._ui.ks_edit.clear()
+                    self._ui.sobolev_edit.clear()
+                    self._ui.energy_edit.clear()
+
+                    # clear fork plot
+                    self.single_fork_axes.clear()
+                    self.single_fork_view.draw()
+
+                    sys.stdout.write(f"Updated fork plot for Pos: {self.current_pos} trap no: {self.current_trap_no + 1} with empty data\n")
+                    sys.stdout.flush()
+    
+                    self.plot_scores(clear_current_score=False)
 
 
-                #Cropped single trap fork plot and scoring 
-                heatmap_trap_init = sco.crop_single_trap_fork_plot(heatmap_trap, self.abins_init_inds, self.lbins_init_inds)
-                flat_heatmap_trap_init = heatmap_trap_init.flatten()
+        except Exception as e:
+            sys.stdout.write(f"Failed to update forks image due to {e} ..\n")            
+            sys.stdout.flush()
 
-                corrcoeff = sco.score_correlation_coefficient(self.flat_full_heatmap_init, flat_heatmap_trap_init)
-                ssim_score = sco.score_ssim(self.flat_full_heatmap_init, flat_heatmap_trap_init)
-                cross_moran_I, moran_pval, moran_z_score = sco.score_cross_moran(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.moran_weight)
-                ks_score, ks_pval = sco.score_kolmogorov_smirnov(self.flat_full_heatmap_init, flat_heatmap_trap_init)
-                sobolev_norm = sco.score_sobolev_norm(self.full_heatmap_init, heatmap_trap_init)
-                enery_score = sco.score_energy_test(self.flat_full_heatmap_init, flat_heatmap_trap_init, self.e_dists)
-
-
-
-                #Fork plot around initiation for a single trap
-                #self.single_fork_axes.matshow(heatmap_trap_init, aspect='auto', interpolation='none',
-                 #           extent=[self.lbins_init[0], self.lbins_init[-1], self.abins_init[-1], self.abins_init[0]], origin='upper', cmap='jet')
-                #self.single_fork_axes.plot(-0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
-                #self.single_fork_axes.plot(+0.5 * mean_cell_lengths_trap_init, self.area_plot_extent[self.abins_init_inds[0:-1]], 'w', linewidth=2)
-                #self.single_fork_axes.set_xlabel('Cell long axis (µm)')
-                #self.single_fork_axes.set_ylabel('Cell size (µm^2)')
-                #self.single_fork_axes.axhline(self.init_area, color='red', linestyle='--', linewidth=2)
-
-                self.single_fork_view.draw()
-
-                sys.stdout.write(f"Updated fork data  for Pos: {self.current_pos} trap no: {self.current_trap_no_disp}\n")
-                sys.stdout.write(f"Correlation coefficient: {corrcoeff}\n SSIM: {ssim_score}\n Cross-Moran I: {cross_moran_I}\n KS-score: {ks_score}\n Sobolev norm: {sobolev_norm}\n Energy test score:{enery_score}\n")
-                sys.stdout.flush()
-
-        if self.fork_type == 'all':
-            self.all_fork_fetch_thread.quit()
-            self.all_fork_fetch_thread.wait()
-            self.all_fork_fetch_thread = None
-        elif self.fork_type == 'single':
-            self.single_fork_fetch_thread.quit()
-            self.single_fork_fetch_thread.wait()
-            self.single_fork_fetch_thread = None
- 
-
-        return None
+        finally:
+            if self.fork_type == 'all':
+                self.all_fork_fetch_thread.quit()
+                self.all_fork_fetch_thread.wait()
+                self.all_fork_fetch_thread = None
+            elif self.fork_type == 'single':
+                self.single_fork_fetch_thread.quit()
+                self.single_fork_fetch_thread.wait()
+                self.single_fork_fetch_thread = None
+            return None
 
 
     def get_all_traps_list(self, clicked):
@@ -674,7 +771,7 @@ class TweezerWindow(QMainWindow):
                 pos = int(directory.name[3:])
                 for trap_no in range(1, num_traps+1):
                     self.active_traps_list.append((pos, trap_no))
-                    item = 'Pos: ' + str(pos) + ' Trap: ' + str(trap_no)
+                    item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
                     self._ui.active_traps_list.addItem(item)
 
         except Exception as e:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1453</width>
-    <height>834</height>
+    <width>1685</width>
+    <height>895</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -235,7 +235,7 @@
       <x>490</x>
       <y>170</y>
       <width>41</width>
-      <height>411</height>
+      <height>321</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="barcode_left_layout"/>
@@ -246,7 +246,7 @@
       <x>550</x>
       <y>170</y>
       <width>41</width>
-      <height>411</height>
+      <height>321</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="barcode_right_layout"/>
@@ -280,8 +280,8 @@
    <widget class="QListWidget" name="active_traps_list">
     <property name="geometry">
      <rect>
-      <x>830</x>
-      <y>490</y>
+      <x>670</x>
+      <y>510</y>
       <width>241</width>
       <height>281</height>
      </rect>
@@ -293,8 +293,8 @@
    <widget class="QListWidget" name="tweeze_traps_list">
     <property name="geometry">
      <rect>
-      <x>1190</x>
-      <y>490</y>
+      <x>1020</x>
+      <y>510</y>
       <width>241</width>
       <height>281</height>
      </rect>
@@ -306,7 +306,7 @@
    <widget class="QPushButton" name="to_tweeze_list_button">
     <property name="geometry">
      <rect>
-      <x>1100</x>
+      <x>940</x>
       <y>600</y>
       <width>41</width>
       <height>21</height>
@@ -319,7 +319,7 @@
    <widget class="QPushButton" name="to_active_list_button">
     <property name="geometry">
      <rect>
-      <x>1100</x>
+      <x>940</x>
       <y>640</y>
       <width>41</width>
       <height>21</height>
@@ -358,7 +358,7 @@
    <widget class="QPushButton" name="get_traps_button">
     <property name="geometry">
      <rect>
-      <x>1080</x>
+      <x>920</x>
       <y>530</y>
       <width>89</width>
       <height>25</height>
@@ -371,7 +371,7 @@
    <widget class="QPushButton" name="reset_button">
     <property name="geometry">
      <rect>
-      <x>1080</x>
+      <x>920</x>
       <y>560</y>
       <width>89</width>
       <height>25</height>
@@ -384,7 +384,7 @@
    <widget class="QWidget" name="formLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>470</x>
       <y>520</y>
       <width>181</width>
       <height>205</height>
@@ -395,13 +395,6 @@
       <widget class="QLabel" name="metrics_label">
        <property name="text">
         <string>Metrics</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="ssim_label">
-       <property name="text">
-        <string>SSIM</string>
        </property>
       </widget>
      </item>
@@ -421,20 +414,6 @@
      </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="moran_edit">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="kolmogorov_label">
-       <property name="text">
-        <string>Kolmogorov</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="kolmogorov_edit">
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -482,6 +461,95 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="ks_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="ks_label">
+       <property name="text">
+        <string>Kolmogorov</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="ssim_label">
+       <property name="text">
+        <string>SSIM</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget_6">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>490</y>
+      <width>371</width>
+      <height>341</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="score_plot_layout"/>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>1470</x>
+      <y>300</y>
+      <width>131</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="0">
+      <widget class="QRadioButton" name="moran_radio">
+       <property name="text">
+        <string>Moran</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QRadioButton" name="correlation_radio">
+       <property name="text">
+        <string>Correlation</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QRadioButton" name="ssim_radio">
+       <property name="text">
+        <string>SSIM</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QRadioButton" name="kolmogorov_radio">
+       <property name="text">
+        <string>Kolmogorov</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QRadioButton" name="sobolev_radio">
+       <property name="text">
+        <string>Sobolev</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QRadioButton" name="energy_radio">
+       <property name="text">
+        <string>Energy</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -490,7 +558,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1453</width>
+     <width>1685</width>
      <height>22</height>
     </rect>
    </property>
