@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1487</width>
-    <height>845</height>
+    <width>1453</width>
+    <height>834</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -280,7 +280,7 @@
    <widget class="QListWidget" name="active_traps_list">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>830</x>
       <y>490</y>
       <width>241</width>
       <height>281</height>
@@ -293,7 +293,7 @@
    <widget class="QListWidget" name="tweeze_traps_list">
     <property name="geometry">
      <rect>
-      <x>1050</x>
+      <x>1190</x>
       <y>490</y>
       <width>241</width>
       <height>281</height>
@@ -306,7 +306,7 @@
    <widget class="QPushButton" name="to_tweeze_list_button">
     <property name="geometry">
      <rect>
-      <x>960</x>
+      <x>1100</x>
       <y>600</y>
       <width>41</width>
       <height>21</height>
@@ -319,7 +319,7 @@
    <widget class="QPushButton" name="to_active_list_button">
     <property name="geometry">
      <rect>
-      <x>960</x>
+      <x>1100</x>
       <y>640</y>
       <width>41</width>
       <height>21</height>
@@ -358,7 +358,7 @@
    <widget class="QPushButton" name="get_traps_button">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>1080</x>
       <y>530</y>
       <width>89</width>
       <height>25</height>
@@ -371,7 +371,7 @@
    <widget class="QPushButton" name="reset_button">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>1080</x>
       <y>560</y>
       <width>89</width>
       <height>25</height>
@@ -381,13 +381,116 @@
      <string>Reset</string>
     </property>
    </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>520</y>
+      <width>181</width>
+      <height>205</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="metrics_label">
+       <property name="text">
+        <string>Metrics</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="ssim_label">
+       <property name="text">
+        <string>SSIM</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="ssim_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="moran_label">
+       <property name="text">
+        <string>Moran</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="moran_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="kolmogorov_label">
+       <property name="text">
+        <string>Kolmogorov</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="kolmogorov_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="sobolev_label">
+       <property name="text">
+        <string>Sobolev</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="sobolev_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="energy_label">
+       <property name="text">
+        <string>Energy</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="energy_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="corrleation_label">
+       <property name="text">
+        <string>Correlation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="correlation_edit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1487</width>
+     <width>1453</width>
      <height>22</height>
     </rect>
    </property>

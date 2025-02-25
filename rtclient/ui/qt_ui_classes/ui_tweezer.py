@@ -15,16 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QLabel,
-    QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
-    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
-    QStatusBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFormLayout, QHBoxLayout,
+    QLabel, QLineEdit, QListWidget, QListWidgetItem,
+    QMainWindow, QMenuBar, QPushButton, QRadioButton,
+    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
 
 class Ui_TweezerWindow(object):
     def setupUi(self, TweezerWindow):
         if not TweezerWindow.objectName():
             TweezerWindow.setObjectName(u"TweezerWindow")
-        TweezerWindow.resize(1487, 845)
+        TweezerWindow.resize(1453, 834)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -161,18 +161,18 @@ class Ui_TweezerWindow(object):
         self.label_2.setGeometry(QRect(550, 140, 41, 17))
         self.active_traps_list = QListWidget(self.centralwidget)
         self.active_traps_list.setObjectName(u"active_traps_list")
-        self.active_traps_list.setGeometry(QRect(680, 490, 241, 281))
+        self.active_traps_list.setGeometry(QRect(830, 490, 241, 281))
         self.active_traps_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.tweeze_traps_list = QListWidget(self.centralwidget)
         self.tweeze_traps_list.setObjectName(u"tweeze_traps_list")
-        self.tweeze_traps_list.setGeometry(QRect(1050, 490, 241, 281))
+        self.tweeze_traps_list.setGeometry(QRect(1190, 490, 241, 281))
         self.tweeze_traps_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.to_tweeze_list_button = QPushButton(self.centralwidget)
         self.to_tweeze_list_button.setObjectName(u"to_tweeze_list_button")
-        self.to_tweeze_list_button.setGeometry(QRect(960, 600, 41, 21))
+        self.to_tweeze_list_button.setGeometry(QRect(1100, 600, 41, 21))
         self.to_active_list_button = QPushButton(self.centralwidget)
         self.to_active_list_button.setObjectName(u"to_active_list_button")
-        self.to_active_list_button.setGeometry(QRect(960, 640, 41, 21))
+        self.to_active_list_button.setGeometry(QRect(1100, 640, 41, 21))
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
         self.pushButton.setGeometry(QRect(940, 30, 151, 25))
@@ -181,14 +181,91 @@ class Ui_TweezerWindow(object):
         self.precompute_forks_button.setGeometry(QRect(1140, 30, 161, 25))
         self.get_traps_button = QPushButton(self.centralwidget)
         self.get_traps_button.setObjectName(u"get_traps_button")
-        self.get_traps_button.setGeometry(QRect(940, 530, 89, 25))
+        self.get_traps_button.setGeometry(QRect(1080, 530, 89, 25))
         self.reset_button = QPushButton(self.centralwidget)
         self.reset_button.setObjectName(u"reset_button")
-        self.reset_button.setGeometry(QRect(940, 560, 89, 25))
+        self.reset_button.setGeometry(QRect(1080, 560, 89, 25))
+        self.formLayoutWidget = QWidget(self.centralwidget)
+        self.formLayoutWidget.setObjectName(u"formLayoutWidget")
+        self.formLayoutWidget.setGeometry(QRect(620, 520, 181, 205))
+        self.formLayout = QFormLayout(self.formLayoutWidget)
+        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setContentsMargins(0, 0, 0, 0)
+        self.metrics_label = QLabel(self.formLayoutWidget)
+        self.metrics_label.setObjectName(u"metrics_label")
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.metrics_label)
+
+        self.ssim_label = QLabel(self.formLayoutWidget)
+        self.ssim_label.setObjectName(u"ssim_label")
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.ssim_label)
+
+        self.ssim_edit = QLineEdit(self.formLayoutWidget)
+        self.ssim_edit.setObjectName(u"ssim_edit")
+        self.ssim_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.ssim_edit)
+
+        self.moran_label = QLabel(self.formLayoutWidget)
+        self.moran_label.setObjectName(u"moran_label")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.moran_label)
+
+        self.moran_edit = QLineEdit(self.formLayoutWidget)
+        self.moran_edit.setObjectName(u"moran_edit")
+        self.moran_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.moran_edit)
+
+        self.kolmogorov_label = QLabel(self.formLayoutWidget)
+        self.kolmogorov_label.setObjectName(u"kolmogorov_label")
+
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.kolmogorov_label)
+
+        self.kolmogorov_edit = QLineEdit(self.formLayoutWidget)
+        self.kolmogorov_edit.setObjectName(u"kolmogorov_edit")
+        self.kolmogorov_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.kolmogorov_edit)
+
+        self.sobolev_label = QLabel(self.formLayoutWidget)
+        self.sobolev_label.setObjectName(u"sobolev_label")
+
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.sobolev_label)
+
+        self.sobolev_edit = QLineEdit(self.formLayoutWidget)
+        self.sobolev_edit.setObjectName(u"sobolev_edit")
+        self.sobolev_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.sobolev_edit)
+
+        self.energy_label = QLabel(self.formLayoutWidget)
+        self.energy_label.setObjectName(u"energy_label")
+
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.energy_label)
+
+        self.energy_edit = QLineEdit(self.formLayoutWidget)
+        self.energy_edit.setObjectName(u"energy_edit")
+        self.energy_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.energy_edit)
+
+        self.corrleation_label = QLabel(self.formLayoutWidget)
+        self.corrleation_label.setObjectName(u"corrleation_label")
+
+        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.corrleation_label)
+
+        self.correlation_edit = QLineEdit(self.formLayoutWidget)
+        self.correlation_edit.setObjectName(u"correlation_edit")
+        self.correlation_edit.setReadOnly(True)
+
+        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.correlation_edit)
+
         TweezerWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(TweezerWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1487, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1453, 22))
         TweezerWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(TweezerWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -222,6 +299,13 @@ class Ui_TweezerWindow(object):
         self.precompute_forks_button.setText(QCoreApplication.translate("TweezerWindow", u"Pre-compute forks", None))
         self.get_traps_button.setText(QCoreApplication.translate("TweezerWindow", u"Get all traps", None))
         self.reset_button.setText(QCoreApplication.translate("TweezerWindow", u"Reset", None))
+        self.metrics_label.setText(QCoreApplication.translate("TweezerWindow", u"Metrics", None))
+        self.ssim_label.setText(QCoreApplication.translate("TweezerWindow", u"SSIM", None))
+        self.moran_label.setText(QCoreApplication.translate("TweezerWindow", u"Moran", None))
+        self.kolmogorov_label.setText(QCoreApplication.translate("TweezerWindow", u"Kolmogorov", None))
+        self.sobolev_label.setText(QCoreApplication.translate("TweezerWindow", u"Sobolev", None))
+        self.energy_label.setText(QCoreApplication.translate("TweezerWindow", u"Energy", None))
+        self.corrleation_label.setText(QCoreApplication.translate("TweezerWindow", u"Correlation", None))
         pass
     # retranslateUi
 
