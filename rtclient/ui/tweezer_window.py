@@ -11,6 +11,12 @@ import pyqtgraph as pg
 from matplotlib import cm
 from pathlib import Path
 import rtseg.cells.scoring as sco
+from rtseg.utils.get_fork_init import read_all_fork_data_around_init
+from rtseg.cells.scoring import score_all_fork_plots, score_plotter
+from os.path import exists
+import h5py
+import libpysal
+import matplotlib.pyplot as plt
 
 def mpl_cmap_to_pg_colormap(cmap_name):
     cmap = cm.get_cmap(cmap_name)
@@ -114,6 +120,75 @@ class SingleForkFetchThread(QThread):
     def get_data(self):
         return self.fork_data
 
+class PreComputeForkScoreFetchThread(QThread):
+
+    fork_fetched = Signal()
+
+    def __init__(self, param):
+        super(PreComputeForkScoreFetchThread, self).__init__()
+        self.param = param
+        self.fork_data = None
+        self.all_scores = None
+        self.scores_median_mad = None
+
+    def run(self):
+        try:
+            file_dir_hdf5 = Path(self.param.Save.directory) / Path('fork_score_data.h5')
+            if not exists(file_dir_hdf5):
+                self.fork_data, moran_weights = read_all_fork_data_around_init(self.param)
+                self.all_scores, self.scores_median_mad = score_all_fork_plots(self.fork_data, moran_weights)
+                self.save_data_to_file()
+            else:
+                self.fork_data, self.all_scores, self.scores_median_mad = self.load_data()
+        except Exception as e:
+            sys.stdout.write(f"Fork plot data fetching failed due to {e}")
+            sys.stdout.flush()
+            self.fork_data = {}
+            self.all_scores = {}
+            self.scores_median_mad = {}
+        finally:
+            self.fork_fetched.emit()
+
+    def save_data_to_file(self):
+
+        save_dir = Path(self.param.Save.directory)
+        with h5py.File(save_dir / 'fork_score_data.h5', 'w') as hdf:
+
+            fork_group = hdf.create_group('fork_data')
+            for key, value in self.fork_data.items():
+                fork_group.create_dataset(key, data=value)
+
+            score_group = hdf.create_group('all_scores')
+            for key, value in self.all_scores.items():
+                score_group.create_dataset(key, data=value)
+
+            median_mad_group = hdf.create_group('scores_median_mad')
+            for key, value in self.scores_median_mad.items():
+                median_mad_group.create_dataset(key, data=value)                    
+
+    def get_data(self):
+        return self.fork_data, self.all_scores, self.scores_median_mad
+    
+    def load_data(self):
+        file_dir_hdf5 = Path(self.param.Save.directory) / Path('fork_score_data.h5')
+    
+        with h5py.File(file_dir_hdf5, 'r') as hdf:
+            self.fork_data = {}
+            for key in hdf['fork_data'].keys():
+                self.fork_data[key] = hdf['fork_data'][key][()]
+
+            self.all_scores = {}
+            for key in hdf['all_scores'].keys():
+                self.all_scores[key] = hdf['all_scores'][key][()]
+            
+            self.scores_median_mad = {}
+            for key in hdf['scores_median_mad'].keys():
+                self.scores_median_mad[key] = hdf['scores_median_mad'][key][()]
+
+        sys.stdout.write("Loaded precomputed fork data from file\n")
+        sys.stdout.flush()
+
+        return self.fork_data, self.all_scores, self.scores_median_mad
 
 class TweezerWindow(QMainWindow):
 
@@ -155,12 +230,16 @@ class TweezerWindow(QMainWindow):
         self.moran_weight = None
         self.e_dists = None
 
+        self.all_scores = None
+        self.scores_median_mad = None
+
         self.fork_type = None
         self.single_fork_fetch_thread = None
         self.all_fork_fetch_thread = None
+        self.precomputed_fork_thread = None
         self.single_fork_thread_running = False
         self.all_fork_thread_running = False
-
+        
         self.selected_pos = None
         self.selected_trap_no = None
         self.show_active_or_tweeze = 'acitve' # will use to toggle between 'active' and 'tweeze'
@@ -238,6 +317,8 @@ class TweezerWindow(QMainWindow):
         self._ui.to_tweeze_list_button.clicked.connect(self.send_trap_to_tweeze_list)
         self._ui.to_active_list_button.clicked.connect(self.send_trap_to_active_list)
 
+        self._ui.precompute_forks_button.clicked.connect(self.precompute_forks_and_score)
+
     def set_params(self, param):
         self.param = param
         
@@ -280,6 +361,15 @@ class TweezerWindow(QMainWindow):
         else:
             self.max_imgs = None
 
+    def precompute_forks_and_score(self, clicked):
+        sys.stdout.write("Pre-computing forks for scoring\n")
+        sys.stdout.flush()
+
+        if self.precomputed_fork_thread is None:
+            self.precomputed_fork_thread = PreComputeForkScoreFetchThread(self.param)
+            self.precomputed_fork_thread.start()
+            self.precomputed_fork_thread.fork_fetched.connect(self.precomputed_fork_data_scores_init)
+            
     def fetch_data(self):
         if self.show_phase:
             read_type = 'phase'
@@ -406,6 +496,49 @@ class TweezerWindow(QMainWindow):
             self.all_fork_fetch_thread.start()
             self.all_fork_fetch_thread.fork_fetched.connect(self.update_forks_image)
 
+    def precomputed_fork_data_scores_init(self):
+        # The _ is fork_data, currently not using it, and it is only sliced fork plots
+        _, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
+
+        self.precomputed_fork_thread.quit()
+        self.precomputed_fork_thread.wait()
+        self.precomputed_fork_thread = None
+
+    def plot_scores(self):
+        #Hook this to a button
+        
+        if self.all_scores is None and self.scores_median_mad is None:
+            sys.stdout.write(f"Fork plots were not pre-computed or not loaded into memory. Doing that now.\n")
+            sys.stdout.flush()
+            self.precompute_forks_and_score()
+
+            
+        tot_nr_traps = self.all_scores['correlation'].flatten().size
+        plot_range = np.arange(1, tot_nr_traps+1, 1)
+        x_fill = np.array([1, tot_nr_traps, tot_nr_traps, 1])
+        
+        score_plotter(self.all_scores['correlation'], self.scores_median_mad['correlation'], 
+                    plot_range, x_fill, 'Pearson correlation coefficient')
+
+        score_plotter(self.all_scores['ssim'], self.scores_median_mad['ssim'], 
+                    plot_range, x_fill, 'SSIM')
+        
+        score_plotter(self.all_scores['moran'][0], self.scores_median_mad['moran'][0], 
+                    plot_range, x_fill, 'Cross-Moran\'s I')
+
+        score_plotter(self.all_scores['ks'][0], self.scores_median_mad['ks'][0], 
+                    plot_range, x_fill, 'Kolmogorov-Smirnov results')
+
+        score_plotter(self.all_scores['sobolevs'], self.scores_median_mad['sobolevs'], 
+                    plot_range, x_fill, 'Sobolev norm')
+
+        score_plotter(self.all_scores['energies'], self.scores_median_mad['energies'], 
+                    plot_range, x_fill, 'Energy test')
+        
+        print('Plotting')
+       
+
+    
     def update_forks_image(self):
         
         if self.fork_type == 'all':
@@ -479,6 +612,8 @@ class TweezerWindow(QMainWindow):
                 self.single_fork_axes.set_xlim(-3, 3)
                 self.single_fork_axes.set_ylim(3, y[0])
                 
+
+
                 #Cropped single trap fork plot and scoring 
                 heatmap_trap_init = sco.crop_single_trap_fork_plot(heatmap_trap, self.abins_init_inds, self.lbins_init_inds)
                 flat_heatmap_trap_init = heatmap_trap_init.flatten()
