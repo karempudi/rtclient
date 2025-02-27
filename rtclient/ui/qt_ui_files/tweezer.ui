@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1685</width>
+    <width>1803</width>
     <height>895</height>
    </rect>
   </property>
@@ -280,7 +280,7 @@
    <widget class="QListWidget" name="active_traps_list">
     <property name="geometry">
      <rect>
-      <x>670</x>
+      <x>660</x>
       <y>510</y>
       <width>241</width>
       <height>281</height>
@@ -487,7 +487,7 @@
    <widget class="QWidget" name="verticalLayoutWidget_6">
     <property name="geometry">
      <rect>
-      <x>1280</x>
+      <x>1320</x>
       <y>490</y>
       <width>371</width>
       <height>341</height>
@@ -495,62 +495,180 @@
     </property>
     <layout class="QVBoxLayout" name="score_plot_layout"/>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget">
+   <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>1470</x>
-      <y>300</y>
-      <width>131</width>
-      <height>171</height>
+      <x>740</x>
+      <y>490</y>
+      <width>91</width>
+      <height>17</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="moran_radio">
-       <property name="text">
-        <string>Moran</string>
-       </property>
-      </widget>
+    <property name="text">
+     <string>All traps list</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>1090</x>
+      <y>490</y>
+      <width>111</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Selectetd traps</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>1400</x>
+      <y>170</y>
+      <width>351</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="threshold_layout">
+     <item>
+      <layout class="QVBoxLayout" name="threshold_radios_layout">
+       <item>
+        <widget class="QRadioButton" name="correlation_radio">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Correlation</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="moran_radio">
+         <property name="text">
+          <string>Moran</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="sobolev_radio">
+         <property name="text">
+          <string>Sobolev</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="ssim_radio">
+         <property name="text">
+          <string>SSIM</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="kolmogorov_radio">
+         <property name="text">
+          <string>Kolmogorov</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="energy_radio">
+         <property name="text">
+          <string>Energy</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item row="0" column="0">
-      <widget class="QRadioButton" name="correlation_radio">
-       <property name="text">
-        <string>Correlation</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
+     <item>
+      <layout class="QVBoxLayout" name="threshold_sliders_layout"/>
      </item>
-     <item row="3" column="0">
-      <widget class="QRadioButton" name="ssim_radio">
-       <property name="text">
-        <string>SSIM</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QRadioButton" name="kolmogorov_radio">
-       <property name="text">
-        <string>Kolmogorov</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QRadioButton" name="sobolev_radio">
-       <property name="text">
-        <string>Sobolev</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QRadioButton" name="energy_radio">
-       <property name="text">
-        <string>Energy</string>
-       </property>
-      </widget>
+     <item>
+      <layout class="QVBoxLayout" name="threshold_values_layout">
+       <item>
+        <widget class="QLabel" name="correlation_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="moran_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="sobolev_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ssim_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="kolmogorov_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="energy_value_label">
+         <property name="text">
+          <string>Value:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
+   </widget>
+   <widget class="QLCDNumber" name="lcdNumber">
+    <property name="geometry">
+     <rect>
+      <x>1130</x>
+      <y>800</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>690</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save selection</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBox">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>810</y>
+      <width>44</width>
+      <height>26</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -558,7 +676,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1685</width>
+     <width>1803</width>
      <height>22</height>
     </rect>
    </property>

@@ -15,17 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFormLayout, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QListWidget,
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFormLayout, QHBoxLayout,
+    QLCDNumber, QLabel, QLineEdit, QListWidget,
     QListWidgetItem, QMainWindow, QMenuBar, QPushButton,
-    QRadioButton, QSizePolicy, QStatusBar, QVBoxLayout,
-    QWidget)
+    QRadioButton, QSizePolicy, QSpinBox, QStatusBar,
+    QVBoxLayout, QWidget)
 
 class Ui_TweezerWindow(object):
     def setupUi(self, TweezerWindow):
         if not TweezerWindow.objectName():
             TweezerWindow.setObjectName(u"TweezerWindow")
-        TweezerWindow.resize(1685, 895)
+        TweezerWindow.resize(1803, 895)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -162,7 +162,7 @@ class Ui_TweezerWindow(object):
         self.label_2.setGeometry(QRect(550, 140, 41, 17))
         self.active_traps_list = QListWidget(self.centralwidget)
         self.active_traps_list.setObjectName(u"active_traps_list")
-        self.active_traps_list.setGeometry(QRect(670, 510, 241, 281))
+        self.active_traps_list.setGeometry(QRect(660, 510, 241, 281))
         self.active_traps_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.tweeze_traps_list = QListWidget(self.centralwidget)
         self.tweeze_traps_list.setObjectName(u"tweeze_traps_list")
@@ -265,51 +265,113 @@ class Ui_TweezerWindow(object):
 
         self.verticalLayoutWidget_6 = QWidget(self.centralwidget)
         self.verticalLayoutWidget_6.setObjectName(u"verticalLayoutWidget_6")
-        self.verticalLayoutWidget_6.setGeometry(QRect(1280, 490, 371, 341))
+        self.verticalLayoutWidget_6.setGeometry(QRect(1320, 490, 371, 341))
         self.score_plot_layout = QVBoxLayout(self.verticalLayoutWidget_6)
         self.score_plot_layout.setObjectName(u"score_plot_layout")
         self.score_plot_layout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayoutWidget = QWidget(self.centralwidget)
-        self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(1470, 300, 131, 171))
-        self.gridLayout = QGridLayout(self.gridLayoutWidget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.moran_radio = QRadioButton(self.gridLayoutWidget)
-        self.moran_radio.setObjectName(u"moran_radio")
-
-        self.gridLayout.addWidget(self.moran_radio, 1, 0, 1, 1)
-
-        self.correlation_radio = QRadioButton(self.gridLayoutWidget)
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
+        self.label_3.setGeometry(QRect(740, 490, 91, 17))
+        self.label_4 = QLabel(self.centralwidget)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setGeometry(QRect(1090, 490, 111, 17))
+        self.horizontalLayoutWidget_3 = QWidget(self.centralwidget)
+        self.horizontalLayoutWidget_3.setObjectName(u"horizontalLayoutWidget_3")
+        self.horizontalLayoutWidget_3.setGeometry(QRect(1400, 170, 351, 300))
+        self.threshold_layout = QHBoxLayout(self.horizontalLayoutWidget_3)
+        self.threshold_layout.setObjectName(u"threshold_layout")
+        self.threshold_layout.setContentsMargins(0, 0, 0, 0)
+        self.threshold_radios_layout = QVBoxLayout()
+        self.threshold_radios_layout.setObjectName(u"threshold_radios_layout")
+        self.correlation_radio = QRadioButton(self.horizontalLayoutWidget_3)
         self.correlation_radio.setObjectName(u"correlation_radio")
+        self.correlation_radio.setEnabled(True)
         self.correlation_radio.setChecked(True)
 
-        self.gridLayout.addWidget(self.correlation_radio, 0, 0, 1, 1)
+        self.threshold_radios_layout.addWidget(self.correlation_radio)
 
-        self.ssim_radio = QRadioButton(self.gridLayoutWidget)
-        self.ssim_radio.setObjectName(u"ssim_radio")
+        self.moran_radio = QRadioButton(self.horizontalLayoutWidget_3)
+        self.moran_radio.setObjectName(u"moran_radio")
+        self.moran_radio.setChecked(False)
 
-        self.gridLayout.addWidget(self.ssim_radio, 3, 0, 1, 1)
+        self.threshold_radios_layout.addWidget(self.moran_radio)
 
-        self.kolmogorov_radio = QRadioButton(self.gridLayoutWidget)
-        self.kolmogorov_radio.setObjectName(u"kolmogorov_radio")
-
-        self.gridLayout.addWidget(self.kolmogorov_radio, 4, 0, 1, 1)
-
-        self.sobolev_radio = QRadioButton(self.gridLayoutWidget)
+        self.sobolev_radio = QRadioButton(self.horizontalLayoutWidget_3)
         self.sobolev_radio.setObjectName(u"sobolev_radio")
 
-        self.gridLayout.addWidget(self.sobolev_radio, 2, 0, 1, 1)
+        self.threshold_radios_layout.addWidget(self.sobolev_radio)
 
-        self.energy_radio = QRadioButton(self.gridLayoutWidget)
+        self.ssim_radio = QRadioButton(self.horizontalLayoutWidget_3)
+        self.ssim_radio.setObjectName(u"ssim_radio")
+
+        self.threshold_radios_layout.addWidget(self.ssim_radio)
+
+        self.kolmogorov_radio = QRadioButton(self.horizontalLayoutWidget_3)
+        self.kolmogorov_radio.setObjectName(u"kolmogorov_radio")
+
+        self.threshold_radios_layout.addWidget(self.kolmogorov_radio)
+
+        self.energy_radio = QRadioButton(self.horizontalLayoutWidget_3)
         self.energy_radio.setObjectName(u"energy_radio")
 
-        self.gridLayout.addWidget(self.energy_radio, 5, 0, 1, 1)
+        self.threshold_radios_layout.addWidget(self.energy_radio)
 
+
+        self.threshold_layout.addLayout(self.threshold_radios_layout)
+
+        self.threshold_sliders_layout = QVBoxLayout()
+        self.threshold_sliders_layout.setObjectName(u"threshold_sliders_layout")
+
+        self.threshold_layout.addLayout(self.threshold_sliders_layout)
+
+        self.threshold_values_layout = QVBoxLayout()
+        self.threshold_values_layout.setObjectName(u"threshold_values_layout")
+        self.correlation_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.correlation_value_label.setObjectName(u"correlation_value_label")
+
+        self.threshold_values_layout.addWidget(self.correlation_value_label)
+
+        self.moran_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.moran_value_label.setObjectName(u"moran_value_label")
+
+        self.threshold_values_layout.addWidget(self.moran_value_label)
+
+        self.sobolev_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.sobolev_value_label.setObjectName(u"sobolev_value_label")
+
+        self.threshold_values_layout.addWidget(self.sobolev_value_label)
+
+        self.ssim_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.ssim_value_label.setObjectName(u"ssim_value_label")
+
+        self.threshold_values_layout.addWidget(self.ssim_value_label)
+
+        self.kolmogorov_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.kolmogorov_value_label.setObjectName(u"kolmogorov_value_label")
+
+        self.threshold_values_layout.addWidget(self.kolmogorov_value_label)
+
+        self.energy_value_label = QLabel(self.horizontalLayoutWidget_3)
+        self.energy_value_label.setObjectName(u"energy_value_label")
+
+        self.threshold_values_layout.addWidget(self.energy_value_label)
+
+
+        self.threshold_layout.addLayout(self.threshold_values_layout)
+
+        self.lcdNumber = QLCDNumber(self.centralwidget)
+        self.lcdNumber.setObjectName(u"lcdNumber")
+        self.lcdNumber.setGeometry(QRect(1130, 800, 64, 23))
+        self.pushButton_2 = QPushButton(self.centralwidget)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.pushButton_2.setGeometry(QRect(910, 690, 101, 25))
+        self.spinBox = QSpinBox(self.centralwidget)
+        self.spinBox.setObjectName(u"spinBox")
+        self.spinBox.setGeometry(QRect(1000, 810, 44, 26))
         TweezerWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(TweezerWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1685, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1803, 22))
         TweezerWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(TweezerWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -350,12 +412,21 @@ class Ui_TweezerWindow(object):
         self.corrleation_label.setText(QCoreApplication.translate("TweezerWindow", u"Correlation", None))
         self.ks_label.setText(QCoreApplication.translate("TweezerWindow", u"Kolmogorov", None))
         self.ssim_label.setText(QCoreApplication.translate("TweezerWindow", u"SSIM", None))
-        self.moran_radio.setText(QCoreApplication.translate("TweezerWindow", u"Moran", None))
+        self.label_3.setText(QCoreApplication.translate("TweezerWindow", u"All traps list", None))
+        self.label_4.setText(QCoreApplication.translate("TweezerWindow", u"Selectetd traps", None))
         self.correlation_radio.setText(QCoreApplication.translate("TweezerWindow", u"Correlation", None))
+        self.moran_radio.setText(QCoreApplication.translate("TweezerWindow", u"Moran", None))
+        self.sobolev_radio.setText(QCoreApplication.translate("TweezerWindow", u"Sobolev", None))
         self.ssim_radio.setText(QCoreApplication.translate("TweezerWindow", u"SSIM", None))
         self.kolmogorov_radio.setText(QCoreApplication.translate("TweezerWindow", u"Kolmogorov", None))
-        self.sobolev_radio.setText(QCoreApplication.translate("TweezerWindow", u"Sobolev", None))
         self.energy_radio.setText(QCoreApplication.translate("TweezerWindow", u"Energy", None))
+        self.correlation_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.moran_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.sobolev_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.ssim_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.kolmogorov_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.energy_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
+        self.pushButton_2.setText(QCoreApplication.translate("TweezerWindow", u"Save selection", None))
         pass
     # retranslateUi
 

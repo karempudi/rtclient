@@ -25,15 +25,15 @@ class Ui_PositionsWindow(object):
     def setupUi(self, PositionsWindow):
         if not PositionsWindow.objectName():
             PositionsWindow.setObjectName(u"PositionsWindow")
-        PositionsWindow.resize(1182, 787)
+        PositionsWindow.resize(1267, 827)
         self.centralwidget = QWidget(PositionsWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.positions_group = QGroupBox(self.centralwidget)
         self.positions_group.setObjectName(u"positions_group")
-        self.positions_group.setGeometry(QRect(10, 10, 441, 411))
+        self.positions_group.setGeometry(QRect(10, 10, 511, 431))
         self.formLayoutWidget = QWidget(self.positions_group)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(10, 30, 401, 244))
+        self.formLayoutWidget.setGeometry(QRect(10, 30, 488, 244))
         self.positions_layout = QFormLayout(self.formLayoutWidget)
         self.positions_layout.setObjectName(u"positions_layout")
         self.positions_layout.setContentsMargins(0, 0, 0, 0)
@@ -41,27 +41,6 @@ class Ui_PositionsWindow(object):
         self.num_sides_label.setObjectName(u"num_sides_label")
 
         self.positions_layout.setWidget(0, QFormLayout.LabelRole, self.num_sides_label)
-
-        self.grid_type_layout = QHBoxLayout()
-        self.grid_type_layout.setObjectName(u"grid_type_layout")
-        self.one_rect_button = QRadioButton(self.formLayoutWidget)
-        self.sidesGroup = QButtonGroup(PositionsWindow)
-        self.sidesGroup.setObjectName(u"sidesGroup")
-        self.sidesGroup.addButton(self.one_rect_button)
-        self.one_rect_button.setObjectName(u"one_rect_button")
-        self.one_rect_button.setChecked(True)
-
-        self.grid_type_layout.addWidget(self.one_rect_button)
-
-        self.two_rect_button = QRadioButton(self.formLayoutWidget)
-        self.sidesGroup.addButton(self.two_rect_button)
-        self.two_rect_button.setObjectName(u"two_rect_button")
-        self.two_rect_button.setAutoExclusive(True)
-
-        self.grid_type_layout.addWidget(self.two_rect_button)
-
-
-        self.positions_layout.setLayout(0, QFormLayout.FieldRole, self.grid_type_layout)
 
         self.making_patterns_label = QLabel(self.formLayoutWidget)
         self.making_patterns_label.setObjectName(u"making_patterns_label")
@@ -83,7 +62,7 @@ class Ui_PositionsWindow(object):
 
         self.num_dummy_positions_label = QLabel(self.formLayoutWidget)
         self.num_dummy_positions_label.setObjectName(u"num_dummy_positions_label")
-        self.num_dummy_positions_label.setEnabled(False)
+        self.num_dummy_positions_label.setEnabled(True)
 
         self.positions_layout.setWidget(3, QFormLayout.LabelRole, self.num_dummy_positions_label)
 
@@ -185,6 +164,27 @@ class Ui_PositionsWindow(object):
 
         self.positions_layout.setLayout(1, QFormLayout.FieldRole, self.horizontalLayout_2)
 
+        self.grid_type_layout_2 = QHBoxLayout()
+        self.grid_type_layout_2.setObjectName(u"grid_type_layout_2")
+        self.one_rect_button = QRadioButton(self.formLayoutWidget)
+        self.one_rect_button.setObjectName(u"one_rect_button")
+        self.one_rect_button.setChecked(True)
+
+        self.grid_type_layout_2.addWidget(self.one_rect_button)
+
+        self.two_rect_button = QRadioButton(self.formLayoutWidget)
+        self.two_rect_button.setObjectName(u"two_rect_button")
+
+        self.grid_type_layout_2.addWidget(self.two_rect_button)
+
+        self.two_chips_button = QRadioButton(self.formLayoutWidget)
+        self.two_chips_button.setObjectName(u"two_chips_button")
+
+        self.grid_type_layout_2.addWidget(self.two_chips_button)
+
+
+        self.positions_layout.setLayout(0, QFormLayout.FieldRole, self.grid_type_layout_2)
+
         self.horizontalLayoutWidget = QWidget(self.positions_group)
         self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
         self.horizontalLayoutWidget.setGeometry(QRect(10, 280, 401, 41))
@@ -251,7 +251,7 @@ class Ui_PositionsWindow(object):
 
         self.rules_group = QGroupBox(self.centralwidget)
         self.rules_group.setObjectName(u"rules_group")
-        self.rules_group.setGeometry(QRect(460, 10, 371, 261))
+        self.rules_group.setGeometry(QRect(540, 10, 371, 261))
         self.formLayoutWidget_2 = QWidget(self.rules_group)
         self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
         self.formLayoutWidget_2.setGeometry(QRect(10, 120, 226, 121))
@@ -405,7 +405,7 @@ class Ui_PositionsWindow(object):
 
         self.horizontalLayoutWidget_3 = QWidget(self.centralwidget)
         self.horizontalLayoutWidget_3.setObjectName(u"horizontalLayoutWidget_3")
-        self.horizontalLayoutWidget_3.setGeometry(QRect(470, 290, 380, 51))
+        self.horizontalLayoutWidget_3.setGeometry(QRect(530, 300, 380, 51))
         self.reset_close_layout = QHBoxLayout(self.horizontalLayoutWidget_3)
         self.reset_close_layout.setObjectName(u"reset_close_layout")
         self.reset_close_layout.setContentsMargins(0, 0, 0, 0)
@@ -432,17 +432,17 @@ class Ui_PositionsWindow(object):
 
         self.verticalLayoutWidget = QWidget(self.centralwidget)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(510, 380, 351, 271))
+        self.verticalLayoutWidget.setGeometry(QRect(540, 380, 351, 271))
         self.matplotlib_layout = QVBoxLayout(self.verticalLayoutWidget)
         self.matplotlib_layout.setObjectName(u"matplotlib_layout")
         self.matplotlib_layout.setContentsMargins(0, 0, 0, 0)
         self.preview_list = QListWidget(self.centralwidget)
         self.preview_list.setObjectName(u"preview_list")
-        self.preview_list.setGeometry(QRect(870, 30, 301, 621))
+        self.preview_list.setGeometry(QRect(930, 30, 301, 621))
         PositionsWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(PositionsWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1182, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1267, 22))
         PositionsWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(PositionsWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -456,9 +456,7 @@ class Ui_PositionsWindow(object):
     def retranslateUi(self, PositionsWindow):
         PositionsWindow.setWindowTitle(QCoreApplication.translate("PositionsWindow", u"MainWindow", None))
         self.positions_group.setTitle(QCoreApplication.translate("PositionsWindow", u"Positon layout", None))
-        self.num_sides_label.setText(QCoreApplication.translate("PositionsWindow", u"No of sides", None))
-        self.one_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"One Side", None))
-        self.two_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"Two sides", None))
+        self.num_sides_label.setText(QCoreApplication.translate("PositionsWindow", u"IImaging chip types", None))
         self.making_patterns_label.setText(QCoreApplication.translate("PositionsWindow", u"Marking patterns", None))
         self.dummy_positions_label.setText(QCoreApplication.translate("PositionsWindow", u"Dummy", None))
         self.dummy_positions_combo.setItemText(0, QCoreApplication.translate("PositionsWindow", u"None", None))
@@ -476,6 +474,9 @@ class Ui_PositionsWindow(object):
         self.num_cols_label.setText(QCoreApplication.translate("PositionsWindow", u"Number of columns", None))
         self.corners_marking_button.setText(QCoreApplication.translate("PositionsWindow", u"Corners", None))
         self.auto_marking_button.setText(QCoreApplication.translate("PositionsWindow", u"Auto", None))
+        self.one_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"One Side", None))
+        self.two_rect_button.setText(QCoreApplication.translate("PositionsWindow", u"Two Sides", None))
+        self.two_chips_button.setText(QCoreApplication.translate("PositionsWindow", u"2 Chips", None))
         self.save_corners_button.setText(QCoreApplication.translate("PositionsWindow", u"Save corners", None))
         self.generate_positions_button.setText(QCoreApplication.translate("PositionsWindow", u"Generate position grid", None))
         self.plot_path_button.setText(QCoreApplication.translate("PositionsWindow", u"Plot", None))

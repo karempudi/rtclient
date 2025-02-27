@@ -12,12 +12,12 @@ from rtclient.ui.qt_ui_classes.ui_positions import Ui_PositionsWindow
 from rtclient.utils.devices import check_mm_server_alive
 from rtclient.microscope.utils import construct_pos_file, parse_positions_file
 from pycromanager import Core # type: ignore
-from rtclient.microscope.motion import RectGridMotion, TwoRectGridMotion 
+from rtclient.microscope.motion import RectGridMotion, TwoRectGridMotion, TwoSmallChipsMotion
 mplstyle.use('fast')
 
 RESOURES_PATH = Path(__file__).parent / Path('../resources/positions_dummies')
 RESOURES_PATH = RESOURES_PATH.resolve()
-DUMMY_POSTIONS_FILES = ("positions_20x_all.pos", "positions_20x_left.pos")
+DUMMY_POSTIONS_FILES = ("positions_20x_all.pos", "positions_20x_left.pos", "positions_two_chips.pos")
 
 class PositionsWindow(QMainWindow):
 
@@ -35,8 +35,11 @@ class PositionsWindow(QMainWindow):
 
 
         self.one_side = True
+        self.two_sides = False
+        self.two_small_chips = False
         self.enable_two_side_buttons(False)
         self.enable_one_side_buttons(True)
+        self.motion_object = None
         self.corners_keys = {
             'first_half': ('TL', 'TR', 'BR', 'BL'),
             'second_half': ('TL2', 'TR2', 'BR2', 'BL2')
@@ -84,6 +87,7 @@ class PositionsWindow(QMainWindow):
     def setup_button_handlers(self):
         self._ui.one_rect_button.toggled.connect(self.set_layout_type)
         self._ui.two_rect_button.toggled.connect(self.set_layout_type)
+        self._ui.two_chips_button.toggled.connect(self.set_layout_type)
 
         self._ui.corners_marking_button.clicked.connect(self.set_marking_type)
         self._ui.auto_marking_button.clicked.connect(self.set_marking_type)
@@ -202,14 +206,22 @@ class PositionsWindow(QMainWindow):
         # effect the snaking pattern
         self.one_side = self._ui.one_rect_button.isChecked()
         self.two_sides = self._ui.two_rect_button.isChecked()
+        self.two_small_chips = self._ui.two_chips_button.isChecked()
         if not self.one_side:
             self.enable_one_side_buttons(False)
             self.enable_two_side_buttons(True)
             self.selected_values['n_sides'] = 2
+            self._ui.num_dummy_positions.setEnabled(False)
+            self._ui.num_dummy_positions.clear()
         else: 
             self.enable_two_side_buttons(False)
             self.enable_one_side_buttons(True)
             self.selected_values['n_sides'] = 1
+            self._ui.num_dummy_positions.setEnabled(False)
+            self._ui.num_dummy_positions.clear()
+
+        if self.two_small_chips:
+            self._ui.num_dummy_positions.setEnabled(True)
         
         self.selected_values['corners'].clear()
         self.statusBar.showMessage(f"Imaging number of chip sides: {self.selected_values['n_sides']}", self.statusBarWaitTime)
@@ -329,32 +341,66 @@ class PositionsWindow(QMainWindow):
 
     @Slot()
     def generate_positions(self):
-        chip_orientation = self.selected_values['orientation']
-        sides = self.selected_values['n_sides']
-        nrows = self.selected_values['n_rows']
-        ncols = self.selected_values['n_cols']
-        corners = self.selected_values['corners']
-        if sides == 2:
-            motion_object = TwoRectGridMotion(chip_orientation=chip_orientation) 
-        else:
-            motion_object = RectGridMotion(movement_type='top') if chip_orientation == 'vertical' else RectGridMotion(movement_type='left')
+
+        if self.one_side or self.two_sides:
+            chip_orientation = self.selected_values['orientation']
+            sides = self.selected_values['n_sides']
+            nrows = self.selected_values['n_rows']
+            ncols = self.selected_values['n_cols']
+            corners = self.selected_values['corners']
+            if sides == 2:
+                self.motion_object = TwoRectGridMotion(chip_orientation=chip_orientation) 
+            else:
+                self.motion_object = RectGridMotion(movement_type='top') if chip_orientation == 'vertical' else RectGridMotion(movement_type='left')
+            
+            self.motion_object.set_rows(nrows)
+            self.motion_object.set_cols(ncols)
+            for corner_key, corner_position in corners.items():
+                self.motion_object.set_corner_position(corner_key, corner_position)
+            
+            self.motion_object.construct_grid()
+
+            self.selected_values['positions'] = self.motion_object.positions
+
+            self.selected_values['dummy_positions'] = []
+            if nrows > 2:
+                self.motion_object.construct_dummy_grid()
+                self.selected_values['dummy_positions'] = self.motion_object.dummy_positions
+
+            print(f"Number of generated positions: {len(self.selected_values['positions'])}")
+            print(f"Number of generated dummy positions: {len(self.selected_values['dummy_positions'])}")
         
-        motion_object.set_rows(nrows)
-        motion_object.set_cols(ncols)
-        for corner_key, corner_position in corners.items():
-            motion_object.set_corner_position(corner_key, corner_position)
-        
-        motion_object.construct_grid()
+        elif self.two_small_chips:
+            print("Generating positions for two small chips .. Check events also carefully")
+            chip_orientation = self.selected_values['orientation']
+            assert chip_orientation == 'horizontal', "Chip orientation must be horizontal.. setthing it to horizantal"
+            if chip_orientation == 'vertical':
+                self.selected_values['orientation'] = 'horizontal'
+                chip_orientation = 'horizontal'
+            nrows = self.selected_values['n_rows']
+            ncols = self.selected_values['n_cols']
+            corners = self.selected_values['corners']
 
-        self.selected_values['positions'] = motion_object.positions
+            self.motion_object = TwoSmallChipsMotion()
+            self.motion_object.set_rows(nrows)
+            self.motion_object.set_cols(ncols)
+            self.motion_object.set_dummy_number(self.selected_values['n_dummy_pos'])
 
-        self.selected_values['dummy_positions'] = []
-        if nrows > 2:
-            motion_object.construct_dummy_grid()
-            self.selected_values['dummy_positions'] = motion_object.dummy_positions
+            for corner_key, corner_position in corners.items():
+                self.motion_object.set_corner_position(corner_key, corner_position)
 
-        print(f"Number of generated positions: {len(self.selected_values['positions'])}")
-        print(f"Number of generated dummy positions: {len(self.selected_values['dummy_positions'])}")
+            self.motion_object.construct_grid()
+            self.motion_object.construct_dummy_grid()
+            print("Generated dummy positions....")
+
+            self.selected_values['positions'] = self.motion_object.positions
+
+            # Figure out how to generate dummy positions... in between chips
+            # we wont use this for anything other than plotting 
+            # In the event generation we will loop over the motinon object
+            self.selected_values['dummy_positions'] = self.motion_object.dummy_positions1 + self.motion_object.dummy_positions2
+
+
 
     @Slot()
     def plot_path(self):
@@ -375,7 +421,7 @@ class PositionsWindow(QMainWindow):
         self.axes.invert_xaxis()
         self.axes.invert_yaxis()
         for i, position in enumerate(positions, 0):
-            circle = plt.Circle((position['x'], position['y']), 50, color='r')
+            circle = plt.Circle((position['x'], position['y']), 20, color='r')
             self.axes.add_patch(circle)
             if i == len(positions)-1:
                 break
@@ -383,8 +429,8 @@ class PositionsWindow(QMainWindow):
                 # drawing arrows
                 dx = positions[i+1]['x'] - positions[i]['x']
                 dy = positions[i+1]['y'] - positions[i]['y']
-                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=200,
-                            head_length=200, length_includes_head=True)
+                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=50,
+                            head_length=50, length_includes_head=True)
 
         self.view.draw()
     
@@ -489,7 +535,7 @@ class PositionsWindow(QMainWindow):
         self.axes.invert_xaxis()
         self.axes.invert_yaxis()
         for i, position in enumerate(positions, 0):
-            circle = plt.Circle((position['x'], position['y']), 50, color='g')
+            circle = plt.Circle((position['x'], position['y']), 20, color='g')
             self.axes.add_patch(circle)
             if i == len(positions)-1:
                 break
@@ -497,8 +543,8 @@ class PositionsWindow(QMainWindow):
                 # drawing arrows
                 dx = positions[i+1]['x'] - positions[i]['x']
                 dy = positions[i+1]['y'] - positions[i]['y']
-                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=200,
-                            head_length=200, length_includes_head=True)
+                self.axes.arrow(position['x'], position['y'], dx, dy, head_width=50,
+                            head_length=50, length_includes_head=True)
 
         self.view.draw()
     
@@ -513,6 +559,8 @@ class PositionsWindow(QMainWindow):
             # load dummies if there is no micromanager connection
             if self.selected_values['n_sides'] == 1:
                 dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[1])
+            elif self.two_small_chips:
+                dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[2])
             else:
                 dummy_filename = RESOURES_PATH / Path(DUMMY_POSTIONS_FILES[0])
 
@@ -742,42 +790,124 @@ class PositionsWindow(QMainWindow):
     def generate_events(self):
         events = []
         try:
-            positions = self.selected_values['positions']
-            dummy_positions = self.selected_values['dummy_positions']
-            to_image = self.selected_values['to_image']
-            for i, one_position in enumerate(positions, 0):
-                for group, preset, exposure, _ in to_image:
-                    event = {}
-                    event['axes'] = {'time': 0,
-                                'position': int(one_position['label'][3:]), 
-                                'preset': preset}
-                    event['x'] = one_position['x']
-                    event['y'] = one_position['y']
-                    event['z'] = one_position['z']
-                    event['config_group'] = [group, preset]
-                    event['exposure'] = exposure
-                    event['min_start_time'] = 0
-                    event['extra_tags'] = {
-                        'position' : int(one_position['label'][3:]),
-                        'is_dummy': False,
+            if self.one_side or self.two_sides:
+                positions = self.selected_values['positions']
+                dummy_positions = self.selected_values['dummy_positions']
+                to_image = self.selected_values['to_image']
+                for i, one_position in enumerate(positions, 0):
+                    for group, preset, exposure, _ in to_image:
+                        event = {}
+                        event['axes'] = {'time': 0,
+                                    'position': int(one_position['label'][3:]), 
+                                    'preset': preset}
+                        event['x'] = one_position['x']
+                        event['y'] = one_position['y']
+                        event['z'] = one_position['z']
+                        event['config_group'] = [group, preset]
+                        event['exposure'] = exposure
+                        event['min_start_time'] = 0
+                        event['extra_tags'] = {
+                            'position' : int(one_position['label'][3:]),
+                            'is_dummy': False,
+                        }
+                        events.append(event)
+                for i, one_dummy_position in enumerate(dummy_positions, 0):
+                    dummy_event = {}
+                    # for dummy positions you have to skip setting axes or channel
+                    dummy_event['axes'] = {}
+                    dummy_event['x'] = one_dummy_position['x']
+                    dummy_event['y'] = one_dummy_position['y']
+                    dummy_event['z'] = one_dummy_position['z']
+                    dummy_event['config_group'] = ['imaging', 'phase_dummy']
+                    dummy_event['exposure'] = 0
+                    dummy_event['min_start_time'] = 0
+                    dummy_event['extra_tags'] = {
+                        'position' : int(one_dummy_position['label'][3:]),
+                        'is_dummy': True,
                     }
-                    events.append(event)
-            for i, one_dummy_position in enumerate(dummy_positions, 0):
-                dummy_event = {}
-                # for dummy positions you have to skip setting axes or channel
-                dummy_event['axes'] = {}
-                dummy_event['x'] = one_dummy_position['x']
-                dummy_event['y'] = one_dummy_position['y']
-                dummy_event['z'] = one_dummy_position['z']
-                dummy_event['config_group'] = ['imaging', 'phase_dummy']
-                dummy_event['exposure'] = 0
-                dummy_event['min_start_time'] = 0
-                dummy_event['extra_tags'] = {
-                    'position' : int(one_dummy_position['label'][3:]),
-                    'is_dummy': True,
-                }
-                events.append(dummy_event)
-        
+                    events.append(dummy_event)
+            elif self.two_small_chips:
+                print("Construction events for two smaller chips ........")
+
+                # we will construct position and grid from scratch
+                # top half events
+                top_positions = self.motion_object.top_chip_motion.positions
+                bottom_positions = self.motion_object.bottom_chip_motion.positions
+                dummy_positions1 = self.motion_object.dummy_positions1
+                dummy_positions2 = self.motion_object.dummy_positions2
+                to_image = self.selected_values['to_image']
+                for i, one_position in enumerate(top_positions, 0):
+                    for group, preset, exposure, _ in to_image:
+                        event = {}
+                        event['axes'] = {'time': 0,
+                                    'position': int(one_position['label'][3:]), 
+                                    'preset': preset}
+                        event['x'] = one_position['x']
+                        event['y'] = one_position['y']
+                        event['z'] = one_position['z']
+                        event['config_group'] = [group, preset]
+                        event['exposure'] = exposure
+                        event['min_start_time'] = 0
+                        event['extra_tags'] = {
+                            'position' : int(one_position['label'][3:]),
+                            'is_dummy': False,
+                        }
+                        events.append(event)
+ 
+                # dummy1
+                for i, one_dummy_position in enumerate(dummy_positions1, 0):
+                    dummy_event = {}
+                    # for dummy positions you have to skip setting axes or channel
+                    dummy_event['axes'] = {}
+                    dummy_event['x'] = one_dummy_position['x']
+                    dummy_event['y'] = one_dummy_position['y']
+                    dummy_event['z'] = one_dummy_position['z']
+                    dummy_event['config_group'] = ['imaging', 'phase_dummy']
+                    dummy_event['exposure'] = 0
+                    dummy_event['min_start_time'] = 0
+                    dummy_event['extra_tags'] = {
+                        'position' : int(one_dummy_position['label'][3:]),
+                        'is_dummy': True,
+                    }
+                    events.append(dummy_event)
+ 
+                # bottom half events
+                for i, one_position in enumerate(bottom_positions, 0):
+                    for group, preset, exposure, _ in to_image:
+                        event = {}
+                        event['axes'] = {'time': 0,
+                                    'position': int(one_position['label'][3:]), 
+                                    'preset': preset}
+                        event['x'] = one_position['x']
+                        event['y'] = one_position['y']
+                        event['z'] = one_position['z']
+                        event['config_group'] = [group, preset]
+                        event['exposure'] = exposure
+                        event['min_start_time'] = 0
+                        event['extra_tags'] = {
+                            'position' : int(one_position['label'][3:]),
+                            'is_dummy': False,
+                        }
+                        events.append(event)
+ 
+                # dummy2
+                for i, one_dummy_position in enumerate(dummy_positions2, 0):
+                    dummy_event = {}
+                    # for dummy positions you have to skip setting axes or channel
+                    dummy_event['axes'] = {}
+                    dummy_event['x'] = one_dummy_position['x']
+                    dummy_event['y'] = one_dummy_position['y']
+                    dummy_event['z'] = one_dummy_position['z']
+                    dummy_event['config_group'] = ['imaging', 'phase_dummy']
+                    dummy_event['exposure'] = 0
+                    dummy_event['min_start_time'] = 0
+                    dummy_event['extra_tags'] = {
+                        'position' : int(one_dummy_position['label'][3:]),
+                        'is_dummy': True,
+                    }
+                    events.append(dummy_event)
+ 
+            
         except Exception as e:
             msg = QMessageBox()
             msg.setText(f'Error {e} in generating events')
