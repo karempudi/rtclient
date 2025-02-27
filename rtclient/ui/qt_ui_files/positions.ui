@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1182</width>
-    <height>787</height>
+    <width>1267</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>441</width>
-      <height>411</height>
+      <width>511</width>
+      <height>431</height>
      </rect>
     </property>
     <property name="title">
@@ -31,7 +31,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>401</width>
+       <width>488</width>
        <height>244</height>
       </rect>
      </property>
@@ -39,39 +39,9 @@
       <item row="0" column="0">
        <widget class="QLabel" name="num_sides_label">
         <property name="text">
-         <string>No of sides</string>
+         <string>IImaging chip types</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <layout class="QHBoxLayout" name="grid_type_layout">
-        <item>
-         <widget class="QRadioButton" name="one_rect_button">
-          <property name="text">
-           <string>One Side</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">sidesGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="two_rect_button">
-          <property name="text">
-           <string>Two sides</string>
-          </property>
-          <property name="autoExclusive">
-           <bool>true</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">sidesGroup</string>
-          </attribute>
-         </widget>
-        </item>
-       </layout>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="making_patterns_label">
@@ -109,7 +79,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="num_dummy_positions_label">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>No of dummy  positions</string>
@@ -244,6 +214,34 @@
         </item>
        </layout>
       </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="grid_type_layout_2">
+        <item>
+         <widget class="QRadioButton" name="one_rect_button">
+          <property name="text">
+           <string>One Side</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="two_rect_button">
+          <property name="text">
+           <string>Two Sides</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="two_chips_button">
+          <property name="text">
+           <string>2 Chips</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
     <widget class="QWidget" name="horizontalLayoutWidget">
@@ -352,7 +350,7 @@
    <widget class="QGroupBox" name="rules_group">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>540</x>
       <y>10</y>
       <width>371</width>
       <height>261</height>
@@ -617,8 +615,8 @@
    <widget class="QWidget" name="horizontalLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>290</y>
+      <x>530</x>
+      <y>300</y>
       <width>380</width>
       <height>51</height>
      </rect>
@@ -660,7 +658,7 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>540</x>
       <y>380</y>
       <width>351</width>
       <height>271</height>
@@ -671,7 +669,7 @@
    <widget class="QListWidget" name="preview_list">
     <property name="geometry">
      <rect>
-      <x>870</x>
+      <x>930</x>
       <y>30</y>
       <width>301</width>
       <height>621</height>
@@ -684,8 +682,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1182</width>
-     <height>21</height>
+     <width>1267</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -694,9 +692,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="orientationGroup"/>
   <buttongroup name="versionGroup"/>
-  <buttongroup name="sidesGroup"/>
+  <buttongroup name="orientationGroup"/>
   <buttongroup name="markingGroup"/>
+  <buttongroup name="sidesGroup"/>
  </buttongroups>
 </ui>

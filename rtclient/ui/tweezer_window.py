@@ -1,11 +1,11 @@
 
 import sys
 import numpy as np
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QListWidget
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QListWidget, QSlider
 from rtclient.ui.qt_ui_classes.ui_tweezer import Ui_TweezerWindow
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT #type: ignore
 from matplotlib.figure import Figure
-from PySide6.QtCore import Signal, QThread
+from PySide6.QtCore import Signal, QThread, Qt
 from rtseg.utils.disk_ops import read_files
 import pyqtgraph as pg
 from matplotlib import cm
@@ -192,12 +192,100 @@ class PreComputeForkScoreFetchThread(QThread):
 
         return self.fork_data, self.all_scores, self.scores_median_mad
 
+
+class DoubleSlider(QSlider):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.decimals = 3
+        self._max_int = 10 ** self.decimals
+
+        super().setMinimum(0)
+        super().setMaximum(self._max_int)
+
+        self._min_value = 0.0
+        self._max_value = 1.0
+
+    @property
+    def _value_range(self):
+        return self._max_value - self._min_value
+
+    def value(self):
+        return float(super().value()) / self._max_int * self._value_range + self._min_value
+
+    def setValue(self, value):
+        super().setValue(int((value - self._min_value) / self._value_range * self._max_int))
+
+    def setMinimum(self, value):
+        if value > self._max_value:
+            raise ValueError("Minimum limit cannot be higher than maximum")
+
+        self._min_value = value
+        self.setValue(self.value())
+
+    def setMaximum(self, value):
+        if value < self._min_value:
+            raise ValueError("Minimum limit cannot be higher than maximum")
+
+        self._max_value = value
+        self.setValue(self.value())
+
+    def minimum(self):
+        return self._min_value
+
+    def maximum(self):
+        return self._max_value
+
+
 class TweezerWindow(QMainWindow):
 
     def __init__(self, param=None):
         super(TweezerWindow, self).__init__()
         self._ui = Ui_TweezerWindow()
         self._ui.setupUi(self)
+
+        # Making sliders double sliders
+        #self._ui.correlation_slider = DoubleSlider()
+        #self._ui.moran_slider = DoubleSlider()
+        #self._ui.sobolev_slider = DoubleSlider()
+        #self._ui.ssim_slider = DoubleSlider()
+        #self._ui.kolmogorov_slider = DoubleSlider()
+
+    
+        # This is abit of a custom widgeting... 
+        # if doesn't work probable horizontalLayoutWidget_3 should be changed
+        # to some number that is automatically generated.
+        self._ui.correlation_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.correlation_slider.setObjectName(u"correlation_slider")
+        self._ui.correlation_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.correlation_slider)
+
+        self._ui.moran_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.moran_slider.setObjectName(u"moran_slider")
+        self._ui.moran_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.moran_slider)
+
+        self._ui.sobolev_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.sobolev_slider.setObjectName(u"sobolev_slider")
+        self._ui.sobolev_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.sobolev_slider)
+
+
+        self._ui.ssim_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.ssim_slider.setObjectName(u"ssim_slider")
+        self._ui.ssim_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.ssim_slider)
+
+        self._ui.kolmogorov_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.kolmogorov_slider.setObjectName(u"kolmogorov_slider")
+        self._ui.kolmogorov_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.kolmogorov_slider)
+
+        self._ui.energy_slider = DoubleSlider(self._ui.horizontalLayoutWidget_3)
+        self._ui.energy_slider.setObjectName(u"energy_slider")
+        self._ui.energy_slider.setOrientation(Qt.Horizontal)
+        self._ui.threshold_sliders_layout.addWidget(self._ui.energy_slider)
+
 
         self.setup_button_handlers()
 
@@ -248,6 +336,14 @@ class TweezerWindow(QMainWindow):
         self.show_active_or_tweeze = 'acitve' # will use to toggle between 'active' and 'tweeze'
         self.active_traps_list = []
         self.tweeze_traps_list = []
+
+        # current values of thresholds
+        self.correlation_threshold = None
+        self.moran_threshold = None
+        self.sobolev_threshold = None
+        self.ssim_threshold = None
+        self.kolmogorov_threshold = None
+        self.energy_threshold = None
 
 
     def setup_button_handlers(self):
@@ -333,6 +429,46 @@ class TweezerWindow(QMainWindow):
         self._ui.ssim_radio.toggled.connect(self.plot_scores)
         self._ui.kolmogorov_radio.toggled.connect(self.plot_scores)
         self._ui.energy_radio.toggled.connect(self.plot_scores)
+
+        # hook up the slider bars
+
+        self._ui.correlation_slider.sliderMoved.connect(self.set_correlation_threshold)
+        self._ui.moran_slider.sliderMoved.connect(self.set_moran_threshold)
+        self._ui.sobolev_slider.sliderMoved.connect(self.set_sobolev_threshold)
+        self._ui.ssim_slider.sliderMoved.connect(self.set_ssim_threshold)
+        self._ui.kolmogorov_slider.sliderMoved.connect(self.set_kolmogorov_threshold)
+        self._ui.energy_slider.sliderMoved.connect(self.set_energy_threshold)
+
+
+    def set_correlation_threshold(self, value):
+        self.correlation_threshold = self._ui.correlation_slider.value()
+        self._ui.correlation_value_label.setText(f"Value: {self.correlation_threshold:.3f}")
+        print(f"Correlation threshold changed to: {self.correlation_threshold}")
+
+    def set_moran_threshold(self, value):
+        self.moran_threshold = self._ui.moran_slider.value()
+        self._ui.moran_value_label.setText(f"Value: {self.moran_threshold:.3f}")
+        print(f"Moran threshold changed to: {self.moran_threshold}")
+    
+    def set_sobolev_threshold(self, value):
+        self.sobolev_threshold = self._ui.sobolev_slider.value()
+        self._ui.sobolev_value_label.setText(f"Value: {self.sobolev_threshold:.3f}")
+        print(f"Sobolev threshold changed to: {self.sobolev_threshold}")
+    
+    def set_ssim_threshold(self, value):
+        self.ssim_threshold = self._ui.ssim_slider.value()
+        self._ui.ssim_value_label.setText(f"Value: {self.ssim_threshold:.3f}")
+        print(f"SSIM threshold changed to: {self.ssim_threshold}")
+
+    def set_kolmogorov_threshold(self, value):
+        self.kolmogorov_threshold = self._ui.kolmogorov_slider.value()
+        self._ui.kolmogorov_value_label.setText(f"Value: {self.kolmogorov_threshold:.3f}")
+        print(f"Kolmogorov threshold changed to: {self.kolmogorov_threshold}")
+    
+    def set_energy_threshold(self, value):
+        self.energy_threshold = self._ui.energy_slider.value()
+        self._ui.energy_value_label.setText(f"Value: {self.energy_threshold:.3f}")
+        print(f"Energy threshold changed to: {self.energy_threshold}")
 
     def set_params(self, param):
         self.param = param
@@ -516,6 +652,9 @@ class TweezerWindow(QMainWindow):
         _, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
         print("Precomputing done ....")
 
+        # set the min and max range of the slider bars and spinners
+
+        print("Slider bars for setting thresholds populated .....")
         self.precomputed_fork_thread.quit()
         self.precomputed_fork_thread.wait()
         self.precomputed_fork_thread = None
@@ -592,9 +731,9 @@ class TweezerWindow(QMainWindow):
 
         #score_plotter(self.all_scores['sobolevs'], self.scores_median_mad['sobolevs'], 
         #            plot_range, x_fill, 'Sobolev norm')
-#        score_plotter(self.all_scores['energies'], self.scores_median_mad['energies'], 
-#                    plot_range, x_fill, 'Energy test')
-#        
+        #score_plotter(self.all_scores['energies'], self.scores_median_mad['energies'], 
+        #            plot_range, x_fill, 'Energy test')
+        
         print('Score Plotting .....')
        
 

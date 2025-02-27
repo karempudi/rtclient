@@ -1066,4 +1066,161 @@ class VerticalTwoRectGridMotion(Motion):
     def plot_motion_plan(self):
         plt.figure()
         plt.close()
+
+
+class TwoSmallChipsMotion(Motion):
+
+    """
+    Class to specify positions when imaging two smaller mother machine chips
+    on the same coverslip
+           (First chip)
+    (TL) (0) ---------- (TR) (1)
+     |                   |           
+     |                   |          
+     |                   |         
+     |                   |         
+     |                   |        
+     |                   |         
+    (BL) (3) ---------- (BR) (2) 
+
+            (Second chip)
+
+    (TL2) (0) ---------- (TR2) (1)
+     |                   |           
+     |                   |          
+     |                   |         
+     |                   |         
+     |                   |        
+     |                   |         
+    (BL2) (3) ---------- (BR2) (2) 
+
+
+    Args:
+        filename: a file name with positions list from micromanager 2.0 with
+            position names "PosTL1", "PosTR1", "PosBR1", "PosBL2", "PosTL2", 
+            "PosTR2", "PosBR1", "PosBL2" that mark the 8 corners.
+        corner_names: a list of position labels used 
+        nrows (int): number of rows  (depends on how many rows you want to image)
+        ncols (int): number of cols  (depends on magnification, stick to 40x, 100 blocks, so 20 positions)
+    """
+    def __init__(self, filename: Union[str, pathlib.Path] = '', objective: int = 40,
+                corner_names=['TL', 'TR', 'BR', 'BL'],
+                nrows=None, ncols=None, num_dummy_positions=25):
+        # The strategy here is to create two sub rectangles and merge their positions
+        # to create full scale
+        super().__init__(objective=objective)
+        self.nrows = nrows # 
+        self.ncols = ncols
+        self.corner_names = corner_names
+        self.num_dummy_positions = num_dummy_positions
+        self.top_chip_motion = RectGridMotion(objective=objective, movement_type='left',
+                                corner_names=corner_names)
+        self.bottom_chip_motion = RectGridMotion(objective=objective, movement_type='left',
+                                corner_names=corner_names)
+
+        self.positions = None
+        self.dummy_positions1 = []
+        self.dummy_positions2 = []
+    
+    def set_rows(self, rows):
+        self.top_chip_motion.set_rows(rows)
+        self.bottom_chip_motion.set_rows(rows)
+        self.nrows = rows
+    
+    def set_cols(self, cols):
+        self.top_chip_motion.set_cols(cols)
+        self.bottom_chip_motion.set_cols(cols)
+        self.ncols = cols
+    
+    def set_dummy_number(self, n_dummies):
+        self.num_dummy_positions = n_dummies
+    
+    def set_corner_position(self, label, position_dict):
+        """
+        Function that will set the positions of the corners,
+        by passing one at a time. It is used if you set the positions
+        from a UI by grabbing the current location.
+        Arguments:
+            label: one of 'TL1', 'TR1', 'BR1', 'BL1', 'TL2', 'TR2', 'BR2', 'BL2'
+            position_dict: dict with keys 'X', 'Y', 'Z', 'grid_row', 'grid_col', 'label'
+        """
+        if label[:2] not in self.corner_names:
+            raise ValueError(f"Position label not in the corner label list, found: {label}...")
+        else:
+            # check if all keys are in the position dict
+            keys = ['x', 'y', 'z', 'grid_row', 'grid_col', 'label']
+            for key in keys:
+                if key not in position_dict:
+                    raise ValueError(f"Key {key} not found in position dict: {position_dict}")
+            if label[2:] == '':
+                self.top_chip_motion.corner_pos_dict[label[:2]] = position_dict
+            elif int(label[2:]) == 2:
+                self.bottom_chip_motion.corner_pos_dict[label[:2]] = position_dict
+    
+    def construct_grid(self, starting_position_no=1):
+        if len(self.top_chip_motion.corner_pos_dict) != 4 or len(self.bottom_chip_motion.corner_pos_dict) != 4:
+            raise ValueError("All 8 corners not set .. check that everything is set")
+
+        print(self.top_chip_motion.corner_pos_dict)
+        print(self.bottom_chip_motion.corner_pos_dict)
         
+        self.top_chip_motion.construct_grid(starting_position_no)
+        n_top_positions = len(self.top_chip_motion.positions)
+        self.bottom_chip_motion.construct_grid(starting_position_no + n_top_positions)
+
+        top_positions = self.top_chip_motion.positions
+        bottom_positions = self.bottom_chip_motion.positions
+        self.positions = top_positions + bottom_positions
+        print(n_top_positions, len(self.positions))
+
+    def construct_dummy_grid(self, number_dummies=25, start_dummy_number=1001):
+        """
+        This will put the dummy positions between 
+            (BL and TL2 --> dummy_positions1) 
+        and (BL2 and TL --> dummy_positions2)
+        """
+        self.dummy_positions1 = []
+        self.dummy_positions2 = []
+
+        # do the interpolation and generate dummy positions1 and dummpy positions 2
+        x_down = np.linspace(self.top_chip_motion.corner_pos_dict['BL']['x'], 
+                        self.bottom_chip_motion.corner_pos_dict['TL']['x'], num=self.num_dummy_positions)
+
+        y_down = np.linspace(self.top_chip_motion.corner_pos_dict['BL']['y'], 
+                        self.bottom_chip_motion.corner_pos_dict['TL']['y'], num=self.num_dummy_positions)
+
+        z_down = np.linspace(self.top_chip_motion.corner_pos_dict['BL']['z'], 
+                        self.bottom_chip_motion.corner_pos_dict['TL']['z'], num=self.num_dummy_positions)
+
+        for i in range(len(x_down)):
+            self.dummy_positions1.append({
+                'x': x_down[i],
+                'y': y_down[i],
+                'z': z_down[i],
+                'grid_row': 0,
+                'grid_col': 0,
+                'label': 'Pos' + str(i+start_dummy_number).zfill(5)
+            })
+
+        counter = 0
+        dummy_number = start_dummy_number + len(x_down)
+        for i in range(len(x_down)-1, -1, -1):
+            self.dummy_positions2.append({
+                'x': x_down[i],
+                'y': y_down[i],
+                'z': z_down[i],
+                'grid_row': 0,
+                'grid_col': 0,
+                'label': 'Pos' + str(counter+dummy_number).zfill(5)
+            })
+            counter += 1
+
+        print(self.dummy_positions1)
+        print('----------------------------')
+        print(self.dummy_positions2)
+        print('---------------------------')
+    
+    def plot_motion_plan(self):
+        plt.figure()
+        plt.close()
+
