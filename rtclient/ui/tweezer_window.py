@@ -112,9 +112,10 @@ class SingleForkFetchThread(QThread):
             self.fork_data = {
                 'heatmap': np.random.normal(loc=0.0, scale=1.0, size=(100, 100)),
                 'mean_cell_lengths': np.random.normal(loc=0.0, scale=1.0, size=(100,)),
-                'extent': (None, None),
+                #'extent': (None, None),
                 'position': self.position,
-                'trap_no': self.trap_no
+                'trap_no': self.trap_no,
+                'nr_dots': self.nr_dots
             }
         finally:
             self.fork_fetched.emit()
@@ -231,6 +232,7 @@ class TweezerWindow(QMainWindow):
         self.flat_full_heatmap_init = None
         self.moran_weight = None
         self.e_dists = None
+        self.nr_dots = None
 
         self.all_scores = None
         self.scores_median_mad = None
@@ -560,7 +562,6 @@ class TweezerWindow(QMainWindow):
 
         trap_index = (self.current_pos - 1 )* 28 + self.current_trap_no
         current_score = scores[trap_index]
-        #print(current_score)
         medi = median_mad[0]
         mad_below_med = median_mad[1]
         mad_above_med = median_mad[2]
@@ -571,7 +572,8 @@ class TweezerWindow(QMainWindow):
         self.score_plot_axes.axhline(medi, linestyle='--', color='red')
         self.score_plot_axes.fill(x_fill, fill_area, color='red', alpha=0.25, zorder=3)
         self.score_plot_axes.set_xlabel('Channel')
-        self.score_plot_axes.set_title(plot_key)
+        self.score_plot_axes.set_ylabel(plot_key)
+        self.score_plot_axes.figure.tight_layout()
 
         self.score_plot_view.draw()
 
@@ -616,6 +618,9 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.set_ylabel('Cell size (µm$^2$)')
                 self.all_forks_axes.set_xlim(-3, 3)
                 self.all_forks_axes.set_ylim(3, y[0])
+                nr_dots = fork_data['nr_dots']
+                self.all_forks_axes.set_title(f'Number of dots: {nr_dots}')
+                self.all_forks_axes.figure.tight_layout()
                 
             
                 #Around initiation fork plot 
@@ -670,6 +675,9 @@ class TweezerWindow(QMainWindow):
                     self.single_fork_axes.set_ylabel('Cell size (µm$^2$)')
                     self.single_fork_axes.set_xlim(-3, 3)
                     self.single_fork_axes.set_ylim(3, y[0])
+                    nr_dots = fork_data['nr_dots']
+                    self.single_fork_axes.set_title(f'Number of dots: {nr_dots}')
+                    self.single_fork_axes.figure.tight_layout()
                     
                     # grab score for the variables
 
