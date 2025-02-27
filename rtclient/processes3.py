@@ -219,31 +219,31 @@ class ExptRun:
         logger = logging.getLogger(name)
         def put_images_in_queue(image, metadata, event_queue):
             #print(metadata['Axes'], '----->', image.shape)
+            if metadata['Axes'] != {}:
+                if not hasattr(put_images_in_queue, 'datapoint'):
+                    put_images_in_queue.datapoint = {}
 
-            if not hasattr(put_images_in_queue, 'datapoint'):
-                put_images_in_queue.datapoint = {}
+                img_type = metadata['Axes']['preset']
+                if img_type == 'phase_fast':
+                    key = 'phase'
+                elif img_type == 'venus':
+                    key = 'fluor'
+                    
+                put_images_in_queue.datapoint[key] = image
+                put_images_in_queue.datapoint['position'] = metadata['Axes']['position']
+                put_images_in_queue.datapoint['timepoint'] = metadata['Axes']['time']
 
-            img_type = metadata['Axes']['preset']
-            if img_type == 'phase_fast':
-                key = 'phase'
-            elif img_type == 'venus':
-                key = 'fluor'
-                
-            put_images_in_queue.datapoint[key] = image
-            put_images_in_queue.datapoint['position'] = metadata['Axes']['position']
-            put_images_in_queue.datapoint['timepoint'] = metadata['Axes']['time']
+                #print(put_images_in_queue.datapoint.keys())
 
-            #print(put_images_in_queue.datapoint.keys())
+                if 'phase' in put_images_in_queue.datapoint.keys() and 'fluor' in put_images_in_queue.datapoint.keys():
+                    put_images_in_queue.datapoint['type'] = 'phase_fluor'
 
-            if 'phase' in put_images_in_queue.datapoint.keys() and 'fluor' in put_images_in_queue.datapoint.keys():
-                put_images_in_queue.datapoint['type'] = 'phase_fluor'
-
-                data = put_images_in_queue.datapoint
-                logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
-                                data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['type'])
-                self.segment_queue.put(data)
-                #print('Put a datapoint in the queue')
-                put_images_in_queue.datapoint = {}
+                    data = put_images_in_queue.datapoint
+                    logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
+                                    data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['type'])
+                    self.segment_queue.put(data)
+                    #print('Put a datapoint in the queue')
+                    put_images_in_queue.datapoint = {}
             
 
             next_event = next(self.e)
