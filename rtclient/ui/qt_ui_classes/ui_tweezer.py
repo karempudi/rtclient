@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFormLayout, QHBoxLayout,
-    QLCDNumber, QLabel, QLineEdit, QListWidget,
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QFormLayout,
+    QHBoxLayout, QLabel, QLineEdit, QListWidget,
     QListWidgetItem, QMainWindow, QMenuBar, QPushButton,
-    QRadioButton, QSizePolicy, QSpinBox, QStatusBar,
-    QVBoxLayout, QWidget)
+    QRadioButton, QSizePolicy, QStatusBar, QVBoxLayout,
+    QWidget)
 
 class Ui_TweezerWindow(object):
     def setupUi(self, TweezerWindow):
@@ -277,7 +277,7 @@ class Ui_TweezerWindow(object):
         self.label_4.setGeometry(QRect(1090, 490, 111, 17))
         self.horizontalLayoutWidget_3 = QWidget(self.centralwidget)
         self.horizontalLayoutWidget_3.setObjectName(u"horizontalLayoutWidget_3")
-        self.horizontalLayoutWidget_3.setGeometry(QRect(1400, 170, 351, 300))
+        self.horizontalLayoutWidget_3.setGeometry(QRect(1420, 160, 351, 300))
         self.threshold_layout = QHBoxLayout(self.horizontalLayoutWidget_3)
         self.threshold_layout.setObjectName(u"threshold_layout")
         self.threshold_layout.setContentsMargins(0, 0, 0, 0)
@@ -359,15 +359,26 @@ class Ui_TweezerWindow(object):
 
         self.threshold_layout.addLayout(self.threshold_values_layout)
 
-        self.lcdNumber = QLCDNumber(self.centralwidget)
-        self.lcdNumber.setObjectName(u"lcdNumber")
-        self.lcdNumber.setGeometry(QRect(1130, 800, 64, 23))
         self.pushButton_2 = QPushButton(self.centralwidget)
         self.pushButton_2.setObjectName(u"pushButton_2")
         self.pushButton_2.setGeometry(QRect(910, 690, 101, 25))
-        self.spinBox = QSpinBox(self.centralwidget)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setGeometry(QRect(1000, 810, 44, 26))
+        self.apply_filters_check = QCheckBox(self.centralwidget)
+        self.apply_filters_check.setObjectName(u"apply_filters_check")
+        self.apply_filters_check.setGeometry(QRect(1510, 110, 111, 23))
+        self.active_traps_counter = QLineEdit(self.centralwidget)
+        self.active_traps_counter.setObjectName(u"active_traps_counter")
+        self.active_traps_counter.setGeometry(QRect(760, 800, 113, 25))
+        self.active_traps_counter.setReadOnly(True)
+        self.label_5 = QLabel(self.centralwidget)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setGeometry(QRect(680, 800, 67, 17))
+        self.label_6 = QLabel(self.centralwidget)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setGeometry(QRect(1030, 800, 67, 17))
+        self.tweeze_traps_counter = QLineEdit(self.centralwidget)
+        self.tweeze_traps_counter.setObjectName(u"tweeze_traps_counter")
+        self.tweeze_traps_counter.setGeometry(QRect(1100, 800, 113, 25))
+        self.tweeze_traps_counter.setReadOnly(True)
         TweezerWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(TweezerWindow)
         self.menubar.setObjectName(u"menubar")
@@ -427,6 +438,9 @@ class Ui_TweezerWindow(object):
         self.kolmogorov_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
         self.energy_value_label.setText(QCoreApplication.translate("TweezerWindow", u"Value:", None))
         self.pushButton_2.setText(QCoreApplication.translate("TweezerWindow", u"Save selection", None))
+        self.apply_filters_check.setText(QCoreApplication.translate("TweezerWindow", u"Apply Filters", None))
+        self.label_5.setText(QCoreApplication.translate("TweezerWindow", u"Count:", None))
+        self.label_6.setText(QCoreApplication.translate("TweezerWindow", u"Count:", None))
         pass
     # retranslateUi
 

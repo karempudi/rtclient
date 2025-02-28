@@ -14,6 +14,7 @@ import rtseg.cells.scoring as sco
 from rtseg.utils.get_fork_init import read_all_fork_data_around_init
 from rtseg.cells.scoring import score_all_fork_plots #score_plotter
 from os.path import exists
+from functools import reduce
 import h5py
 #import libpysal
 #import matplotlib.pyplot as plt
@@ -204,8 +205,8 @@ class DoubleSlider(QSlider):
         super().setMinimum(0)
         super().setMaximum(self._max_int)
 
-        self._min_value = 0.0
-        self._max_value = 1.0
+        self._min_value = -1e5
+        self._max_value = +1e5
 
     @property
     def _value_range(self):
@@ -288,7 +289,6 @@ class TweezerWindow(QMainWindow):
         self._ui.threshold_sliders_layout.addWidget(self._ui.energy_slider)
 
 
-        self.setup_button_handlers()
 
         self.param = param
 
@@ -338,8 +338,10 @@ class TweezerWindow(QMainWindow):
         self.show_active_or_tweeze = 'acitve' # will use to toggle between 'active' and 'tweeze'
         self.active_traps_list = []
         self.tweeze_traps_list = []
+        self.filtered_traps_list = []
 
         # current values of thresholds
+        self.apply_filters = False
         self.correlation_threshold = None
         self.moran_threshold = None
         self.sobolev_threshold = None
@@ -347,6 +349,7 @@ class TweezerWindow(QMainWindow):
         self.kolmogorov_threshold = None
         self.energy_threshold = None
 
+        self.setup_button_handlers()
 
     def setup_button_handlers(self):
 
@@ -434,43 +437,63 @@ class TweezerWindow(QMainWindow):
 
         # hook up the slider bars
 
-        self._ui.correlation_slider.sliderMoved.connect(self.set_correlation_threshold)
-        self._ui.moran_slider.sliderMoved.connect(self.set_moran_threshold)
-        self._ui.sobolev_slider.sliderMoved.connect(self.set_sobolev_threshold)
-        self._ui.ssim_slider.sliderMoved.connect(self.set_ssim_threshold)
-        self._ui.kolmogorov_slider.sliderMoved.connect(self.set_kolmogorov_threshold)
-        self._ui.energy_slider.sliderMoved.connect(self.set_energy_threshold)
+        self._ui.correlation_slider.sliderReleased.connect(self.set_correlation_threshold)
+        self._ui.moran_slider.sliderReleased.connect(self.set_moran_threshold)
+        self._ui.sobolev_slider.sliderReleased.connect(self.set_sobolev_threshold)
+        self._ui.ssim_slider.sliderReleased.connect(self.set_ssim_threshold)
+        self._ui.kolmogorov_slider.sliderReleased.connect(self.set_kolmogorov_threshold)
+        self._ui.energy_slider.sliderReleased.connect(self.set_energy_threshold)
+
+        # apply filters
+        self._ui.apply_filters_check.stateChanged.connect(self.set_apply_filters)
+
+        # counters intialization
+        self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+        self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
 
 
-    def set_correlation_threshold(self, value):
+    def set_apply_filters(self):
+        print("Filters will be applied....")
+        if self._ui.apply_filters_check.isChecked():
+            self.apply_filters = True
+        else:
+            self.apply_filters = False
+
+    def set_correlation_threshold(self):
         self.correlation_threshold = self._ui.correlation_slider.value()
         self._ui.correlation_value_label.setText(f"Value: {self.correlation_threshold:.3f}")
-        print(f"Correlation threshold changed to: {self.correlation_threshold}")
+        #print(f"Correlation threshold changed to: {self.correlation_threshold}")
+        self.plot_scores()
 
-    def set_moran_threshold(self, value):
+    def set_moran_threshold(self):
         self.moran_threshold = self._ui.moran_slider.value()
         self._ui.moran_value_label.setText(f"Value: {self.moran_threshold:.3f}")
-        print(f"Moran threshold changed to: {self.moran_threshold}")
+        self.plot_scores()
+        #print(f"Moran threshold changed to: {self.moran_threshold}")
     
-    def set_sobolev_threshold(self, value):
+    def set_sobolev_threshold(self):
         self.sobolev_threshold = self._ui.sobolev_slider.value()
         self._ui.sobolev_value_label.setText(f"Value: {self.sobolev_threshold:.3f}")
-        print(f"Sobolev threshold changed to: {self.sobolev_threshold}")
+        self.plot_scores()
+        #print(f"Sobolev threshold changed to: {self.sobolev_threshold}")
     
-    def set_ssim_threshold(self, value):
+    def set_ssim_threshold(self):
         self.ssim_threshold = self._ui.ssim_slider.value()
         self._ui.ssim_value_label.setText(f"Value: {self.ssim_threshold:.3f}")
-        print(f"SSIM threshold changed to: {self.ssim_threshold}")
+        self.plot_scores()
+        #print(f"SSIM threshold changed to: {self.ssim_threshold}")
 
-    def set_kolmogorov_threshold(self, value):
+    def set_kolmogorov_threshold(self):
         self.kolmogorov_threshold = self._ui.kolmogorov_slider.value()
         self._ui.kolmogorov_value_label.setText(f"Value: {self.kolmogorov_threshold:.3f}")
-        print(f"Kolmogorov threshold changed to: {self.kolmogorov_threshold}")
+        self.plot_scores()
+        #print(f"Kolmogorov threshold changed to: {self.kolmogorov_threshold}")
     
-    def set_energy_threshold(self, value):
+    def set_energy_threshold(self):
         self.energy_threshold = self._ui.energy_slider.value()
         self._ui.energy_value_label.setText(f"Value: {self.energy_threshold:.3f}")
-        print(f"Energy threshold changed to: {self.energy_threshold}")
+        self.plot_scores()
+        #print(f"Energy threshold changed to: {self.energy_threshold}")
 
     def set_params(self, param):
         self.param = param
@@ -654,6 +677,42 @@ class TweezerWindow(QMainWindow):
         _, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
         print("Precomputing done ....")
 
+        corr_min, corr_max = np.nanmin(self.all_scores['correlation']), np.nanmax(self.all_scores['correlation'])
+        moran_min, moran_max = np.nanmin(self.all_scores['moran'][:, :, 0]), np.nanmax(self.all_scores['moran'][:, :, 0])
+        sobolev_min, sobolev_max = np.nanmin(self.all_scores['sobolev']), np.nanmax(self.all_scores['sobolev'])
+        ssim_min, ssim_max = np.nanmin(self.all_scores['ssim']), np.nanmax(self.all_scores['ssim'])
+        kolmogorov_min, kolmogorov_max = np.nanmin(self.all_scores['ks'][:, :, 0]), np.nanmax(self.all_scores['ks'][:, :, 0])
+        energy_min, energy_max = np.nanmin(self.all_scores['energies']), np.nanmax(self.all_scores['energies'])
+
+        print(f"Correlation min: {corr_min}, max: {corr_max}")
+        print(f"Moran min: {moran_min}, max: {moran_max}")
+        print(f"Sobolev min: {sobolev_min}, max: {sobolev_max}")
+        print(f"SSIM min: {ssim_min}, max: {ssim_max}")
+        print(f"Kolmogorv min: {kolmogorov_min} max: {kolmogorov_max}")
+        print(f"Energy min: {energy_min} max: {energy_max}")
+
+
+        print("Setting min and max of the slider bars")
+        # set max first 
+        self._ui.correlation_slider.setMaximum(corr_max)
+        self._ui.correlation_slider.setMinimum(corr_min)
+
+        self._ui.moran_slider.setMaximum(moran_max)
+        self._ui.moran_slider.setMinimum(moran_min)
+
+        self._ui.sobolev_slider.setMaximum(sobolev_max)
+        self._ui.sobolev_slider.setMinimum(sobolev_min)
+
+        self._ui.ssim_slider.setMaximum(ssim_max)
+        self._ui.ssim_slider.setMinimum(ssim_min)
+
+        self._ui.kolmogorov_slider.setMaximum(kolmogorov_max)
+        self._ui.kolmogorov_slider.setMinimum(kolmogorov_min)
+
+        self._ui.energy_slider.setMinimum(energy_min)
+        self._ui.energy_slider.setMaximum(energy_max)
+
+
         # set the min and max range of the slider bars and spinners
 
         print("Slider bars for setting thresholds populated .....")
@@ -662,8 +721,11 @@ class TweezerWindow(QMainWindow):
         self.precomputed_fork_thread = None
 
     def plot_scores(self, clear_current_score=False):
-        #Hook this to a button
-        
+        """
+        Arguments:
+            clear_current_score (bool): is used to highlight the current score that is selected
+            filter_indices : used to hightlight the indices that pass the threshold
+        """
         if self.all_scores is None and self.scores_median_mad is None:
             sys.stdout.write("Fork plots were not pre-computed or not loaded into memory. Doing that now.\n")
             sys.stdout.flush()
@@ -699,13 +761,94 @@ class TweezerWindow(QMainWindow):
             scores = self.all_scores[plot_key].flatten()
             median_mad = self.scores_median_mad[plot_key]
 
+
+        # filters scores based on sliders
+        if self.apply_filters:
+            corr_current = self._ui.correlation_slider.value()
+            moran_current = self._ui.moran_slider.value()
+            sobolev_current = self._ui.sobolev_slider.value()
+            ssim_current = self._ui.ssim_slider.value()
+            kolmogorov_current = self._ui.kolmogorov_slider.value()
+            energy_current = self._ui.energy_slider.value()
+
+            correlation_scores = self.all_scores['correlation'].flatten()
+            corr_filtered_idx= np.where(correlation_scores < corr_current)[0]
+
+            moran_scores = self.all_scores['moran'][:, :, 0].flatten()
+            moran_filtered_idx = np.where(moran_scores < moran_current)[0]
+
+            sobolev_scores = self.all_scores['sobolev'].flatten()
+            sobolev_filtered_idx = np.where(sobolev_scores > sobolev_current)[0]
+
+            ssim_scores = self.all_scores['ssim'].flatten()
+            ssim_filtered_idx = np.where(ssim_scores < ssim_current)[0]
+
+            kolmogorov_scores = self.all_scores['ks'][:, :, 0].flatten()
+            kolmogorov_filtered_idx = np.where(kolmogorov_scores > kolmogorov_current)[0]
+
+            energy_scores = self.all_scores['energies'].flatten()
+            energy_filtered_idx = np.where(energy_scores < energy_current)[0]
+            
+            # filter scores
+            filtered_indices = reduce(np.union1d, (corr_filtered_idx, moran_filtered_idx, 
+                                        sobolev_filtered_idx, ssim_filtered_idx,
+                                        kolmogorov_filtered_idx, energy_filtered_idx))
+            #print('-------------------')
+            #print(filtered_indices)        
+            #print('*********************')
+
+            filtered_scores = scores[filtered_indices]
+
+            # add the filtered traps
+            num_traps = self.param.BarcodeAndChannels.num_blocks_per_image * self.param.BarcodeAndChannels.num_traps_per_block
+            for item in self.filtered_traps_list:
+                self.active_traps_list.append(item)
+            
+            self.filtered_traps_list = []
+
+            # memorize current selection 
+
+            for idx in filtered_indices:
+                pos = idx // num_traps + 1
+                trap_no = idx % num_traps + 1
+                self.filtered_traps_list.append((pos, trap_no))
+                item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
+                if (pos, trap_no) in self.active_traps_list:
+                    self.active_traps_list.remove((pos, trap_no))
+
+            self._ui.active_traps_list.clear()
+            self._ui.tweeze_traps_list.clear()
+
+            for (pos, trap_no) in self.active_traps_list:
+                item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
+                self._ui.active_traps_list.addItem(item)
+
+            for (pos, trap_no) in self.tweeze_traps_list:
+                item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
+                self._ui.tweeze_traps_list.addItem(item)
+
+            for (pos, trap_no) in self.filtered_traps_list:
+                item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
+                self._ui.tweeze_traps_list.addItem(item)
+
+            self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+            self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
+
+
+
+
         trap_index = (self.current_pos - 1 )* 28 + self.current_trap_no
         current_score = scores[trap_index]
         medi = median_mad[0]
         mad_below_med = median_mad[1]
         mad_above_med = median_mad[2]
         fill_area = [mad_below_med, mad_below_med, mad_above_med, mad_above_med]
+
         self.score_plot_axes.plot(plot_range, scores, 'o')
+
+        if self.apply_filters:
+            self.score_plot_axes.plot(filtered_indices+1, filtered_scores, 'rx')
+
         if clear_current_score is True:
             self.score_plot_axes.plot(1 + trap_index, current_score, 'ko')
         self.score_plot_axes.axhline(medi, linestyle='--', color='red')
@@ -815,7 +958,7 @@ class TweezerWindow(QMainWindow):
                     self.single_fork_axes.set_xlim(-3, 3)
                     self.single_fork_axes.set_ylim(3, y[0])
                     nr_dots = fork_data['nr_dots']
-                    self.single_fork_axes.set_title(f'Number of dots: {nr_dots}')
+                    self.single_fork_axes.set_title(f'Dots: {nr_dots} Pos: {position} Trap: {trap_no+1}')
                     self.single_fork_axes.figure.tight_layout()
                     
                     # grab score for the variables
@@ -902,9 +1045,7 @@ class TweezerWindow(QMainWindow):
     def get_all_traps_list(self, clicked):
 
         # Populate all the traps in the active list
-        self.active_traps_list.clear()
-        self.tweeze_traps_list.clear()
-
+        self.reset_lists(None)
         try:
 
             # get traps
@@ -921,6 +1062,9 @@ class TweezerWindow(QMainWindow):
                     item = 'Pos: ' + str(pos).zfill(3) + ' Trap: ' + str(trap_no).zfill(3)
                     self._ui.active_traps_list.addItem(item)
 
+            self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+            self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
+
         except Exception as e:
             msg = QMessageBox()
             msg.setText(f'Unable to fetch traps list due to: {e}')
@@ -932,6 +1076,8 @@ class TweezerWindow(QMainWindow):
         self.tweeze_traps_list.clear()
         self._ui.active_traps_list.clear()
         self._ui.tweeze_traps_list.clear()
+        self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+        self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
 
     def show_selected_tweeze_trap(self):
 
@@ -999,6 +1145,8 @@ class TweezerWindow(QMainWindow):
                 self.tweeze_traps_list.append((position, trap_no))
                 sys.stdout.write(f"Moved Pos: {position}  Trap: {trap_no} to tweeze list\n")
                 sys.stdout.flush()
+            self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+            self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
         except Exception as e:
             sys.stdout.write(f"Moving trap to tweeeze list failed due to {e}\n")
             sys.stdout.flush()
@@ -1016,6 +1164,8 @@ class TweezerWindow(QMainWindow):
                 self.active_traps_list.append((position, trap_no))
                 sys.stdout.write(f"Moved Pos: {position}  Trap: {trap_no} to active list\n")
                 sys.stdout.flush()
+            self._ui.active_traps_counter.setText(str(len(self.active_traps_list)))
+            self._ui.tweeze_traps_counter.setText(str(len(self.tweeze_traps_list) + len(self.filtered_traps_list)))
         except Exception as e:
             sys.stdout.write(f"Moving trap to active list failed due to {e}\n")
             sys.stdout.flush()

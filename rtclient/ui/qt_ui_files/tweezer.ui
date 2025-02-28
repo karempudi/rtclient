@@ -524,8 +524,8 @@
    <widget class="QWidget" name="horizontalLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>1400</x>
-      <y>170</y>
+      <x>1420</x>
+      <y>160</y>
       <width>351</width>
       <height>300</height>
      </rect>
@@ -637,16 +637,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLCDNumber" name="lcdNumber">
-    <property name="geometry">
-     <rect>
-      <x>1130</x>
-      <y>800</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
@@ -660,14 +650,69 @@
      <string>Save selection</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox">
+   <widget class="QCheckBox" name="apply_filters_check">
     <property name="geometry">
      <rect>
-      <x>1000</x>
-      <y>810</y>
-      <width>44</width>
-      <height>26</height>
+      <x>1510</x>
+      <y>110</y>
+      <width>111</width>
+      <height>23</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>Apply Filters</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="active_traps_counter">
+    <property name="geometry">
+     <rect>
+      <x>760</x>
+      <y>800</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>800</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Count:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>800</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Count:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="tweeze_traps_counter">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>800</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
