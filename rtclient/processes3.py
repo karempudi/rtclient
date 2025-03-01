@@ -34,7 +34,8 @@ class AcquisitionEvents:
         self.events = events
         for event in self.events:
             event['min_start_time'] = min_start_time
-            event['axes']['time'] = cycle_no
+            if not event['extra_tags']['is_dummy']:
+                event['axes']['time'] = cycle_no
         self.max = len(self.events)
 
     def __next__(self):
