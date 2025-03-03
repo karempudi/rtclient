@@ -437,13 +437,15 @@ class ExptRun:
                         break
                 else:
                     continue
-
+                
+                traps_per_img= self.params.BarcodeAndChannels.num_blocks_per_image*self.params.BarcodeAndChannels.num_traps_per_block
                 # computer internal coordinates using props and backbone fits
                 forkplot_data = compute_forkplot_stats(data_internal_queue['seg_mask'], 
                                         data_internal_queue['rotated_coords'],
                                         data_internal_queue['position'],
                                         data_internal_queue['timepoint'],
-                                        data_internal_queue['trap_locations_list'])
+                                        data_internal_queue['trap_locations_list'], traps_per_img=traps_per_img
+                                        )
                 
                 # write results
                 write_files({
