@@ -339,6 +339,7 @@ class TweezerWindow(QMainWindow):
         self.active_traps_list = []
         self.tweeze_traps_list = []
         self.filtered_traps_list = []
+        self.current_filtered_indices = None
 
         # current values of thresholds
         self.apply_filters = False
@@ -720,7 +721,7 @@ class TweezerWindow(QMainWindow):
         self.precomputed_fork_thread.wait()
         self.precomputed_fork_thread = None
 
-    def plot_scores(self, clear_current_score=False):
+    def plot_scores(self, clear_current_score=False, change_highlight=False):
         """
         Arguments:
             clear_current_score (bool): is used to highlight the current score that is selected
@@ -763,7 +764,7 @@ class TweezerWindow(QMainWindow):
 
 
         # filters scores based on sliders
-        if self.apply_filters:
+        if self.apply_filters and not change_highlight:
             corr_current = self._ui.correlation_slider.value()
             moran_current = self._ui.moran_slider.value()
             sobolev_current = self._ui.sobolev_slider.value()
@@ -790,14 +791,14 @@ class TweezerWindow(QMainWindow):
             energy_filtered_idx = np.where(energy_scores < energy_current)[0]
             
             # filter scores
-            filtered_indices = reduce(np.union1d, (corr_filtered_idx, moran_filtered_idx, 
+            self.filtered_indices = reduce(np.union1d, (corr_filtered_idx, moran_filtered_idx, 
                                         sobolev_filtered_idx, ssim_filtered_idx,
                                         kolmogorov_filtered_idx, energy_filtered_idx))
             #print('-------------------')
             #print(filtered_indices)        
             #print('*********************')
 
-            filtered_scores = scores[filtered_indices]
+            #filtered_scores = scores[filtered_indices]
 
             # add the filtered traps
             num_traps = self.param.BarcodeAndChannels.num_blocks_per_image * self.param.BarcodeAndChannels.num_traps_per_block
@@ -808,7 +809,7 @@ class TweezerWindow(QMainWindow):
 
             # memorize current selection 
 
-            for idx in filtered_indices:
+            for idx in self.filtered_indices:
                 pos = idx // num_traps + 1
                 trap_no = idx % num_traps + 1
                 self.filtered_traps_list.append((pos, trap_no))
@@ -847,7 +848,8 @@ class TweezerWindow(QMainWindow):
         self.score_plot_axes.plot(plot_range, scores, 'o')
 
         if self.apply_filters:
-            self.score_plot_axes.plot(filtered_indices+1, filtered_scores, 'rx')
+            filtered_scores = scores[self.filtered_indices]
+            self.score_plot_axes.plot(self.filtered_indices+1, filtered_scores, 'rx')
 
         if clear_current_score is True:
             self.score_plot_axes.plot(1 + trap_index, current_score, 'ko')
@@ -992,7 +994,7 @@ class TweezerWindow(QMainWindow):
                 
                     # update the plot
                     if self.score_plot_exists:
-                        self.plot_scores(clear_current_score=True)
+                        self.plot_scores(clear_current_score=True, change_highlight=True)
 
                     #Fork plot around initiation for a single trap
                     #self.single_fork_axes.matshow(heatmap_trap_init, aspect='auto', interpolation='none',
