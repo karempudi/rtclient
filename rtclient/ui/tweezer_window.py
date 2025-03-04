@@ -140,6 +140,8 @@ class PreComputeForkScoreFetchThread(QThread):
             file_dir_hdf5 = Path(self.param.Save.directory) / Path('fork_score_data.h5')
             if not exists(file_dir_hdf5):
                 self.fork_data, moran_weights = read_all_fork_data_around_init(self.param)
+                #print(self.fork_data)
+                #print(moran_weights)
                 self.all_scores, self.scores_median_mad = score_all_fork_plots(self.fork_data, moran_weights)
                 self.save_data_to_file()
             else:
@@ -791,7 +793,7 @@ class TweezerWindow(QMainWindow):
             energy_filtered_idx = np.where(energy_scores < energy_current)[0]
             
             # filter scores
-            self.filtered_indices = reduce(np.union1d, (corr_filtered_idx, moran_filtered_idx, 
+            self.filtered_indices = reduce(np.intersect1d, (corr_filtered_idx, moran_filtered_idx, 
                                         sobolev_filtered_idx, ssim_filtered_idx,
                                         kolmogorov_filtered_idx, energy_filtered_idx))
             #print('-------------------')

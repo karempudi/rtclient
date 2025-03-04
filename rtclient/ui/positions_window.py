@@ -349,7 +349,7 @@ class PositionsWindow(QMainWindow):
             ncols = self.selected_values['n_cols']
             corners = self.selected_values['corners']
             if sides == 2:
-                self.motion_object = TwoRectGridMotion(chip_orientation=chip_orientation) 
+                self.motion_object = TwoRectGridMotion(chip_orientation=chip_orientation, nrows=nrows, ncols=ncols) 
             else:
                 self.motion_object = RectGridMotion(movement_type='top') if chip_orientation == 'vertical' else RectGridMotion(movement_type='left')
             

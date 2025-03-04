@@ -536,10 +536,17 @@ class TwoRectGridMotion(Motion):
             self.second_half_motion = RectGridMotion(objective=objective, movement_type='bottom',
                                     corner_names=corner_names)
         elif chip_orientation == 'horizontal':
-            self.first_half_motion = RectGridMotion(objective=objective, movement_type='left',
-                                    corner_names=corner_names)
-            self.second_half_motion = RectGridMotion(objective=objective, movement_type='right',
-                                    corner_names=corner_names)
+            if nrows % 2 == 1:
+                self.first_half_motion = RectGridMotion(objective=objective, movement_type='left',
+                                        corner_names=corner_names)
+                self.second_half_motion = RectGridMotion(objective=objective, movement_type='right',
+                                        corner_names=corner_names)
+            else:
+                self.first_half_motion = RectGridMotion(objective=objective, movement_type='right',
+                                        corner_names=corner_names)
+                self.second_half_motion = RectGridMotion(objective=objective, movement_type='left',
+                                        corner_names=corner_names)
+
 
         self.positions: List[Any] = []
     
@@ -585,11 +592,11 @@ class TwoRectGridMotion(Motion):
 
         # always assert that the two grids are joinable
         # using two halves. Only possible
-        if (self.chip_orientation == 'horizontal') and (self.nrows % 2 != 1):
-            raise ValueError("If Chip orientation is horizontal, No of rows should be odd")
+        #if (self.chip_orientation == 'horizontal') and (self.nrows % 2 != 1):
+        #    raise ValueError("If Chip orientation is horizontal, No of rows should be odd")
         
-        if (self.chip_orientation == 'vertical') and (self.ncols % 2 != 1):
-            raise ValueError("If Chip orientation is vertical, No of cols should be odd")
+        #if (self.chip_orientation == 'vertical') and (self.ncols % 2 != 1):
+        #    raise ValueError("If Chip orientation is vertical, No of cols should be odd")
         
         self.first_half_motion.construct_grid(starting_position_no)
         n_first_positions = len(self.first_half_motion.positions)

@@ -229,7 +229,7 @@ class ExptRun:
                     key = 'phase'
                 elif img_type == 'venus':
                     key = 'fluor'
-                    
+  
                 put_images_in_queue.datapoint[key] = image
                 put_images_in_queue.datapoint['position'] = metadata['Axes']['position']
                 put_images_in_queue.datapoint['timepoint'] = metadata['Axes']['time']
