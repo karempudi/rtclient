@@ -15,14 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QMainWindow, QMenuBar, QPushButton,
-    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFormLayout, QMainWindow,
+    QMenuBar, QPushButton, QSizePolicy, QStatusBar,
+    QVBoxLayout, QWidget)
 
 class Ui_RunWindow(object):
     def setupUi(self, RunWindow):
         if not RunWindow.objectName():
             RunWindow.setObjectName(u"RunWindow")
-        RunWindow.resize(241, 262)
+        RunWindow.resize(303, 338)
         self.centralwidget = QWidget(RunWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayoutWidget = QWidget(self.centralwidget)
@@ -46,10 +47,26 @@ class Ui_RunWindow(object):
 
         self.verticalLayout.addWidget(self.stop_run_button)
 
+        self.formLayoutWidget = QWidget(self.centralwidget)
+        self.formLayoutWidget.setObjectName(u"formLayoutWidget")
+        self.formLayoutWidget.setGeometry(QRect(20, 200, 260, 31))
+        self.formLayout = QFormLayout(self.formLayoutWidget)
+        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setContentsMargins(0, 0, 0, 0)
+        self.post_analysis_check = QCheckBox(self.formLayoutWidget)
+        self.post_analysis_check.setObjectName(u"post_analysis_check")
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.post_analysis_check)
+
+        self.post_save_button = QPushButton(self.formLayoutWidget)
+        self.post_save_button.setObjectName(u"post_save_button")
+
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.post_save_button)
+
         RunWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(RunWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 241, 22))
+        self.menubar.setGeometry(QRect(0, 0, 303, 22))
         RunWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(RunWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -65,5 +82,7 @@ class Ui_RunWindow(object):
         self.load_run_button.setText(QCoreApplication.translate("RunWindow", u"Load Run parameters", None))
         self.start_run_button.setText(QCoreApplication.translate("RunWindow", u"Start Run", None))
         self.stop_run_button.setText(QCoreApplication.translate("RunWindow", u"Stop Run", None))
+        self.post_analysis_check.setText(QCoreApplication.translate("RunWindow", u"Post analysis", None))
+        self.post_save_button.setText(QCoreApplication.translate("RunWindow", u"Post Save directory", None))
     # retranslateUi
 

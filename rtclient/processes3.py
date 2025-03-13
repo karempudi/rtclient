@@ -65,12 +65,47 @@ class AcquisitionEventsSim:
 
 class AcquisitionPost:
 
-    def __init__(self):
-        pass
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
+
+        position_dirs = list(data_dir.glob('Pos*'))
+        position_dirs = sorted([pos_dir for pos_dir in position_dirs if pos_dir.is_dir()], key=lambda x: int(x.name[3:]))
+
+        # just tuples (Pos, timepoint)
+        self.events = []
+        for pos_dir in position_dirs:
+            pos = int(pos_dir.name[3:])
+            phase_dir = pos_dir / Path('phase')
+            fluor_dir = pos_dir / Path('fluor')
+            n_phase_images = len(list(phase_dir.glob('*.tiff')))
+            n_fluor_images = len(list(fluor_dir.glob('*.tiff')))
+            n_images = min(n_phase_images, n_fluor_images)
+            events = [(pos, i) for i in range(n_images)]
+            self.events.extend(events)
+        self.max = len(self.events) 
+        self.i = 0
+        #print(self.events)
 
     def __next__(self):
-        pass
-
+        # read the next event and write it
+        if self.i < self.max:
+            event = self.events[self.i]
+            self.i += 1
+            position_dir = self.data_dir / Path('Pos'+ str(event[0]))
+            phase_dir = position_dir / Path('phase')
+            fluor_dir = position_dir / Path('fluor')
+            phase_image_filename = phase_dir / Path('phase_' + str(event[1]).zfill(4) + '.tiff')
+            fluor_image_filename = fluor_dir / Path('fluor_' + str(event[1]).zfill(4) + '.tiff')
+            datapoint = {
+                'position': event[0],
+                'timepoint': event[1],
+                'phase': imread(phase_image_filename),
+                'fluor': imread(fluor_image_filename),
+                'chan': 'phase_fluor',
+            }
+            return datapoint
+        else:
+            return None
 
 
 class ExptRun:
@@ -133,6 +168,55 @@ class ExptRun:
         root = logging.getLogger()
         root.addHandler(h)
         root.setLevel(logging.DEBUG)
+
+    def acquire_post(self):
+        
+        self.set_process_logger()
+        name = mp.current_process().name
+        print(f"Starting {name} process ...")
+
+        # set the events and over write the save_directory
+        data_dir = Path(self.params.Post.data_dir)
+        print(f"Data dir is ... {data_dir}")
+        print(f"Save dir is ... {self.params.Save.directory}")
+
+        e = AcquisitionPost(data_dir)
+
+        logger = logging.getLogger(name)
+        time.sleep(4)
+        while not self.acquire_kill_event.is_set():
+
+            try:
+                data = next(e)
+                if data is not None:
+                    logger.log(logging.INFO, "Acquired phase img shape: %s fluor shape: %s, Pos: %s time: %s chan: %s",
+                                data['phase'].shape, data['fluor'].shape, data['position'], data['timepoint'], data['chan'])
+                    self.segment_queue.put({
+                        'position': data['position'],
+                        'timepoint': data['timepoint'],
+                        'phase': data['phase'],
+                        'fluor': data['fluor'],
+                        'type': 'phase_fluor',
+                    })
+
+                    # write to db that you acquired image
+                    write_to_db({
+                        'position': data['position'],
+                        'timepoint': data['timepoint']}, self.expt_save_dir, 'acquire_phase')
+                    write_to_db({'position': data['position'],
+                            'timepoint': data['timepoint']}, self.expt_save_dir, 'acquire_fluor')
+
+                    time.sleep(0.8)
+                else:
+                    self.acquire_kill_event.set()
+                    break
+
+            except KeyboardInterrupt:
+                self.acquire_kill_event.set()
+                logger.log(logging.INFO, "Acquire process interrupted using keyboard")
+
+        self.segment_queue.put(None) 
+        logger.log(logging.INFO, "Acquire post process completed successfully")
 
     def acquire_sim(self):
         self.set_process_logger()
@@ -488,7 +572,7 @@ class ExptRun:
         self.logger_kill_event.set()
     
 
-def start_live_experiment(expt_run, sim = False):
+def start_live_experiment(expt_run, sim = False, post = False):
 
     mp.freeze_support()
     try:
@@ -506,6 +590,8 @@ def start_live_experiment(expt_run, sim = False):
         expt_run.acquire_kill_event.clear()
         if sim:
             acquire_process = mp.Process(target=expt_run.acquire_sim, name='acquire_sim')
+        elif post:
+            acquire_process = mp.Process(target=expt_run.acquire_post, name='acquire_post')
         else:
             acquire_process = mp.Process(target=expt_run.acquire, name='acquire')
         acquire_process.start()
