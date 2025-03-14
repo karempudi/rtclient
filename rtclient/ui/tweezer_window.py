@@ -323,6 +323,8 @@ class TweezerWindow(QMainWindow):
         self.moran_weight = None
         self.e_dists = None
         self.nr_dots = None
+        self.tot_nr_dots_init = None
+        self.nr_dots_init_pos_traps = None
 
         self.all_scores = None
         self.scores_median_mad = None
@@ -677,9 +679,10 @@ class TweezerWindow(QMainWindow):
 
     def precomputed_fork_data_scores_init(self):
         # The _ is fork_data, currently not using it, and it is only sliced fork plots
-        _, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
+        self.fork_data, self.all_scores, self.scores_median_mad = self.precomputed_fork_thread.get_data()
         print("Precomputing done ....")
-
+        self.tot_nr_dots_init = self.fork_data['nr_dots_init']
+        self.nr_dots_init_pos_traps = self.fork_data['all_Traps_nr_dots']
         corr_min, corr_max = np.nanmin(self.all_scores['correlation']), np.nanmax(self.all_scores['correlation'])
         moran_min, moran_max = np.nanmin(self.all_scores['moran'][:, :, 0]), np.nanmax(self.all_scores['moran'][:, :, 0])
         sobolev_min, sobolev_max = np.nanmin(self.all_scores['sobolev']), np.nanmax(self.all_scores['sobolev'])
@@ -905,7 +908,10 @@ class TweezerWindow(QMainWindow):
                 self.all_forks_axes.set_xlim(-3, 3)
                 self.all_forks_axes.set_ylim(3, y[0])
                 nr_dots = fork_data['nr_dots']
-                self.all_forks_axes.set_title(f'Number of dots: {nr_dots}')
+                if self.nr_dots_init_pos_traps is not None:
+                    self.all_forks_axes.set_title(f'Number of dots: {nr_dots}\n Number of dots init: {self.tot_nr_dots_init}')
+                else:
+                    self.all_forks_axes.set_title(f'Number of dots: {nr_dots}')
                 self.all_forks_axes.figure.tight_layout()
                 
             
@@ -962,7 +968,11 @@ class TweezerWindow(QMainWindow):
                     self.single_fork_axes.set_xlim(-3, 3)
                     self.single_fork_axes.set_ylim(3, y[0])
                     nr_dots = fork_data['nr_dots']
-                    self.single_fork_axes.set_title(f'Dots: {nr_dots} Pos: {position} Trap: {trap_no+1}')
+
+                    if self.nr_dots_init_pos_traps is not None:
+                        self.single_fork_axes.set_title(f'Dots: {nr_dots} Pos: {position} Trap: {trap_no+1}\n Dots init: {int(self.nr_dots_init_pos_traps[position-1,trap_no])}')
+                    else:
+                        self.single_fork_axes.set_title(f'Dots: {nr_dots} Pos: {position} Trap: {trap_no+1}')
                     self.single_fork_axes.figure.tight_layout()
                     
                     # grab score for the variables
